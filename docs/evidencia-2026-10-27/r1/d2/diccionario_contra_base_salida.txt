@@ -1,0 +1,17 @@
+tablas del esquema: 10 · campos: 167 · diferencias: 0
+tablas propias del servidor (no están en el esquema): ['bitacora_acceso', 'capa_prioritarias', 'capas', 'cargas', 'credenciales', 'duplicados', 'folio_secuencias', 'folios', 'fotografias', 'migraciones', 'parametros', 'prioridades', 'sesiones']
+
+Restricciones CHECK de plantaciones que nombran un campo de la calle:
+   plantaciones_calle_estado_valido CHECK ((calle_estado = ANY (ARRAY['ok'::text, 'lejos'::text])))
+   plantaciones_vialidad_red_valido CHECK ((vialidad_red = ANY (ARRAY['primaria'::text, 'secundaria'::text, 'carretera o camino'::text])))
+Índices de plantaciones que nombran un campo de la calle: ninguno
+Restricciones de jornadas sobre cabos_apoyo: [['jornadas_cabos_apoyo_lista', "CHECK ((jsonb_typeof(cabos_apoyo) = 'array'::text))"]]
+Índices de jornadas sobre cabos_apoyo: ninguno
+Disparadores de plantaciones: ['plantaciones_calle_alta', 'plantaciones_calle_punto', 'plantaciones_folio_inmutable']
+
+Coherencia de los campos de la calle en la base:
+  sin calcular 0 · ok 15178 · lejos 3337 · ok con campos vacíos 0 · ok fuera de 0-40 m 0 · no-ok con campos llenos 0 · primaria sin tipo 0 · no primaria con tipo 0 · con punto y sin calcular 0
+
+Jornadas compartidas en la base:
+  compartidas 67 de 1446
+  cabos de apoyo: 0 sin cuenta · 0 no son cabo · 0 de otra institución · 0 con «fin» fuera de la lista · 0 vigentes con «fin» · 0 con «por» inexistente · 0 en jornadas de un titular que no es Coordinación · de 100

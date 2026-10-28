@@ -1,0 +1,22 @@
+[
+ {
+  "tramo": 8,
+  "renglon": 2883,
+  "nombre": "Datos de demostración",
+  "segundos": 116,
+  "comprobaciones": null,
+  "fallas": [],
+  "detenido": "[renglón 2902]        - waiting 500ms",
+  "final": "Traceback (most recent call last):\n  File \"<carpeta del usuario>\\AppData\\Local\\Temp\\srp_tramos_b41b_kem\\tramo_08.py\", line 362, in <module>\n    abrir_prueba21(); pg21.click('#btn-demo-quitar'); pg21.wait_for_timeout(300)\n    ^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Temp\\srp_tramos_b41b_kem\\tramo_08.py\", line 281, in abrir_prueba21\n    pg21.click('#btn-cuenta'); pg21.click('#btn-datos-prueba'); pg21.wait_for_timeout(400)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py\", line 11102, in click\n    self._sync(\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py\", line 889, in click\n    return await self._main_frame._click(**locals_to_params(locals()))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py\", line 594, in _click\n    await self._channel.send(\"click\", self._timeout, locals_to_params(locals()))\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 76, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 632, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"#btn-cuenta\")\n    - locator resolved to <button type=\"button\" id=\"btn-cuenta\" aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"menu-cuenta\" class=\"btn btn-icono-solo btn-cuenta\" aria-label=\"Cuenta: Yolanda Cruz Demo, Cabo. Abrir menú\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <dialog open=\"\" id=\"dlg-confirmar\" class=\"dlg-confirmar\" aria-describedby=\"dlg-confirmar-cuerpo\" aria-labelledby=\"dlg-confirmar-titulo dlg-confirmar-texto\">…</dialog> intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <dialog open=\"\" id=\"dlg-confirmar\" class=\"dlg-confirmar\" aria-describedby=\"dlg-confirmar-cuerpo\" aria-labelledby=\"dlg-confirmar-titulo dlg-confirmar-texto\">…</dialog> intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    55 × waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - <dialog open=\"\" id=\"dlg-confirmar\" class=\"dlg-confirmar\" aria-describedby=\"dlg-confirmar-cuerpo\" aria-labelledby=\"dlg-confirmar-titulo dlg-confirmar-texto\">…</dialog> intercepts pointer events\n     - retrying click action\n       - waiting 500ms\n\n"
+ },
+ {
+  "tramo": 54,
+  "renglon": 6086,
+  "nombre": "ctx71: Nuevo registro compacto y tarjeta de jornada con avance",
+  "segundos": 31,
+  "comprobaciones": 8,
+  "fallas": [],
+  "detenido": "",
+  "final": ""
+ }
+]

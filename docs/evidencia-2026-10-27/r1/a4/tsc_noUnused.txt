@@ -1,0 +1,10 @@
+src/modulos/srp/acceso.ts(201,32): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/cargas.ts(157,43): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/catalogos.ts(280,38): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/cuentas.ts(172,36): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/cuentas.ts(187,33): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/fotografias.ts(69,76): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/parametros.ts(83,39): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/permisos.ts(156,11): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/rutas.ts(36,10): error TS6133: 'req' is declared but its value is never read.
+src/modulos/srp/rutas.ts(51,10): error TS6133: 'req' is declared but its value is never read.

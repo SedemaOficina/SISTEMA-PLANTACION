@@ -1,0 +1,4 @@
+antes de quitar {"jornadas":{"n":79},"arboles":{"n":165},"bitacora":{"n":618},"ajenas_con_r5_de_apoyo":{"n":0}}
+{ ok: true }
+{ ok: true }
+después [{"u":0,"j":0,"p":0,"b":0,"rol":true}]

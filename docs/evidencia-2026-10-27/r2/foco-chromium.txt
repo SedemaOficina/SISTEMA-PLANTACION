@@ -1,0 +1,8 @@
+chromium vuelta 1 {"tam": "390x844", "quien": "solo", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.6}
+chromium vuelta 1 {"tam": "390x844", "quien": "varios", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.6, "foco_tras_escape": "button#btn-franja-apoyos «Cabos de apoyo»", "foco_tras_cerrar": "button#btn-franja-apoyos «Cabos de apoyo»", "scroll_y": 0}
+chromium vuelta 1 {"tam": "1440x900", "quien": "solo", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.6}
+chromium vuelta 1 {"tam": "1440x900", "quien": "varios", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.7, "foco_tras_escape": "button#btn-franja-apoyos «Cabos de apoyo»", "foco_tras_cerrar": "button#btn-franja-apoyos «Cabos de apoyo»", "scroll_y": 0}
+chromium vuelta 2 {"tam": "390x844", "quien": "solo", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.6}
+chromium vuelta 2 {"tam": "390x844", "quien": "varios", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.6, "foco_tras_escape": "button#btn-franja-apoyos «Cabos de apoyo»", "foco_tras_cerrar": "button#btn-franja-apoyos «Cabos de apoyo»", "scroll_y": 0}
+chromium vuelta 2 {"tam": "1440x900", "quien": "solo", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.6}
+chromium vuelta 2 {"tam": "1440x900", "quien": "varios", "foco_tras_iniciar": "button#btn-ubicacion «Registrar ubicación del punto»", "seg": 1.7, "foco_tras_escape": "button#btn-franja-apoyos «Cabos de apoyo»", "foco_tras_cerrar": "button#btn-franja-apoyos «Cabos de apoyo»", "scroll_y": 0}

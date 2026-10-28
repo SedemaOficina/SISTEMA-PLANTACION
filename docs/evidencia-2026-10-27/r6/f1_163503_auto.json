@@ -1,0 +1,466 @@
+{
+ "obs": {
+  "corrida": "163503",
+  "modo": "auto",
+  "coord_entra_s": 8.3,
+  "JA": "1d801cdd-c225-4e1e-9569-fca30ec510ef",
+  "JB": "99b4ae41-de5a-462a-91d8-54f54f55b876",
+  "c1_al_entrar": {
+   "avisos": [
+    {
+     "titulo": "Jornada compartida",
+     "pregunta": "Ahora es cabo de apoyo en la jornada compartida «R6 compartida A 163503», que coordina R6 Coord 3503. Ya puede registrar en ella.",
+     "puntos": "Registran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.Usted corrige sólo sus árboles.Al acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.La Coordinación cierra la jornada y genera el reporte.",
+     "nota": "",
+     "si": "Entendido",
+     "no": ""
+    }
+   ],
+   "activa": {
+    "activa": "R6 compartida A 163503",
+    "activa_id": "1d801cdd-c225-4e1e-9569-fca30ec510ef",
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida A 163503Jornada compartida · coordina R6 Coord 35030 de 10 árboles · 0 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   }
+  },
+  "c2_al_entrar": {
+   "avisos": [
+    {
+     "titulo": "Jornada compartida",
+     "pregunta": "Ahora es cabo de apoyo en la jornada compartida «R6 compartida A 163503», que coordina R6 Coord 3503. Ya puede registrar en ella.",
+     "puntos": "Registran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.Usted corrige sólo sus árboles.Al acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.La Coordinación cierra la jornada y genera el reporte.",
+     "nota": "",
+     "si": "Entendido",
+     "no": ""
+    }
+   ],
+   "activa": {
+    "activa": "R6 compartida A 163503",
+    "activa_id": "1d801cdd-c225-4e1e-9569-fca30ec510ef",
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida A 163503Jornada compartida · coordina R6 Coord 35030 de 10 árboles · 0 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   }
+  },
+  "c3_al_entrar": {
+   "avisos": [
+    {
+     "titulo": "Jornada compartida",
+     "pregunta": "Ahora es cabo de apoyo en la jornada compartida «R6 compartida B 163503», que coordina R6 Coord 3503. Ya puede registrar en ella.",
+     "puntos": "Registran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.Usted corrige sólo sus árboles.Al acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.La Coordinación cierra la jornada y genera el reporte.",
+     "nota": "",
+     "si": "Entendido",
+     "no": ""
+    }
+   ],
+   "activa": {
+    "activa": "R6 compartida B 163503",
+    "activa_id": "99b4ae41-de5a-462a-91d8-54f54f55b876",
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida B 163503Jornada compartida · coordina R6 Coord 35030 de 10 árboles · 0 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   }
+  },
+  "en_linea": {
+   "c1": "b4da90f5-c603-4890-abe7-b166225eca7a",
+   "c2": "bd145475-7d86-47f9-9f7c-01e1b07d7f86"
+  },
+  "local_jornada_en_tel_cabo": {
+   "c1": false,
+   "c2": false,
+   "c3": false
+  },
+  "c1_sin_senal_cola": [
+   {
+    "tipo": "registro.crear",
+    "registro": "a7094c3d-bb60-40f7-9afa-5db42d9d3727",
+    "rechazo": null
+   },
+   {
+    "tipo": "registro.crear",
+    "registro": "e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57",
+    "rechazo": null
+   }
+  ],
+  "c2_sin_senal_cola": [
+   {
+    "tipo": "registro.crear",
+    "registro": "3a130958-8f3b-4362-8129-8bb832c5b9e9",
+    "rechazo": null
+   },
+   {
+    "tipo": "registro.crear",
+    "registro": "d71370a1-8675-42e1-95d4-2df62b36d028",
+    "rechazo": null
+   }
+  ],
+  "c3_sin_senal_cola": [
+   {
+    "tipo": "registro.crear",
+    "registro": "35d9989a-352a-4db1-8a7b-74974665c5f6",
+    "rechazo": null
+   },
+   {
+    "tipo": "registro.crear",
+    "registro": "337fb80e-0a69-4b1c-970e-8349b2da6a94",
+    "rechazo": null
+   }
+  ],
+  "sin_senal": {
+   "c1": [
+    "a7094c3d-bb60-40f7-9afa-5db42d9d3727",
+    "e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57"
+   ],
+   "c2": [
+    "3a130958-8f3b-4362-8129-8bb832c5b9e9",
+    "d71370a1-8675-42e1-95d4-2df62b36d028"
+   ],
+   "c3": [
+    "35d9989a-352a-4db1-8a7b-74974665c5f6",
+    "337fb80e-0a69-4b1c-970e-8349b2da6a94"
+   ]
+  },
+  "ventana_apoyos": "Cabos de apoyo\n\nMarque a los cabos de su institución que registran en «R6 compartida A 163503». Con ellos, la jornada pasa a ser compartida.\n\nCabos de Secretaría del Medio Ambiente (SEDEMA)\nArturo Méndez Demo\nFulana de Tal Ejemplo\nJulián Ortega Demo\nMarisol Pérez Demo\nR6 Cabo1 3503\nR6 Cabo2 3503\nR6 Cabo3 3503\nRocío Hernández Demo\nTomás Díaz Demo\nYolanda Cruz Demo\n\nCómo funciona una jornada compartida\n\nLa Coordinación la abre el mismo día del evento: una jornada no se puede abrir con fecha futura.\nAgregue aquí a los cabos antes de empezar a plantar, de preferencia en el punto de reunión.\nCada cabo abre el sistema con señal un momento: así le llega la jornada a su teléfono.\nTodos registran a la vez; cada árbol queda a nombre de quien lo captura.\nAl acabar, cada cabo toca «Terminar mi parte».\nLa Coordinación cierra la jornada y genera el reporte.\nGuardar: 2 cabos de apoyo",
+  "dialogo_cierre_A": {
+   "titulo": "Cerrar jornada",
+   "pregunta": "¿Cerrar la jornada «R6 compartida A 163503» con 2 árboles?",
+   "puntos": "R6 Cabo2 3503 no ha terminado su parte: 1 árbol recibido, a las 16:35.2 puntos por revisar.8 árboles por debajo de lo previsto (2 de 10).",
+   "nota": "Puede revisarlos ahora, uno por uno, o cerrar de todos modos y revisarlos después.",
+   "si": "Cerrar jornada",
+   "no": "Cancelar"
+  },
+  "B_boton_eliminar_visible": true,
+  "dialogo_eliminar_B": {
+   "titulo": "Eliminar jornada",
+   "pregunta": "¿Eliminar la jornada «R6 compartida B 163503» del 27-OCT-2026?",
+   "puntos": "No tiene árboles registrados.La bitácora conserva la constancia.",
+   "nota": "No se puede deshacer.",
+   "si": "Eliminar jornada",
+   "no": "Cancelar"
+  },
+  "A_tras_c2_cerrada": {
+   "estatus": "cerrada",
+   "apoyos": [
+    [
+     "4b777d02-9985-4bcb-b2b0-752838653e81",
+     "quitado"
+    ],
+    [
+     "8dc8af78-fa6c-490a-a5c3-45423165f888",
+     null
+    ]
+   ],
+   "arboles": [
+    "4b777d02-9985-4bcb-b2b0-752838653e81",
+    "8dc8af78-fa6c-490a-a5c3-45423165f888"
+   ]
+  },
+  "c2_con_A_cerrada": {
+   "activa": {
+    "activa": "R6 compartida A 163503",
+    "activa_id": "1d801cdd-c225-4e1e-9569-fca30ec510ef",
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida A 163503Jornada compartida · coordina R6 Coord 35033 de 10 árboles · 3 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   },
+   "cola": [
+    {
+     "tipo": "registro.crear",
+     "registro": "3a130958-8f3b-4362-8129-8bb832c5b9e9",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    },
+    {
+     "tipo": "registro.crear",
+     "registro": "d71370a1-8675-42e1-95d4-2df62b36d028",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    }
+   ],
+   "franja": {
+    "ver": true,
+    "texto": "El servidor no aceptó 2 cambios. Siguen guardados en el teléfono; revíselos para que no se queden sin enviar. Revisar"
+   },
+   "aviso": "",
+   "revisar": [
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "3a130958-8f3b-4362-8129-8bb832c5b9e9"
+    },
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "d71370a1-8675-42e1-95d4-2df62b36d028"
+    }
+   ]
+  },
+  "c3_con_B_eliminada": {
+   "activa": {
+    "activa": null,
+    "activa_id": null,
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida B 163503Jornada compartida · coordina R6 Coord 35032 de 10 árboles · 2 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   },
+   "cola": [
+    {
+     "tipo": "registro.crear",
+     "registro": "35d9989a-352a-4db1-8a7b-74974665c5f6",
+     "rechazo": "JORNADA_ELIMINADA: Esa jornada se eliminó en el servidor."
+    },
+    {
+     "tipo": "registro.crear",
+     "registro": "337fb80e-0a69-4b1c-970e-8349b2da6a94",
+     "rechazo": "JORNADA_ELIMINADA: Esa jornada se eliminó en el servidor."
+    }
+   ],
+   "franja": {
+    "ver": true,
+    "texto": "El servidor no aceptó 2 cambios. Siguen guardados en el teléfono; revíselos para que no se queden sin enviar. Revisar"
+   },
+   "aviso": "El servidor no aceptó 2 cambios. Revíselos con «Revisar», arriba.",
+   "revisar": [
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol",
+     "porque": "Por qué: Esa jornada se eliminó en el servidor. Páselo a otra jornada suya para enviarlo.",
+     "botones": [
+      "Pasar a otra jornada",
+      "Eliminar este registro"
+     ],
+     "id": "35d9989a-352a-4db1-8a7b-74974665c5f6"
+    },
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol",
+     "porque": "Por qué: Esa jornada se eliminó en el servidor. Páselo a otra jornada suya para enviarlo.",
+     "botones": [
+      "Pasar a otra jornada",
+      "Eliminar este registro"
+     ],
+     "id": "337fb80e-0a69-4b1c-970e-8349b2da6a94"
+    }
+   ]
+  },
+  "c3_mover": "Mover a otra jornada\n\nElija la jornada abierta a la que pasa el Ahuehuete: se enviará en ella.\n\nNo hay otra jornada abierta suya. Inicie una en Nuevo registro y vuelva a «Revisar».",
+  "c2_tras_reabrir": {
+   "activa": {
+    "activa": "R6 compartida A 163503",
+    "activa_id": "1d801cdd-c225-4e1e-9569-fca30ec510ef",
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida A 163503Jornada compartida · coordina R6 Coord 35033 de 10 árboles · 3 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   },
+   "cola": [
+    {
+     "tipo": "registro.crear",
+     "registro": "3a130958-8f3b-4362-8129-8bb832c5b9e9",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    },
+    {
+     "tipo": "registro.crear",
+     "registro": "d71370a1-8675-42e1-95d4-2df62b36d028",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    }
+   ],
+   "franja": {
+    "ver": true,
+    "texto": "El servidor no aceptó 2 cambios. Siguen guardados en el teléfono; revíselos para que no se queden sin enviar. Revisar"
+   },
+   "aviso": "No hay nada más por enviar. El servidor no aceptó 2 cambios: toque «Revisar», en la franja de arriba.",
+   "revisar": [
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "3a130958-8f3b-4362-8129-8bb832c5b9e9"
+    },
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "d71370a1-8675-42e1-95d4-2df62b36d028"
+    }
+   ]
+  },
+  "c1_quitado": {
+   "activa": {
+    "activa": "R6 compartida A 163503",
+    "activa_id": "1d801cdd-c225-4e1e-9569-fca30ec510ef",
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida A 163503Jornada compartida · coordina R6 Coord 35033 de 10 árboles · 3 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   },
+   "cola": [
+    {
+     "tipo": "registro.crear",
+     "registro": "a7094c3d-bb60-40f7-9afa-5db42d9d3727",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    },
+    {
+     "tipo": "registro.crear",
+     "registro": "e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    }
+   ],
+   "franja": {
+    "ver": true,
+    "texto": "El servidor no aceptó 2 cambios. Siguen guardados en el teléfono; revíselos para que no se queden sin enviar. Revisar"
+   },
+   "aviso": "",
+   "revisar": [
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "a7094c3d-bb60-40f7-9afa-5db42d9d3727"
+    },
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57"
+    }
+   ]
+  },
+  "c1_quitado_con_senal_registra": {
+   "guardado": true,
+   "activa": "R6 compartida A 163503",
+   "cola": [
+    {
+     "tipo": "registro.crear",
+     "registro": "443aeabb-c0bc-4110-8698-9820e8709d0e",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    }
+   ]
+  },
+  "c1_vuelto_a_marcar": {
+   "activa": {
+    "activa": "R6 compartida A 163503",
+    "activa_id": "1d801cdd-c225-4e1e-9569-fca30ec510ef",
+    "panelIniciar": false,
+    "remoto": "listo",
+    "enLinea": true,
+    "franja": "Jornada activa Ver detalle R6 compartida A 163503Jornada compartida · coordina R6 Coord 35034 de 10 árboles · 4 suyos27-OCT-2026 · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · prioridad Alta · Reforestación Urbana Registrar (paso actual)CerrarRevisarReporte Editar jornada Cambiar jor"
+   },
+   "cola": [
+    {
+     "tipo": "registro.crear",
+     "registro": "a7094c3d-bb60-40f7-9afa-5db42d9d3727",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    },
+    {
+     "tipo": "registro.crear",
+     "registro": "e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    },
+    {
+     "tipo": "registro.crear",
+     "registro": "443aeabb-c0bc-4110-8698-9820e8709d0e",
+     "rechazo": "SIN_PERMISO: No tiene permiso para registrar en esta jornada."
+    }
+   ],
+   "franja": {
+    "ver": true,
+    "texto": "El servidor no aceptó 3 cambios. Siguen guardados en el teléfono; revíselos para que no se queden sin enviar. Revisar"
+   },
+   "aviso": "No hay nada más por enviar. El servidor no aceptó 3 cambios: toque «Revisar», en la franja de arriba.",
+   "revisar": [
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "a7094c3d-bb60-40f7-9afa-5db42d9d3727"
+    },
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57"
+    },
+    {
+     "titulo": "Ahuehuete · nuevo, sin folio",
+     "que": "Alta del árbol, en la jornada «R6 compartida A 163503»",
+     "porque": "Por qué: No tiene permiso para registrar en esta jornada.",
+     "botones": [
+      "Eliminar este registro"
+     ],
+     "id": "443aeabb-c0bc-4110-8698-9820e8709d0e"
+    }
+   ]
+  },
+  "final_A": {
+   "estatus": "abierta",
+   "apoyos": [
+    [
+     "4b777d02-9985-4bcb-b2b0-752838653e81",
+     null
+    ],
+    [
+     "8dc8af78-fa6c-490a-a5c3-45423165f888",
+     null
+    ]
+   ],
+   "arboles": [
+    "4b777d02-9985-4bcb-b2b0-752838653e81",
+    "8dc8af78-fa6c-490a-a5c3-45423165f888"
+   ]
+  },
+  "resumen": {
+   "capturados_sin_senal_vigente": 6,
+   "llegados_a_su_jornada": 0
+  },
+  "errores_pagina": []
+ },
+ "checks": [
+  "OK    paso 1: la Coordinación abre A (cabos 1 y 2) y B (cabo 3) desde el formulario y llegan al servidor: {'estatus': 'abierta', 'apoyos': [['4b777d02-9985-4bcb-b2b0-752838653e81', None], ['8dc8af78-fa6c-490a-a5c3-45423165f888', None]], 'arboles': []} {'estatus': 'abierta', 'apoyos': [['829bc9c7-ff7e-4a3f-bf10-95b659f96e35', None]], 'arboles': []}",
+  "OK    paso 2: a cada cabo le llega su jornada compartida, activa en Nuevo registro",
+  "OK    paso 2: los dos árboles con señal llegan a A",
+  "OK    paso 3: cada cabo registra dos árboles sin señal: {'c1': ['a7094c3d-bb60-40f7-9afa-5db42d9d3727', 'e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57'], 'c2': ['3a130958-8f3b-4362-8129-8bb832c5b9e9', 'd71370a1-8675-42e1-95d4-2df62b36d028'], 'c3': ['35d9989a-352a-4db1-8a7b-74974665c5f6', '337fb80e-0a69-4b1c-970e-8349b2da6a94']}",
+  "OK    paso 4a: la Coordinación quita al cabo 1 de A",
+  "OK    paso 4b: la Coordinación cierra A. La ventana decía: {'titulo': 'Cerrar jornada', 'pregunta': '¿Cerrar la jornada «R6 compartida A 163503» con 2 árboles?', 'puntos': 'R6 Cabo2 3503 no ha terminado su parte: 1 árbol recibido, a las 16:35.2 puntos por revisar.8 árboles por debajo de lo previsto (2 de 10).', 'nota': 'Puede revisarlos ahora, uno por uno, o cerrar de todos modos y revisarlos después.', 'si': 'Cerrar jornada', 'no': 'Cancelar'}",
+  "OK    paso 4c: la Coordinación elimina B, con su cabo de apoyo vigente y dos árboles suyos sin enviar. Botón visible: True; ventana: {'titulo': 'Eliminar jornada', 'pregunta': '¿Eliminar la jornada «R6 compartida B 163503» del 27-OCT-2026?', 'puntos': 'No tiene árboles registrados.La bitácora conserva la constancia.', 'nota': 'No se puede deshacer.', 'si': 'Eliminar jornada', 'no': 'Cancelar'}",
+  "FALLA paso 5: con A cerrada, los dos árboles del cabo 2 capturados sin señal llegan (D334: «se quedan en su teléfono hasta que se reabra»): en el servidor 1 de 3; cola: [{'tipo': 'registro.crear', 'registro': '3a130958-8f3b-4362-8129-8bb832c5b9e9', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}, {'tipo': 'registro.crear', 'registro': 'd71370a1-8675-42e1-95d4-2df62b36d028', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}]",
+  "FALLA paso 5 (informativo): el cabo 3, con B eliminada, ve: [\"Por qué: Esa jornada se eliminó en el servidor. Páselo a otra jornada suya para enviarlo. ['Pasar a otra jornada', 'Eliminar este registro']\", \"Por qué: Esa jornada se eliminó en el servidor. Páselo a otra jornada suya para enviarlo. ['Pasar a otra jornada', 'Eliminar este registro']\"] · al «Pasar a otra jornada»: Mover a otra jornada\n\nElija la jornada abierta a la que pasa el Ahuehuete: se enviará en ella.\n\nNo hay otra jornada abierta suya. Inicie una en Nuevo registro y vuelva a «Revisar».",
+  "OK    paso 6: la Coordinación reabre A",
+  "FALLA paso 6: reabierta A, los árboles del cabo 2 que esperaban llegan: en el servidor 1 de 3; cola: [{'tipo': 'registro.crear', 'registro': '3a130958-8f3b-4362-8129-8bb832c5b9e9', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}, {'tipo': 'registro.crear', 'registro': 'd71370a1-8675-42e1-95d4-2df62b36d028', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}]",
+  "FALLA paso 7: los dos árboles del cabo 1 capturados sin señal ANTES de que lo quitaran llegan: en el servidor 1 de 3; cola: [{'tipo': 'registro.crear', 'registro': 'a7094c3d-bb60-40f7-9afa-5db42d9d3727', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}, {'tipo': 'registro.crear', 'registro': 'e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}]",
+  "FALLA paso 7 (informativo): con señal y ya quitado, el teléfono del cabo 1 sigue con A activa y le deja registrar: {'guardado': True, 'activa': 'R6 compartida A 163503', 'cola': [{'tipo': 'registro.crear', 'registro': '443aeabb-c0bc-4110-8698-9820e8709d0e', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}]}",
+  "OK    paso 7: la Coordinación vuelve a marcar al cabo 1",
+  "FALLA paso 7: vuelto a marcar, sus árboles que esperaban llegan: en el servidor 1 de 3; cola: [{'tipo': 'registro.crear', 'registro': 'a7094c3d-bb60-40f7-9afa-5db42d9d3727', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}, {'tipo': 'registro.crear', 'registro': 'e64bf6a9-0bf6-4c55-be3a-7b4e6ee26b57', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}, {'tipo': 'registro.crear', 'registro': '443aeabb-c0bc-4110-8698-9820e8709d0e', 'rechazo': 'SIN_PERMISO: No tiene permiso para registrar en esta jornada.'}]",
+  "FALLA RESUMEN: de 6 árboles capturados sin señal siendo cabo de apoyo vigente, llegaron a su jornada 0"
+ ]
+}

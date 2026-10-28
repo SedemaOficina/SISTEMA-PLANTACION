@@ -1,0 +1,20 @@
+corrida 1: 10 tablas, 167 campos, 31 llaves foráneas → servidor\db\srp\02-srp-tablas.sql datos\DICCIONARIO-DATOS.md: 10 tablas, 167 campos, 36 reglas de Fase 1, 17 de Fase 2 97 celdas, 18.8 MB, fuente 9ecc12364a88d5a0… 
+produccion 1:   File "<frozen ntpath>", line 796, in relpath ValueError: path is on mount '\\\\?\\C:', start on mount 'C:' 
+corrida 2: 10 tablas, 167 campos, 31 llaves foráneas → servidor\db\srp\02-srp-tablas.sql datos\DICCIONARIO-DATOS.md: 10 tablas, 167 campos, 36 reglas de Fase 1, 17 de Fase 2 97 celdas, 18.8 MB, fuente 9ecc12364a88d5a0… 
+produccion 2:   File "<frozen ntpath>", line 796, in relpath ValueError: path is on mount '\\\\?\\C:', start on mount 'C:' 
+--- generados: corrida 1 contra corrida 2
+iguales
+--- generados: corrida 1 contra el commit
+Files /c/sia-rev/tmp/aud1027/r1/evidencia/a3/tmp/gen1/servidor/db/srp/02-srp-tablas.sql and /c/sia-rev/tmp/aud1027/r1/servidor/db/srp/02-srp-tablas.sql differ
+Files /c/sia-rev/tmp/aud1027/r1/evidencia/a3/tmp/gen1/datos/DICCIONARIO-DATOS.md and /c/sia-rev/tmp/aud1027/r1/datos/DICCIONARIO-DATOS.md differ
+Files /c/sia-rev/tmp/aud1027/r1/evidencia/a3/tmp/gen1/js/esquema.js and /c/sia-rev/tmp/aud1027/r1/js/esquema.js differ
+Files /c/sia-rev/tmp/aud1027/r1/evidencia/a3/tmp/gen1/assets/calles/indice.json and /c/sia-rev/tmp/aud1027/r1/assets/calles/indice.json differ
+--- producción: corrida 1 contra corrida 2
+iguales (80 archivos)
+--- producción contra el repositorio: archivos que cambian o faltan
+en el repo y no en producción:
+     97 ./assets/calles/c*.json
+      1 ./assets/calles/indice.json
+en producción y no en el repo:
+distintos:
+  ./js/config.js

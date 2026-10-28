@@ -1,0 +1,32 @@
+{
+ "externas": 294,
+ "dominios": [
+  "server.arcgisonline.com"
+ ],
+ "csp_eventos": 0,
+ "csp_consola": 0,
+ "errores": 0,
+ "pasos_con_error": [],
+ "inyectado": {
+  "ADMIN": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 2
+  },
+  "DIRECTIVO": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 4
+  },
+  "COORDINADOR": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 1
+  },
+  "CABO": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 7
+  }
+ }
+}

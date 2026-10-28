@@ -1,0 +1,305 @@
+paginas 7
+{'/Producer': 'jsPDF 4.2.1', '/Title': 'Informe de plantación', '/Subject': 'Informe de plantación', '/Author': 'Secretaría del Medio Ambiente de la Ciudad de México', '/Creator': 'Sistema de Registro de Plantaciones 1.4.2', '/CreationDate': "D:20261027160637-06'00'"}
+--- pag 1
+INFORME DE PLANTACIÓN
+Todo el registro
+Periodo: del 06-MAY-2024 al 27-OCT-2026
+Toda la Ciudad (dirección)
+Jornadas compartidas
+RESUMEN
+Indicador Valor
+Árboles plantados (jornadas cerradas) 3,582
+Jornadas cerradas 38
+Jornadas en curso (no se cuentan hasta cerrarse) 1
+Avance contra lo previsto en las jornadas 100 % (3,582 de 3,597)
+Cabos que trabajaron 0 de 20
+Árboles por jornada 94.3
+Especies distintas 22 (91 % de los árboles son nativos o endémicos)
+Alcaldías y colonias 8 alcaldías · 65 colonias
+Con fotografía 158 (4 %)
+Ubicados con GPS 3,046 (85 %), precisión típica ±11 m
+QUÉ ATENDER
+Pendiente Jornadas
+2 jornadas cerradas tienen puntos sin revisar 2
+4 jornadas cerradas no tienen reporte 4
+ÁRBOLES PLANTADOS POR AÑO
+Año Jornadas cerradas Árboles
+2024 5 445
+2025 11 1,188
+2026 22 1,949
+Total 38 3,582
+POR INSTITUCIÓN
+Institución Tipo Árboles % del total Jornadas
+Secretaría del Medio Ambiente (SEDEMA) Gobierno de la CDMX 1,907 53 % 18
+Reforestamos México, A.C. Organización civil 447 12 % 5
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 06-MAY-2024 al 27-OCT-2026 Página 1 de 7
+--- pag 2
+Institución Tipo Árboles % del total Jornadas
+Procuraduría Ambiental y del Ordenamiento Territorial (PAOT) Gobierno de la CDMX 437 12 % 5
+Green Cover Empresa privada 414 12 % 5
+Alcaldía Iztapalapa Alcaldía 377 11 % 5
+Total 3,582 100 %
+POR QUIÉN REGISTRÓ
+Quién registró Jornadas Árboles De lo previsto Última Pendientes
+Marisol Pérez Demo 0 319 — — —
+Arturo Méndez Demo 0 274 — — —
+Fulana de Tal Ejemplo 0 272 — — —
+Julián Ortega Demo 0 263 — — —
+Tomás Díaz Demo 0 243 — — —
+Yolanda Cruz Demo 0 190 — — —
+Lucía Méndez Ejemplo 0 178 — — —
+Valeria Castro Demo 0 174 — — —
+Óscar Rivas Ejemplo 0 164 — — —
+Gerardo Paredes Demo 0 162 — — —
+Andrea Solís Ejemplo 0 148 — — —
+Paula Sánchez Demo 0 133 — — —
+Olivia Reyes Demo 0 128 — — —
+Estela Ramírez Demo 9 126 100 % 01-AGO-2026 2 sin revisar, 1 sin reporte
+Perengano Gómez Ejemplo 9 111 100 % 27-AGO-2026 1 sin reporte
+Rocío Hernández Demo 0 109 — — —
+Ramiro Torres Ejemplo 0 98 — — —
+Mariana Vega Ejemplo 5 97 99 % 17-JUN-2026 —
+Omar Fuentes Demo 0 94 — — —
+Ernesto Luna Demo 0 87 — — —
+Carmen Ibarra Ejemplo 5 77 99 % 24-AGO-2026 1 sin reporte
+Héctor Salinas Ejemplo 5 76 100 % 22-SEP-2026 4 sin revisar, 1 sin reporte
+Sergio Navarro Ejemplo 5 59 98 % 15-SEP-2026 —
+Nadia Flores Demo 0 0 — — —
+Silvia Rangel Demo 0 0 — — —
+Zacarías Molina Demo 0 0 — — —
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 06-MAY-2024 al 27-OCT-2026 Página 2 de 7
+--- pag 3
+POR ALCALDÍA
+Alcaldía Árboles % del total Jornadas Colonias
+Tlalpan 1,057 30 % 12 16
+Iztapalapa 754 21 % 8 16
+Benito Juárez 431 12 % 4 5
+Miguel Hidalgo 414 12 % 5 10
+Xochimilco 368 10 % 5 11
+Coyoacán 243 7 % 2 3
+Cuauhtémoc 193 5 % 2 3
+Milpa Alta 122 3 % 1 1
+POR RED VIAL
+Red vial Quién la atiende Calles Árboles % del total
+Vialidades primarias Gobierno de CDMX 11 276 8 %
+Calles secundarias Alcaldía Tlalpan y 7 más 152 2,661 74 %
+Sin calle cercana — — 645 18 %
+VIALIDADES PRIMARIAS · GOBIERNO DE CDMX
+Calle Entre calles Alcaldía Árboles % del total Jornadas
+Avenida Niños Héroes entre Avenida Doctor Río de la Loza y
+Calle Claudio Bernard
+Cuauhtémoc 56 2 % 1
+Avenida Constituyentes entre Calle General Francisco Fagoaga
+y Calle Gobernador Gregorio V. Gelati
+Miguel Hidalgo 50 2 % 1
+Avenida Canal Nacional entre Calzada del Hueso y Periférico
+(Boulevard Adolfo Ruiz Cortines)
+Xochimilco 39 2 % 1
+Calle Benvenuto Cellini entre Calle El Greco y Periférico
+(Boulevard Adolfo López Mateos)
+Benito Juárez 29 1 % 1
+Avenida Canal Nacional entre Calzada del Hueso y Periférico
+(Boulevard Adolfo Ruiz Cortines)
+Tlalpan 27 1 % 1
+Avenida Año de Juárez entre Calle 10 y Calle 6 Iztapalapa 21 1 % 1
+Avenida Miguel Ángel de
+Quevedo
+entre Calle Ohio y Calle Quetzal Coyoacán 18 1 % 1
+Prolongación División del
+Norte
+entre Calle Francisco Mendoza y Calle
+Plan de Guadalupe
+Xochimilco 15 1 % 1
+Avenida Universidad entre Calle Pilares y calle sin nombre Benito Juárez 11 1 % 1
+Periférico (Boulevard
+Adolfo López Mateos)
+entre Calle Benvenuto Cellini y Calle
+Chilpa; entre Calle Merced Gómez y
+Calle Miguel de Mendoza
+Benito Juárez 5 1 % 2
+Periférico (Boulevard
+Adolfo Ruiz Cortines)
+entre Camino Real y Privada Entrada 9 Tlalpan 5 1 % 1
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 06-MAY-2024 al 27-OCT-2026 Página 3 de 7
+--- pag 4
+CALLES SECUNDARIAS · ALCALDÍA TLALPAN Y 7 MÁS
+Calle Entre calles Alcaldía Árboles % del total Jornadas
+Calles sin nombre — Tlalpan 91 3 % 3
+Calles sin nombre — Iztapalapa 85 3 % 2
+Calle Alondra entre Avenida Miguel Ángel de Quevedo
+y Calle Jardín de las Rosas
+Coyoacán 61 2 % 1
+Calle Gobernador Tiburcio
+Montiel
+entre Calle General Zuazua y Calle
+General Gómez Pedraza
+Miguel Hidalgo 57 2 % 1
+Calle Ingeniero A. Vidal entre Calle 5 y Calle 9 Tlalpan 55 2 % 1
+Calle Santiago Rebull entre Periférico (Boulevard Adolfo
+López Mateos) y Calle Miguel Cabrera
+Benito Juárez 55 2 % 1
+Avenida Panamericana entre Calle Céfiro y Privada Rinconada
+Flora
+Coyoacán 52 2 % 1
+Calle Doctor Lavista entre Calle Doctor Miguel Francisco
+Jiménez y Calle Doctor Rafael Lucio
+Cuauhtémoc 50 2 % 1
+Privada Mariano Abasolo entre Cerrada Las Tortolas y Cerrada
+Mariano Abasolo
+Tlalpan 50 2 % 1
+Calle 9 entre Calle Fray Pedro de Gante y Calle
+Ingeniero A. Vidal
+Tlalpan 45 2 % 1
+Calle General Antonio León entre Calle General Juan Cano y Calle
+Gobernador Rafael Rebollar
+Miguel Hidalgo 44 1 % 1
+Calle Sur 109 entre Calle Atanasio G. Sarabia y Calle
+Jorge Enciso
+Iztapalapa 44 1 % 1
+Calle Gobernador Gregorio
+V. Gelati
+entre Calle Gobernador Melchor
+Múzquiz y Privada Gobernador Gregorio
+V. Gelati
+Miguel Hidalgo 43 1 % 1
+Calle Sur 109-A entre Calle Atanasio G. Sarabia y Calle
+Jorge Enciso
+Iztapalapa 43 1 % 1
+Calle Leonardo Da Vinci entre Calle Chilpa y Calle Giotto Benito Juárez 42 2 % 1
+Otras 137 calles 1,844 51 %
+La calle la pone el sistema con la capa de calles de la Ciudad de México (versión 1.0.0): el tramo más cercano al árbol, a 40 m o menos, con su
+red vial y quién lo atiende. Elaborada por SEDEMA con información del INEGI (Marco Geoestadístico, Encuesta Intercensal 2025; Red Nacional
+de Caminos 2025) y de SEMOVI (Vialidades primarias, CC BY 4.0, y el acuerdo de clasificación de vialidades de 2024). En el PDF van las 15
+calles con más árboles de cada red; la lista completa, en la tabla para Excel.
+POR PRIORIDAD DE LA COLONIA
+Prioridad de reforestación Árboles % del total
+Muy alta 302 8 %
+Alta 380 11 %
+Media 1,434 40 %
+Baja 1,083 30 %
+Muy baja 331 9 %
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 06-MAY-2024 al 27-OCT-2026 Página 4 de 7
+--- pag 5
+Prioridad de reforestación Árboles % del total
+Sin dato en la capa 52 1 %
+Total 3,582 100 %
+POR ESPECIE
+Especie Nombre científico Distribución Árboles % del total
+Fresno Fraxinus uhdei Nativa 436 12 %
+Liquidámbar Liquidambar styraciflua Nativa 304 9 %
+Jacaranda Jacaranda mimosifolia Exótica 253 7 %
+Tepozán Buddleja cordata Nativa 250 7 %
+Palo dulce Eysenhardtia polystachya Nativa 231 6 %
+Aile Alnus acuminata Nativa 229 6 %
+Ahuehuete Taxodium mucronatum Nativa 220 6 %
+Encino Quiebra Hacha Quercus rugosa Nativa 207 6 %
+Capulín Prunus serotina var. salicifolia Nativa 191 5 %
+Colorín Erythrina americana Endémica 180 5 %
+Tejocote Crataegus mexicana Nativa 143 4 %
+Cedro blanco Cupressus lusitanica Nativa 137 4 %
+Huizache Vachellia farnesiana Nativa 121 3 %
+Mezquite Neltuma laevigata Nativa 113 3 %
+Codo de fraile Cascabela thevetioides Endémica 104 3 %
+Pino Pinus cembroides Nativa 95 3 %
+Magnolia Magnolia grandiflora Exótica 73 2 %
+Palo loco Pittocaulon praecox Endémica 73 2 %
+Sauce Salix humboldtiana Nativa 62 2 %
+Olmo de texas Ulmus crassifolia Nativa 60 2 %
+Guaje rojo Leucaena esculenta Nativa 59 2 %
+Cedro limón Cupressus macrocarpa Nativa 41 1 %
+Total 3,582 100 %
+POR PROGRAMA
+Programa Árboles % del total Jornadas
+Reforestación Urbana 3,040 85 % 32
+Palmeras 414 11 % 5
+Centro Histórico 128 4 % 1
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 06-MAY-2024 al 27-OCT-2026 Página 5 de 7
+--- pag 6
+JORNADAS CERRADAS DEL PERIODO
+Fecha Jornada Quién registró Prioridad Árboles Reporte
+22-SEP-2026 Unidad habitacional · San Miguel Chapultepec I Héctor Salinas Ejemplo Muy baja 122 de 121 Generado
+17-SEP-2026 Plaza cívica · Lomas De Reforma Héctor Salinas Ejemplo Muy baja 85 de 85 Generado
+15-SEP-2026 Plaza cívica · Granjas San Antonio Sergio Navarro
+Ejemplo
+Alta 77 de 77 Generado
+04-SEP-2026 Deportivo · Consejo Agrarista Mexicano Ii Sergio Navarro
+Ejemplo
+Muy alta 84 de 86 Generado
+27-AGO-2026 Unidad habitacional · Letran Valle Perengano Gómez
+Ejemplo
+Baja 79 de 77 Generado
+24-AGO-2026 Camellón · San Francisco Tlalnepantla Carmen Ibarra Ejemplo Media 122 de 122 Pendiente
+13-AGO-2026 Plaza cívica · La Cebada Carmen Ibarra Ejemplo Media 86 de 88 Generado
+05-AGO-2026 Deportivo · Lomas De Sotelo Héctor Salinas Ejemplo Baja 46 de 46 Generado
+04-AGO-2026 Escuela primaria · Argentina Antigua Héctor Salinas Ejemplo Media 42 de 41 Pendiente
+01-AGO-2026 Escuela primaria · Bosques De Tepeximilpa Estela Ramírez Demo Baja 51 de 49 Generado
+27-JUL-2026 Camellón · San Nicolas Tolentino Ii Sergio Navarro
+Ejemplo
+Media 73 de 76 Generado
+08-JUL-2026 Escuela primaria · El Rosario Carmen Ibarra Ejemplo Media 87 de 87 Generado
+06-JUL-2026 Centro de salud · Lomas Estrella 2a Secc I Perengano Gómez
+Ejemplo
+Media 131 de 131 Pendiente
+26-JUN-2026 Glorieta · San Miguel Toxiac Estela Ramírez Demo Alta 75 de 75 Pendiente
+17-JUN-2026 Deportivo · Valle Escondido Mariana Vega Ejemplo Baja 88 de 88 Generado
+10-JUN-2026 Mercado · Iztaccihuatl Perengano Gómez
+Ejemplo
+Media 119 de 119 Generado
+06-JUN-2026 Andador · San Miguel Chapultepec Ii Héctor Salinas Ejemplo Muy baja 119 de 119 Generado
+02-JUN-2026 Andador · Huitzico-La Poblanita Sergio Navarro
+Ejemplo
+Alta 71 de 72 Generado
+05-MAY-2026 Escuela primaria · Canal Once Carmen Ibarra Ejemplo Baja 102 de 104 Generado
+01-ABR-2026 Jardín · Mixcoac Perengano Gómez
+Ejemplo
+Baja 145 de 145 Generado
+31-MAR-2026 Glorieta · Hueso Periferico-Isssfam No. 7 Mariana Vega Ejemplo Media 95 de 95 Generado
+20-MAR-2026 Glorieta · San Lorenzo Carmen Ibarra Ejemplo Media 50 de 50 Generado
+12-DIC-2025 Jardín · Seccion Xvi Estela Ramírez Demo Baja 142 de 142 Generado
+26-NOV-2025 Jardín · San Miguel Toxiac Mariana Vega Ejemplo Alta 62 de 62 Generado
+20-OCT-2025 Unidad habitacional · Villa Panamericana 1era.
+Seccion
+Estela Ramírez Demo Baja 108 de 107 Generado
+20-OCT-2025 Mercado · El Zacaton Mariana Vega Ejemplo Media 122 de 126 Generado
+14-OCT-2025 Glorieta · El Arenal Estela Ramírez Demo Muy alta 101 de 101 Generado
+10-SEP-2025 Jardín · Guelatao De Juarez I Perengano Gómez
+Ejemplo
+Muy alta 126 de 126 Generado
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 06-MAY-2024 al 27-OCT-2026 Página 6 de 7
+--- pag 7
+Fecha Jornada Quién registró Prioridad Árboles Reporte
+23-JUL-2025 Jardín · Pedregal De Sn Nicolas 4a Secc Ii Mariana Vega Ejemplo Baja 70 de 70 Generado
+22-JUL-2025 Jardín · El Rosedal I Estela Ramírez Demo Baja 135 de 135 Generado
+26-MAY-2025 Glorieta · El Zacaton Estela Ramírez Demo Media 130 de 132 Generado
+18-ABR-2025 Deportivo · Barrancas De Guadalupe Sergio Navarro
+Ejemplo
+Media 72 de 72 Generado
+01-ENE-2025 Camellón · Heroes De Churubusco Perengano Gómez
+Ejemplo
+Alta 120 de 120 Generado
+22-NOV-2024 Unidad habitacional · Mixcoac Perengano Gómez
+Ejemplo
+Baja 88 de 91 Generado
+20-JUN-2024 Camellón · Santa Maria La Ribera Iv Perengano Gómez
+Ejemplo
+Media 65 de 68 Generado
+05-JUN-2024 Jardín · Santa Ursula Xitla Estela Ramírez Demo Media 70 de 70 Generado
+31-MAY-2024 Camellón · Doctores I Perengano Gómez
+Ejemplo
+Media 128 de 128 Generado
+06-MAY-2024 Glorieta · Residencial Fuentes De Cantera Estela Ramírez Demo Baja 94 de 94 Generado
+TRAZABILIDAD
+Sin árboles eliminados ni editados en el periodo.
+Cuentan sólo las jornadas cerradas: una jornada abierta todavía puede cambiar. La semana va de lunes a domingo. Los árboles eliminados y
+editados se cuentan aparte, como constancia, y no cambian la cifra de árboles.
+Cifra de ejemplares registrados en el sistema. No equivale necesariamente al total plantado. Reúne lo capturado en este equipo.
+Documento de prueba con datos ficticios. Sin validez oficial.
+Generado por Zutana Ríos Ejemplo (Directivo).
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 06-MAY-2024 al 27-OCT-2026 Página 7 de 7

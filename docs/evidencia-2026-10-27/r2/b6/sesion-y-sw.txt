@@ -1,0 +1,14 @@
+# Salida de guiones/b6_sesion_sw.py (27-10-2026)
+sesion 1 OK    la sesión del cabo vence en el servidor mientras está sin señal
+sesion 1 OK    sin señal y con la sesión vencida, el árbol se guarda en el teléfono
+sesion 1 OK    con señal, la pantalla dice que la sesión venció y pide entrar · {"acceso": true, "nav": false, "dialogos": [], "aviso": "No se pudo enviar: Su sesión venció. Vuelva a escribir su contraseña; lo capturado se conserva.", "conexion": "Con conexión", "cola": [["registro.crear", null]], "desborde": false}
+sesion 1 OK    después de entrar otra vez, el árbol llega una sola vez al servidor · {"en_servidor": "1", "cola": [], "errores": []}
+sesion 2 OK    (los mismos cuatro pasos, idénticos)
+sw 1 OK    1. con red se instala la 1.4.2 y su caché · [["srp-1.4.2"], 71]
+sw 1 OK    2. sin red abre la 1.4.2 guardada, con la sesión · "1.4.2"
+sw 1 FALLA 2. sin red, Nuevo registro sigue en la jornada abierta · {"panel": true, "franja": false, "activa": null, "vista": "registrar", "ubicacion": false, "remoto": "sin-senal"}
+sw 1 FALLA 2. sin red registra un árbol pendiente
+sw 1 OK    3. con red se instala la versión nueva (segundos) · 0.0
+sw 1 OK    3. lo que queda · {"version": "1.4.2", "caches": ["srp-1.4.3-r2"], "mezcla": ["1.4.2"], "aviso": null, "cola": 0, "sesion": true, "tras_recargar": {"version": "1.4.3-r2", "caches": ["srp-1.4.3-r2"], "mezcla": ["1.4.3-r2"]}}
+sw 1 FALLA 3. el árbol pendiente de la versión vieja llega una vez al servidor · {"en_servidor": "sin árbol"}   (no hubo árbol: B6-R2-02)
+# Una corrida previa se invalidó: un servidor de prueba anterior seguía en 8142 y sirvió la versión nueva desde el paso 1.

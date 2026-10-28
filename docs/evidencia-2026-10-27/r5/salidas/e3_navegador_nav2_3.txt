@@ -1,0 +1,4 @@
+C2 catálogos JSON con listas dañadas → {"dentro": false, "error": "No se pudo entrar\n\nNo se pudo entrar (listas[t].forEach is not a function). Intente de nuevo; si se repite, recargue la página.", "aviso": "", "especies": 0} · errores de página: []
+C2 catálogos JSON cortado → {"dentro": false, "error": "Falta corregir 1 dato\nNo se pudieron bajar los catálogos: falta conexión con el servidor. Intente de nuevo.", "aviso": "", "especies": 0} · errores de página: []
+C2 catálogos vacío → {"dentro": true, "error": null, "aviso": "", "especies": 0} · errores de página: []
+C2b teléfono con catálogos recibe {}: {"especies": 79, "programas": 7} → respuesta {"ok": true} → {"especies": 0, "programas": 0} · errores: []

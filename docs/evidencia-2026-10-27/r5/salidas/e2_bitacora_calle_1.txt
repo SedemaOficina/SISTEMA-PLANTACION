@@ -1,0 +1,9 @@
+E2 bitácora con srp_api · UPDATE de un renglón APOYO de r5: negado: 42501 permiso denegado a la tabla bitacora
+E2 bitácora con srp_api · DELETE de un renglón APOYO de r5: negado: 42501 permiso denegado a la tabla bitacora
+E2 bitácora con la cuenta dueña · UPDATE: negado: P0001 La bitácora del SRP no se edita ni se borra (bitacora)
+E2 renglones APOYO y RELEVO de las cuentas r5 hasta ahora: [{"accion":"APOYO","n":135},{"accion":"RELEVO","n":6}]
+Calle · alta en el Zócalo: ["lejos",null,null,"1.0.0"] → punto movido 600 m: ["ok","Calle 5 de Mayo",30] · la bitácora del cambio dice: Campos: lat, lng. Punto: 19.432600, -99.133200 → 19.434200, -99.138600
+Calle · punto lejos de toda calle: ["recibido"] ["lejos",null,null,null,"Milpa Alta","MLP-120-00001"]
+Calle · reenvío del mismo punto: ["recibido:repetido"]
+Reloj · compartida de ayer: ["recibido","recibido"] · árbol de hoy: ["recibido"] · de ayer: ["recibido"] · de mañana (reloj adelantado): ["rechazado:DATOS_INVALIDOS [[\"fecha_plantacion\",\"La fecha de plantación no puede ser posterior a hoy.\"]]"] · de antes de la jornada: ["rechazado:DATOS_INVALIDOS [[\"fecha_plantacion\",\"La fecha de plantación no puede ser anterior al inicio de la jornada (26-OCT-2026).\"]]"]
+Reloj · fecha_registro de 2030 queda como: 2026-10-27T21:30:09.273+00:00 · la Coordinación pasa la jornada a hoy con un árbol de apoyo de ayer: ["recibido"]

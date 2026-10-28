@@ -1,0 +1,5 @@
+datos del servidor en 1.5 s
+todo · árboles 8487 · jornadas 666 · filas CSV 8487 · lejos 1401 · por asignar 0 · por red [('primaria', 906, 155), ('secundaria', 6180, 1750)] · calles 1905
+compartida_si · árboles 4 · jornadas 22 · filas CSV 4 · lejos 0 · por asignar 0 · por red [('secundaria', 4, 4)] · calles 4
+compartida_no · árboles 8483 · jornadas 644 · filas CSV 8483 · lejos 1401 · por asignar 0 · por red [('primaria', 906, 155), ('secundaria', 6176, 1746)] · calles 1901
+errores: []

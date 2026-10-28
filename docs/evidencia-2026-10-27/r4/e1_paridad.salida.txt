@@ -1,0 +1,4 @@
+Paridad js/permisos.js contra permisos.ts (dist), 2026-10-27T21:00:11.948Z
+Acciones en la pantalla: 18; en el servidor: 18; iguales: true
+Textos distintos: ninguno
+Comparaciones: 73482; diferencias: 0

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\sia-rev\tmp\aud1027\r6\herramientas\preparar_produccion.py", line 83, in <module>
+    main()
+  File "C:\sia-rev\tmp\aud1027\r6\herramientas\preparar_produccion.py", line 55, in main
+    cambiar(pagina, AVISO_DE_PRUEBA, '')
+  File "C:\sia-rev\tmp\aud1027\r6\herramientas\preparar_produccion.py", line 34, in cambiar
+    sys.exit('No se encontró una sola vez en %s: %s' % (os.path.relpath(ruta), viejo.strip()))
+                                                        ^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen ntpath>", line 796, in relpath
+ValueError: path is on mount '\\\\?\\C:', start on mount 'C:'
+salida: 1

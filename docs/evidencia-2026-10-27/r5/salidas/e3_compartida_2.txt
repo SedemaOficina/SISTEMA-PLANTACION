@@ -1,0 +1,52 @@
+== Corrida 2 · 2026-10-27T20:58:59.687Z
+A1 46 envíos simultáneos (45 árboles + 1 compartir): 1575 ms rechazados: 0 [] árboles/folios distintos/sin folio/sin calle: {"n":45,"distintos":45,"sin_folio":0,"sin_calle":0} CREADO en bitácora: 45 apoyos: [["cabo1",null],["cabo2",null],["cabo3",null]]
+A2 quitar: ["recibido"] · árbol registrado ANTES de que lo quitaran llega después: ["rechazado:SIN_PERMISO"] No tiene permiso para registrar en esta jornada.
+A3 terminar contra cerrar, 10 veces: {"terminar=recibido cerrar=recibido → cerrada [[\"cabo1\",\"terminado\"]]":9,"terminar=rechazado:SIN_PERMISO cerrar=recibido → cerrada [[\"cabo1\",null]]":1}
+A4 cerrar: ["recibido"] · árbol de apoyo pendiente llega: ["rechazado:SIN_PERMISO"] No tiene permiso para registrar en esta jornada. · reabrir: ["recibido"] · el mismo árbol otra vez (el teléfono NO lo reenvía solo): ["recibido"]
+A4b eliminar sin árboles en el servidor: ["recibido"] · árbol de apoyo pendiente llega: ["rechazado:JORNADA_ELIMINADA"]
+A4c con árbol de apoyo en el servidor: ["rechazado:CON_ARBOLES"] No se puede eliminar: tiene árboles registrados. Muévalos o elimínelos primero. · tras eliminar el árbol: ["recibido"] ["rechazado:CON_ARBOLES"] No se puede eliminar: guarda 1 árbol eliminado, que se conserva como constancia. Si ya no se usará, ciérrela.
+A5 relevo a cabo3: ["recibido"] · la Coordinación registra: ["rechazado:SIN_PERMISO"] · apoyo cabo1 registra: ["recibido"] · relevo cabo3 registra: ["recibido"] · relevo a cabo1 (apoyo) y vuelta al titular: ["recibido"] ["recibido"] · cabo1, ya sin relevo, edita la jornada: ["recibido"] · y la cierra: ["recibido"]
+A5 bitácora: ["CREADO · R5 coord · Jornada «r5 A5 relevo c2» del 27-OCT-2026","APOYO · R5 coord · Agrega: R5 cabo1, R5 cabo2","RELEVO · R5 coord · Registra R5 cabo3 en lugar de R5 coord; titular: R5 coord","RELEVO · R5 coord · Registra R5 cabo1 en lugar de R5 cabo3; titular: R5 coord","RELEVO · R5 coord · Registra R5 coord en lugar de R5 cabo1: vuelve el titular","EDITADO · R5 cabo1 · Campos: nombre","EDITADO · R5 cabo1 · Jornada cerrada"]
+A6 dos veces el mismo: ["recibido"]  → [["cabo1",null]]
+A6 otra vez el mismo, ya vigente: ["recibido:repetido"]  → [["cabo1",null]]
+A6 agregar y quitar el mismo: ["recibido"]  → [["cabo1",null],["cabo2",null]]
+A6 en mayúsculas: ["recibido:repetido"]  → [["cabo1",null],["cabo2",null]]
+A6 no es uuid: ["recibido:repetido"]  → [["cabo1",null],["cabo2",null]]
+A6 uuid inexistente: ["rechazado:DATOS_INVALIDOS"] [["cabos_apoyo","Elija cabos activos de la institución de la jornada."]] → [["cabo1",null],["cabo2",null]]
+A6 la propia Coordinación: ["rechazado:DATOS_INVALIDOS"] [["cabos_apoyo","Elija cabos activos de la institución de la jornada."]] → [["cabo1",null],["cabo2",null]]
+A6 otra Coordinación: ["rechazado:DATOS_INVALIDOS"] [["cabos_apoyo","Elija cabos activos de la institución de la jornada."]] → [["cabo1",null],["cabo2",null]]
+A6 Administración: ["rechazado:DATOS_INVALIDOS"] [["cabos_apoyo","Elija cabos activos de la institución de la jornada."]] → [["cabo1",null],["cabo2",null]]
+A6 agregar como texto: ["recibido:repetido"]  → [["cabo1",null],["cabo2",null]]
+A6 agregar null, quitar objeto: ["recibido:repetido"]  → [["cabo1",null],["cabo2",null]]
+A6 quitar a quien no está: ["recibido:repetido"]  → [["cabo1",null],["cabo2",null]]
+A6 bitácora (APOYO): ["APOYO · R5 coord · Agrega: R5 cabo1","APOYO · R5 coord · Agrega: R5 cabo2"]
+A7 Coordinación agrega cabo de otra institución: ["rechazado:DATOS_INVALIDOS"] Revise los cabos de apoyo.
+A7 Coordinación de otra institución comparte: ["rechazado:SIN_PERMISO"] No tiene permiso para elegir los cabos de apoyo de esta jornada.
+A7 Otra Coordinación de la misma institución comparte: ["rechazado:SIN_PERMISO"] No tiene permiso para elegir los cabos de apoyo de esta jornada.
+A7 cabo de otra institución registra: ["rechazado:SIN_PERMISO"] No tiene permiso para registrar en esta jornada.
+A7 cabo de otra institución termina: ["rechazado:SIN_PERMISO"] No tiene permiso para terminar su parte en esta jornada.
+A7 cabo de la institución que no es de apoyo registra: ["rechazado:SIN_PERMISO"] No tiene permiso para registrar en esta jornada.
+A7 cabo de la institución que no es de apoyo termina: ["rechazado:SIN_PERMISO"] No tiene permiso para terminar su parte en esta jornada.
+A7 otra institución lee la jornada: 404 404
+A8 reabierta: ["recibido"] · cabo1 (vigente al cerrar) registra: ["recibido"] · cabo2 (terminó) registra: ["rechazado:SIN_PERMISO"] [["cabo1",null],["cabo2","terminado"]]
+A9 pestaña 1 quita cabo1 y pestaña 2 agrega cabo3 a la vez: ["recibido"] ["recibido"] → [["cabo1","quitado"],["cabo2",null],["cabo3",null]]
+A10 cabo1 (apoyo) editar árbol de otro cabo: ["rechazado:SIN_PERMISO"] No tiene permiso para editar este registro.
+A10 cabo1 (apoyo) eliminar árbol de la Coordinación: ["rechazado:SIN_PERMISO"] No tiene permiso para eliminar este registro.
+A10 cabo1 (apoyo) sustituir árbol de otro cabo: ["rechazado:SIN_PERMISO"] No tiene permiso para sustituir este árbol.
+A10 cabo1 (apoyo) mover árbol de otro cabo a su jornada: ["rechazado:SIN_PERMISO"] No tiene permiso para mover este registro de jornada.
+A10 cabo1 (apoyo) mover SU árbol fuera de la compartida: ["recibido"] 
+A10 cabo1 (apoyo) editar la jornada: ["rechazado:SIN_PERMISO"] No tiene permiso para modificar esta jornada.
+A10 cabo1 (apoyo) cerrar la jornada: ["rechazado:SIN_PERMISO"] No tiene permiso para modificar esta jornada.
+A10 cabo1 (apoyo) eliminar la jornada: ["rechazado:SIN_PERMISO"] No tiene permiso para eliminar esta jornada.
+A10 cabo1 (apoyo) revisar puntos: ["rechazado:SIN_PERMISO"] No tiene permiso para modificar esta jornada.
+A10 cabo1 (apoyo) relevo: ["rechazado:SIN_PERMISO"] No tiene permiso para pasar esta jornada a otro cabo.
+A10 cabo1 (apoyo) compartir: ["rechazado:SIN_PERMISO"] No tiene permiso para elegir los cabos de apoyo de esta jornada.
+A10 cabo1 ve la jornada: 200 árboles visibles: 2
+A10 otra Coordinación de la institución corrige el árbol de un cabo de apoyo: ["recibido"]
+A11 2,000 ids inexistentes: ["rechazado:DATOS_INVALIDOS"] 42 ms · 6,000 ids (≈230 kB): 413 {"codigo":"DEMASIADO_GRANDE","mensaje":"La petición es demasiado grande."} · jornada inexistente: ["rechazado:NO_EXISTE"] · sin id: ["rechazado:DATOS_INVALIDOS"]
+A11 terminar con versión de 1999: ["recibido"] · compartir con versión «no es fecha»: ["recibido"] · terminar otra vez: ["recibido:repetido"] [["cabo1","terminado"],["cabo2",null]]
+A12 compartir x3 a la vez: recibido:repetido | recibido | recibido:repetido · terminar x2: recibido | recibido:repetido · mismo árbol x4: recibido | recibido:repetido | recibido:repetido,recibido:repetido · árboles: 1 · APOYO en bitácora: 2 ["APOYO · R5 coord · Agrega: R5 cabo1, R5 cabo2","APOYO · R5 cabo1 · Terminó su parte: 0 árboles"]
+A13 compartir llega: ["recibido"] · cabo1 termina: ["recibido"] [["cabo1","terminado"]] · el MISMO compartir reenviado: ["recibido"] → [["cabo1",null]] · cabo1 vuelve a poder registrar: ["recibido"]
+A13b terminar llega: ["recibido"] · la Coordinación lo vuelve a marcar: ["recibido"] · el MISMO terminar reenviado: ["recibido"] → [["cabo1","terminado"]]
+A13 bitácora: ["APOYO · R5 coord · Agrega: R5 cabo1","APOYO · R5 cabo1 · Terminó su parte: 0 árboles","APOYO · R5 coord · Agrega: R5 cabo1","APOYO · R5 cabo1 · Terminó su parte: 1 árbol","APOYO · R5 coord · Agrega: R5 cabo1","APOYO · R5 cabo1 · Terminó su parte: 1 árbol"]
+A16 cabo quitado toca «Terminar mi parte»: ["rechazado:SIN_PERMISO"] No tiene permiso para terminar su parte en esta jornada.

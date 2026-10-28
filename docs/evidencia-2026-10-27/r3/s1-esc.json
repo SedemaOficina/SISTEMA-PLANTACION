@@ -1,0 +1,124 @@
+{
+ "datos_prueba": "Datos de prueba\nDatos de demostración\n\nJornadas inventadas de enero de 2024 a hoy, de la Secretaría y de una institución de cada tipo —alcaldías, Gobierno de la CDMX, empresas y organizaciones civiles—, con cabos y coordinaciones de todas, jornadas compartidas, relevos y los cuatro programas, para probar Supervisión, Mi avance y los informes. No tocan lo que usted capture.\n\nCargar datos de demostración\nQuitar datos de demostración\nEmpezar de cero\nRestablecer datos de prueba",
+ "compartida_hoy": {
+  "id": "demo-j-01431",
+  "nombre": "Plaza cívica · El Mirador",
+  "fecha": "2026-10-27",
+  "titular": "u-demo-k1",
+  "apoyos": [
+   {
+    "cabo_id": "u-demo-c3",
+    "desde": "2026-10-27T14:18:00.000Z",
+    "por_id": "u-demo-k1",
+    "hasta": null,
+    "fin": null
+   },
+   {
+    "cabo_id": "u-demo-c5",
+    "desde": "2026-10-27T14:18:00.000Z",
+    "por_id": "u-demo-k1",
+    "hasta": null,
+    "fin": null
+   }
+  ]
+ },
+ "rocio_aviso": [
+  {
+   "id": "dlg-confirmar",
+   "texto": "Jornada compartida\n\nAhora es cabo de apoyo en la jornada compartida «Plaza cívica · El Mirador», que coordina Estela Ramírez Demo. Ya puede registrar en ella.\n\nCómo funciona:\n\nRegistran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.\nUsted corrige sólo sus árboles.\nAl acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.\nLa Coordinación cierra la jornada y genera el reporte.\nEntendido"
+  }
+ ],
+ "rocio_aviso_carga": {
+  "palabras": 72,
+  "botones": 1,
+  "campos": 0,
+  "alto": 392
+ },
+ "rocio_tras_entendido": [],
+ "rocio_franja": "JORNADA ACTIVA\n\nPlaza cívica · El Mirador\nJornada compartida · coordina Estela Ramírez Demo\n9 de 60 árboles · 3 suyos\n27-OCT-2026 · Coyoacán · Col. EL MIRADOR · \nprioridad\nMedia · Reforestación Urbana\n\nRegistrar\n(paso actual)\nCerrar\nRevisar\nReporte\nCambiar jornada\nTerminar mi parte",
+ "rocio_franja_carga": {
+  "palabras": 35,
+  "botones": 2,
+  "campos": 0,
+  "alto": 239
+ },
+ "rocio_activa": "demo-j-01431",
+ "rocio_registro_carga": {
+  "palabras": 142,
+  "botones": 25,
+  "campos": 4,
+  "alto": 1725
+ },
+ "rocio_gps": [],
+ "sitio": {
+  "chips": [
+   "Suelo=true",
+   "Macetón=false"
+  ],
+  "valor": "suelo"
+ },
+ "sitio_despues": "maceton",
+ "rocio_al_guardar": [],
+ "rocio_aviso_guardado": "",
+ "rocio_franja_2": "JORNADA ACTIVA\n\nPlaza cívica · El Mirador\nJornada compartida · coordina Estela Ramírez Demo\n9 de 60 árboles · 3 suyos\n27-OCT-2026 · Coyoacán · Col. EL MIRADOR · \nprioridad\nMedia · Reforestación Urbana\n\nRegistrar\n(paso actual)\nCerrar\nRevisar\nReporte\nCambiar jornada\nTerminar mi parte",
+ "terminar_dialogo": [],
+ "terminar_carga": {
+  "palabras": 70,
+  "botones": 0,
+  "campos": 0,
+  "alto": 0
+ },
+ "terminar_aviso": "Se enviaron 22 registros que estaban pendientes (simulado).",
+ "tras_terminar_activa": "demo-j-01431",
+ "rocio_jornadas": [
+  "Plaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos"
+ ],
+ "estela_al_entrar": [],
+ "estela_franja": "JORNADA ACTIVA\n\nPlaza cívica · El Mirador\n9 de 60 árboles\n27-OCT-2026 · Coyoacán · Col. EL MIRADOR · \nprioridad\nMedia · Reforestación Urbana · compartida\n\nRegistrar\n(paso actual)\nCerrar\nRevisar\nReporte\nEditar jornada\nCambiar jornada\nCabos de apoyo\nCerrar jornada",
+ "estela_franja_carga": {
+  "palabras": 33,
+  "botones": 4,
+  "campos": 0,
+  "alto": 213
+ },
+ "apoyos_dialogo": "Cabos de apoyo\n\nMarque a los cabos de su institución que registran en «Plaza cívica · El Mirador». Con ellos, la jornada pasa a ser compartida.\n\nCabos de Secretaría del Medio Ambiente (SEDEMA)\nArturo Méndez Demo\nFulana de Tal Ejemplo\nJulián Ortega Demo\nMarisol Pérez Demo\nRocío Hernández Demo · terminó su parte\nTomás Díaz Demo\nYolanda Cruz Demo\n\nCómo funciona una jornada compartida\n\nLa Coordinación la abre el mismo día del evento: una jornada no se puede abrir con fecha futura.\nAgregue aquí a los cabos antes de empezar a plantar, de preferencia en el punto de reunión.\nCada cabo abre el sistema con señal un momento: así le llega la jornada a su teléfono.\nTodos registran a la vez; cada árbol queda a nombre de quien lo captura.\nAl acabar, cada cabo toca «Terminar mi parte».\nLa Coordinación cierra la jornada y genera el reporte.\nGuardar: 1 cabo de apoyo",
+ "apoyos_carga": {
+  "palabras": 149,
+  "botones": 9,
+  "campos": 0,
+  "alto": 931
+ },
+ "apoyos_alto_visible": {
+  "alto": 868,
+  "scroll": 931,
+  "top": 16,
+  "guardar_top": 867
+ },
+ "cerrar_dialogo": [
+  {
+   "id": "dlg-confirmar",
+   "texto": "Cerrar jornada\n\n¿Cerrar la jornada «Plaza cívica · El Mirador» con 9 árboles?\n\nQueda pendiente:\n\nYolanda Cruz Demo no ha terminado su parte: 3 árboles recibidos, el último a las 08:47.\n51 árboles por debajo de lo previsto (9 de 60).\n\nSe puede cerrar de todos modos. Si después llegan árboles de un cabo de apoyo, se quedan en su teléfono hasta que se reabra la jornada.\n\nCerrar jornada\nCancelar"
+  }
+ ],
+ "cerrar_carga": {
+  "palabras": 63,
+  "botones": 2,
+  "campos": 0,
+  "alto": 352
+ },
+ "cerrar_botones": [
+  "Cerrar jornada [btn btn-primario]",
+  "Cancelar [btn btn-cancelar]"
+ ],
+ "tras_cerrar": [],
+ "tras_cerrar_aviso": "",
+ "cierre": "Datos de cierre de la jornada\n\nLa hora de finalización es obligatoria. Lo demás es opcional: lo que quede vacío no sale en el reporte.\n\nEncargado\nSin especificar\nEstela Ramírez Demo (coordinación)\nRocío Hernández Demo\nYolanda Cruz Demo\nPersonal participante\nPersonal de apoyo\nObservaciones\nChófer\nVehículo\nPRU 001\nPipa\nPRU 002\nPipa\nPRU 006\nEstacas\nSin vehículo\nPRU 004 — Nissan\nPRU 005 — Dodge\nPRU 006 — Dodge\nPRU 007 — Dodge\nPRU 008 — Dodge\nPRU 012 — Ford\nPRU 013 — Ford\nPRU 014 — Ford\nPRU 015 — Ford\nPRU 011 — Internacional\nPRU 003 — Ford\nPRU 001 — Internacional\nPRU 002 — Chevrolet\nPRU 009 — Internacional\nPRU 010 — Internacional\nPRU 016 — Chevrolet\nHora de finalización *\nElija la hora\nAhora\nLo que viaja a la base de datos\nVer vista previa",
+ "cierre_boton": "Ver vista previa",
+ "previa": "Vista previa del reporte\n\nREPORTE DE LA JORNADA DE PLANTACIÓN\n\nJornada compartida, coordina: Estela Ramírez Demo\n\nNombre de la jornada: Plaza cívica · El Mirador\nDía de la jornada: Martes 27 de octubre de 2026\nCabos de apoyo: Rocío Hernández Demo (3 árboles) y Yolanda Cruz Demo (3 árboles)\nAlcaldía: Coyoacán\nColonia: EL MIRADOR\nPrograma: Reforestación Urbana\nPrioridad de reforestación: Media\nÁrboles en otra colonia: 2 en Haciendas de Coyoacan, de prioridad media\nInstitución que ejecuta: Secretaría del Medio Ambiente (SEDEMA)\nHora de finalización: 13:30 h\n9\nárboles plantados\n60\nprevistos en la jornada\n15 %\nde lo previsto\n7\nespecies\n89 %\nnativas o endémicas\n1. CROQUIS DE LA JORNADA\n\nPuntos numerados en el orden de la tabla de ejemplares. Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community · Vías: Esri, HERE, Garmin, © OpenStreetMap contributors · Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community · Powered by Esri.\n\n2. EJEMPLARES PLANTADOS\nN.º\tEspecie\tCalle\tPrecisión\tCabo\n1\tCedro blanco (Cupressus lusitanica)\tCalle Anáhuac, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±18 m\tEstela Ramírez Demo\n2\tMezquite (Neltuma laevigata)\tCalle Mirador, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±19 m\tRocío Hernández Demo\n3\tEncino Quiebra Hacha (Quercus rugosa)\tCalle Anáhuac, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±4 m\tYolanda Cruz Demo\n4\tFresno (Fraxinus uhdei)\tCalle Mirador, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±13 m\tEstela Ramírez Demo\n5\tAhuehuete (Taxodium mucronatum)\tCalle Mirador, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±12 m\tRocío Hernández Demo\n6\tEncino Quiebra Hacha (Quercus rugosa)\tCalle Mirador, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±14 m\tYolanda Cruz Demo\n7\tCedro blanco (Cupressus lusitanica)\tCalle Anáhuac, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±14 m\tEstela Ramírez Demo\n8\tJacaranda (Jacaranda mimosifolia)\tCalle Mirador, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±18 m\tRocío Hernández Demo\n9\tColorín (Erythrina americana)\tCalle Anáhuac, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±3 m\tYolanda Cruz Demo\n\nPrecisión del GPS: en verde, ±10 m o menos; en ámbar, hasta ±30 m; en rojo, más de ±30 m (conviene revisar el punto). «En el mapa» y «A mano» no tienen medida del GPS.\n\n3. TOTALES POR ESPECIE\nEspecie\tDistribución\tEjemplares\t% del total\nCedro blanco (Cupressus lusitanica)\tNativa\t2\t22 %\nEncino Quiebra Hacha (Quercus rugosa)\tNativa\t2\t22 %\nAhuehuete (Taxodium mucronatum)\tNativa\t1\t11 %\nColorín (Erythrina americana)\tEndémica\t1\t11 %\nFresno (Fraxinus uhdei)\tNativa\t1\t11 %\nJacaranda (Jacaranda mimosifolia)\tExótica\t1\t11 %\nMezquite (Neltuma laevigata)\tNativa\t1\t11 %\nTotal\t\t9\t100 %\n\nEl conteo se calcula a partir de los registros del sistema; no se captura a mano. Los porcentajes están redondeados: especies con la misma cantidad llevan el mismo porcentaje.\n\nNativa:\n78 %\n(7)\nEndémica:\n11 %\n(1)\nExótica:\n11 %\n(1)\n\nUbicados con GPS del teléfono: 9 de 9 (100 %).\n\nCifra de ejemplares registrados en el sistema para esta jornada. No equivale necesariamente al total plantado en ella.\n\nGenerado por Estela Ramírez Demo (Coordinador).\n\nDocumento de prueba con datos ficticios. Sin validez oficial.\n\nCorregir datos\nGenerar PDF",
+ "previa_html_encabezado": "Vista previa del reporte\n\nREPORTE DE LA JORNADA DE PLANTACIÓN\n\nJornada compartida, coordina: Estela Ramírez Demo\n\nNombre de la jornada: Plaza cívica · El Mirador\nDía de la jornada: Martes 27 de octubre de 2026\nCabos de apoyo: Rocío Hernández Demo (3 árboles) y Yolanda Cruz Demo (3 árboles)\nAlcaldía: Coyoacán\nColonia: EL MIRADOR\nPrograma: Reforestación Urbana\nPrioridad de reforestación: Media\nÁrboles en otra colonia: 2 en Haciendas de Coyoacan, de prioridad media\nInstitución que ejecuta: Secretaría del Medio Ambiente (SEDEMA)\nHora de finalización: 13:30 h\n9\nárboles plantados\n60\nprevistos en la jornada\n15 %\nde lo previsto\n7\nespecies\n89 %\nnativas o endémicas\n1. CROQUIS DE LA JORNADA\n\nPuntos numerados en el orden de la tabla de ejemplares. Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community · Vías: Esri, HERE, Garmin, © OpenStreetMap contributors · Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community · Powered by Esri.\n\n2. EJEMPLARES PLANTADOS\nN.º\tEspecie\tCalle\tPrecisión\tCabo\n1\tCedro blanco (Cupressus lusitanica)\tCalle Anáhuac, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±18 m\tEstela Ramírez Demo\n2\tMezquite (Neltuma laevigata)\tCalle Mirador, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±19 m\tRocío Hernández Demo\n3\tEncino Quiebra Hacha (Quercus rugosa)\tCalle Anáhuac, entre Calzada del Hueso y Calle Hacienda Vista Hermosa\t±4 m\tYolanda Cruz Demo\n4\tFresno (Fraxinus uhdei)\tCalle Mirador, entre Calzada del Hueso y Calle Hacien",
+ "pdf": {
+  "nombre": "Reporte_Estela_Ramirez_Demo_2026-10-27.pdf",
+  "ruta": "C:\\sia-rev\\tmp\\aud1027\\r3\\evidencia\\pdf\\s1-esc-reporte.pdf"
+ },
+ "errores": []
+}

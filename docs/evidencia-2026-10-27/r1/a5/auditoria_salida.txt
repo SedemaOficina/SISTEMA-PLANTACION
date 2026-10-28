@@ -1,0 +1,147 @@
+AVISO: esta copia no tiene originales/; se omite la comparación de las capas contra los originales
+OK    sin rastro de «registrador» en el código
+OK    sin rastro de «Registrador» en el código
+OK    sin rastro de «REGISTRADOR» en el código
+OK    sin rastro de «jefe_id» en el código
+OK    sin rastro de «'JEFE'» en el código
+OK    sin rastro de «Jefe de registradores» en el código
+OK    sin rastro de «Jefe de registradores» en la documentación vigente
+OK    sin rastro de «registrador» en la documentación vigente
+OK    sin rastro de «`grupo`» en la documentación vigente
+OK    sin rastro de «cuatro almacenes» en la documentación vigente
+OK    sin rastro de «e-001» en la documentación vigente
+OK    ningún id se repite en index.html
+OK    ninguna consulta @media fuera de la sección 7 de la hoja
+OK    ninguna regla escrita después de la sección 7 (cada regla en su bloque)
+OK    una sola consulta por corte en la hoja
+OK    tres cortes de ancho: 480, 700 y 1024 px (701 es el complemento de 700)
+OK    la hoja no usa selectores #id: una clase por caso
+OK    colores, sombras y velos sólo como variables de :root
+OK    el código no escribe colores: los lee de :root (SRP.util.color, colorBase, rgb)
+OK    los textos dicen «teléfono» o «este equipo», no «dispositivo»
+OK    la hoja de estilos cumple su norma: medidas con token, una regla por selector, sin clases ni variables sin uso (auditoria_css.py)
+OK    el catálogo de perfiles es el acordado
+OK    las etiquetas dicen Cabo y Coordinador
+OK    hay exactamente las trece cuentas de arranque: cuatro de la Secretaría, un coordinador y un cabo por tipo de institución y un directivo de alcaldía (13)
+OK    una cuenta por perfil operativo
+OK    toda cuenta tiene un perfil del catálogo
+OK    los perfiles guardados son los de ahora
+OK    toda cuenta tiene correo
+OK    ningún correo repetido
+OK    el área de cada cuenta de la Secretaría existe en el catálogo
+OK    las cuentas de fuera de la Secretaría no llevan área
+OK    la institución de cada cuenta existe en el catálogo
+OK    el coordinador asignado existe
+OK    quien figura como coordinador tiene ese perfil
+OK    el coordinador de cada cabo es de su misma institución
+OK    la Administración global es sólo de la Secretaría
+OK    ninguna cuenta conserva el campo anterior
+OK    el sistema arranca sin ninguna plantación (0)
+OK    toda plantación tiene autor
+OK    el autor de cada plantación existe
+OK    ninguna plantación conserva el campo anterior
+OK    la especie de cada plantación existe
+OK    toda plantación dice qué especie es
+OK    el programa de cada plantación existe
+OK    los estados son los previstos
+OK    las fechas guardadas tienen el formato de siempre
+OK    ninguna plantación cae fuera de la ciudad
+OK    toda plantación dice de dónde salió su coordenada
+OK    los archivos originales no están dentro del sitio publicado
+OK    .gitignore deja fuera la carpeta originales/
+OK    cada prefijo de UGA es una alcaldía y cada alcaldía tiene UGAs
+OK    ninguna capa cargada es ficticia
+OK    ninguna plantación se derivó con la capa ficticia
+OK    la precisión aparece si y sólo si el punto vino del GPS
+OK    el selector ofrece siete cuentas de prueba, una por rol distinto
+OK    ninguna cuenta aparece con perfil no reconocido
+OK    aparecen cuentas de Cabo
+OK    aparece la cuenta de Coordinador
+OK    aparece la cuenta de Administración
+OK    ningún perfil desconocido apareció al pintar
+OK    sin errores en consola
+OK    todo campo que se guarda está en el mapeo
+OK    y el mapeo no inventa campos que no existen
+OK    el esquema describe exactamente los almacenes que existen
+OK    esquema.json y el sistema guardan los mismos campos en `plantaciones`
+OK    esquema.json y el sistema guardan los mismos campos en `usuarios`
+OK    esquema.json y el sistema guardan los mismos campos en `programas`
+OK    esquema.json y el sistema guardan los mismos campos en `areas`
+OK    esquema.json y el sistema guardan los mismos campos en `especies`
+OK    esquema.json y el sistema guardan los mismos campos en `vehiculos`
+OK    esquema.json y el sistema guardan los mismos campos en `instituciones`
+OK    esquema.json y el sistema guardan los mismos campos en `solicitantes`
+OK    esquema.json y el sistema guardan los mismos campos en `bitacora`
+OK    esquema.json y el sistema guardan los mismos campos en `jornadas`
+OK    llave e índices de `plantaciones` son los del esquema
+OK    llave e índices de `usuarios` son los del esquema
+OK    llave e índices de `programas` son los del esquema
+OK    llave e índices de `areas` son los del esquema
+OK    llave e índices de `especies` son los del esquema
+OK    llave e índices de `vehiculos` son los del esquema
+OK    llave e índices de `instituciones` son los del esquema
+OK    llave e índices de `solicitantes` son los del esquema
+OK    llave e índices de `bitacora` son los del esquema
+OK    llave e índices de `jornadas` son los del esquema
+OK    el dominio `motivo_sustitucion` coincide con el código
+OK    el dominio `sitio_plantacion` coincide con el código
+OK    el dominio `punto_origen` coincide con el código
+OK    el dominio `perfil` coincide con el código
+OK    el dominio `tipo_catalogo` coincide con el código
+OK    el dominio `tipo_distribucion` coincide con el código
+OK    el dominio `paleta_vegetal` coincide con el código
+OK    el dominio `fruto_comestible` coincide con el código
+OK    el dominio `tipo_organizacion` coincide con el código
+OK    el dominio `tipo_solicitante` coincide con el código
+OK    el dominio `calle_estado` coincide con el código
+OK    el dominio `vialidad_red` coincide con el código
+OK    las acciones de bitácora del código son las del esquema
+OK    las entidades de bitácora del código son las del esquema
+OK    el mapeo de campos nombra todos los campos de `plantaciones`
+OK    el mapeo de campos nombra todos los campos de `usuarios`
+OK    el mapeo de campos nombra todos los campos de `programas`
+OK    el mapeo de campos nombra todos los campos de `areas`
+OK    el mapeo de campos nombra todos los campos de `especies`
+OK    el mapeo de campos nombra todos los campos de `vehiculos`
+OK    el mapeo de campos nombra todos los campos de `instituciones`
+OK    el mapeo de campos nombra todos los campos de `solicitantes`
+OK    el mapeo de campos nombra todos los campos de `bitacora`
+OK    el mapeo de campos nombra todos los campos de `jornadas`
+OK    cada etiqueta del mapeo de campos es la que dice la pantalla (69 etiquetas)
+OK    la relación plantaciones.cabo_id → usuarios.id apunta a una tabla del esquema
+OK    la relación plantaciones.editado_por_id → usuarios.id apunta a una tabla del esquema
+OK    la relación plantaciones.especie_id → especies.id apunta a una tabla del esquema
+OK    la relación plantaciones.programa_id → programas.id apunta a una tabla del esquema
+OK    la relación plantaciones.alcaldia_cve / colonia_cve / uga → capas del SIA (alcaldías, colonias, UGA) apunta a una tabla del esquema
+OK    la relación usuarios.coordinadores_ids → usuarios.id apunta a una tabla del esquema
+OK    la relación usuarios.area_id → areas.id apunta a una tabla del esquema
+OK    la relación usuarios.creado_por_id / editado_por_id → usuarios.id apunta a una tabla del esquema
+OK    la relación programas, areas, especies, vehiculos, instituciones y solicitantes: creado_por_id / editado_por_id → usuarios.id apunta a una tabla del esquema
+OK    la relación jornadas.cabo_id / encargado_id / relevo_id / editado_por_id → usuarios.id apunta a una tabla del esquema
+OK    la relación plantaciones.jornada_id → jornadas.id apunta a una tabla del esquema
+OK    la relación jornadas.programa_id → programas.id apunta a una tabla del esquema
+OK    la relación jornadas.puntos_revisados → plantaciones.id apunta a una tabla del esquema
+OK    la relación bitacora.entidad_id → plantaciones.id / usuarios.id / jornadas.id o el id del catálogo (programas, areas, especies, vehiculos, instituciones, solicitantes) según entidad apunta a una tabla del esquema
+OK    la relación bitacora.usuario_id → usuarios.id apunta a una tabla del esquema
+OK    la relación jornadas.vehiculo_id → vehiculos.id apunta a una tabla del esquema
+OK    la relación usuarios.organizacion_id → instituciones.id apunta a una tabla del esquema
+OK    la relación jornadas.organizacion_id → instituciones.id apunta a una tabla del esquema
+OK    la relación jornadas.solicitante_id → solicitantes.id apunta a una tabla del esquema
+OK    la relación plantaciones.sustituye_id / sustituido_por_id → plantaciones.id apunta a una tabla del esquema
+OK    DICCIONARIO-DATOS.md está regenerado a partir de esquema.json
+OK    js/esquema.js está regenerado a partir de esquema.json (lo lee js/referencias.js)
+OK    servidor/db/srp/02-srp-tablas.sql está generado a partir de esquema.json: las tablas del servidor son las del teléfono
+OK    las cuatro capas tienen todas sus geometrías válidas tras el redondeo
+OK    todos los mapas muestran el crédito del proveedor (ninguno con attributionControl: false)
+OK    una etiqueta por acción: no quedan «Reiniciar filtros», «Ver registro», «Registrar faltante» ni «Datos de cierre del día»
+OK    ningún estilo ni manejador en línea en la página ni en el HTML que arma el código (la política de seguridad los bloquearía)
+OK    el folio mide 13 caracteres y es único en el esquema
+OK    el patrón del folio en el código es AAA-000-00000
+OK    no queda rastro del folio de 22 caracteres fuera de la bitácora
+OK    ningún texto de pantalla, reporte ni esquema dice «sembrar» de un árbol: se dice plantar
+OK    los 16 vehículos del catálogo de prueba llevan placas ficticias «PRU 000»
+OK    placas reales: la copia no trae originales/, se omite la búsqueda
+OK    ninguna vista pide más de 8 filtros (supervision 6, registros 7, jornadas 8, galeria 8, catalogos 4, usuarios 4, cambios 2, duplicados 1)
+OK    y a la vista quedan a lo más 4; el resto va plegado en «Más filtros»
+
+144 comprobaciones, 0 hallazgos

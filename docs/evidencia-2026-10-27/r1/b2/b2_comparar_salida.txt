@@ -1,0 +1,34 @@
+=== todo
+árboles  app 8487 · sql 8487 · lejos app 1401 · sql 1401
+red primaria    árboles app   906 · sql   906 | calles app  155 · sql  158 (distintas con algún árbol en la red) | suma de las calles de su lista en la app   912
+red secundaria  árboles app  6180 · sql  6180 | calles app 1750 · sql 1753 (distintas con algún árbol en la red) | suma de las calles de su lista en la app  6174
+quién atiende: iguales
+por calle: 1905 en la app · 1905 en sql · árboles distintos en 0 calles
+CSV: 8487 renglones (sql 8487) · red vial igual · quién atiende igual · «Sin calle a menos de 40 m» en la columna Calle: 1401 · columna compartida: {'Sí': 4, 'No': 8483}
+PDF: 37 páginas · metadatos {'/Producer': 'jsPDF 4.2.1', '/Title': 'Informe de plantación', '/Subject': 'Informe de plantación', '/Author': 'Secretaría del Medio Ambiente de la Ciudad de México', '/Creator': 'Sistema de Registro de Plantaciones 1.4.2', '/CreationDate': "D:20261027153401-06'00'"}
+PDF «Por red vial»: POR RED VIAL Red vial Quién la atiende Calles Árboles % del total Vialidades primarias Gobierno de CDMX y 2 más 155 906 11 % Calles secundarias Alcaldía Cuauhtémoc y 14 más 1,750 6,180 73 % Sin calle cercana — — 1,401 17 % VIALIDADES PRIMARIAS · GOBIERNO DE CDMX Y 2 MÁS Calle Entre calles Alcaldía Árboles % del total Jornadas Eje 3 Norte (Cuitláhuac) entre Avenida Manuel Salazar y Calle Renacimiento; entre calle sin nombre y Calle Naranjos; entre Avenida de las Granjas y Cerrada Toronja; y 2 más Azcapotzalco 26 1 % 6 Periférico (Canal de San Juan) entre Avenida Revolución Social y Calle 3 Alej
+=== compartida_si
+árboles  app 4 · sql 4 · lejos app 0 · sql 0
+red secundaria  árboles app     4 · sql     4 | calles app    4 · sql    4 (distintas con algún árbol en la red) | suma de las calles de su lista en la app     4
+quién atiende: iguales
+por calle: 4 en la app · 4 en sql · árboles distintos en 0 calles
+CSV: 4 renglones (sql 4) · red vial igual · quién atiende igual · «Sin calle a menos de 40 m» en la columna Calle: 0 · columna compartida: {'Sí': 4}
+PDF: 4 páginas · metadatos {'/Producer': 'jsPDF 4.2.1', '/Title': 'Informe de plantación', '/Subject': 'Informe de plantación', '/Author': 'Secretaría del Medio Ambiente de la Ciudad de México', '/Creator': 'Sistema de Registro de Plantaciones 1.4.2', '/CreationDate': "D:20261027153407-06'00'"}
+PDF «Por red vial»: POR RED VIAL Red vial Quién la atiende Calles Árboles % del total Calles secundarias Alcaldía Iztapalapa 4 4 100 % CALLES SECUNDARIAS · ALCALDÍA IZTAPALAPA Calle Entre calles Alcaldía Árboles % del total Jornadas Calle 1 Jesús Rodríguez entre Calle 4 Jesús Rodríguez y calle sin nombre Iztapalapa 1 25 % 1 Calle 2 Jesús Rodríguez entre Calle 3 Jesús Rodríguez y calle sin nombre Iztapalapa 1 25 % 1 Calle 3 Alejo Rico entre Calle 1 Guadalupe Magaña y Calle 3 Guadalupe Magaña Iztapalapa 1 25 % 1 Calle 3 Jesús Rodríguez entre Calle 1 Jesús Rodríguez y Calle 2 Jesús Rodríguez Iztapalapa 1 25 % 1 La c
+=== compartida_no
+árboles  app 8483 · sql 8483 · lejos app 1401 · sql 1401
+red primaria    árboles app   906 · sql   906 | calles app  155 · sql  158 (distintas con algún árbol en la red) | suma de las calles de su lista en la app   912
+red secundaria  árboles app  6176 · sql  6176 | calles app 1746 · sql 1749 (distintas con algún árbol en la red) | suma de las calles de su lista en la app  6170
+quién atiende: iguales
+por calle: 1901 en la app · 1901 en sql · árboles distintos en 0 calles
+CSV: 8483 renglones (sql 8483) · red vial igual · quién atiende igual · «Sin calle a menos de 40 m» en la columna Calle: 1401 · columna compartida: {'No': 8483}
+PDF: 36 páginas · metadatos {'/Producer': 'jsPDF 4.2.1', '/Title': 'Informe de plantación', '/Subject': 'Informe de plantación', '/Author': 'Secretaría del Medio Ambiente de la Ciudad de México', '/Creator': 'Sistema de Registro de Plantaciones 1.4.2', '/CreationDate': "D:20261027153412-06'00'"}
+PDF «Por red vial»: POR RED VIAL Red vial Quién la atiende Calles Árboles % del total Vialidades primarias Gobierno de CDMX y 2 más 155 906 11 % Calles secundarias Alcaldía Cuauhtémoc y 14 más 1,746 6,176 73 % Sin calle cercana — — 1,401 17 % VIALIDADES PRIMARIAS · GOBIERNO DE CDMX Y 2 MÁS Calle Entre calles Alcaldía Árboles % del total Jornadas Eje 3 Norte (Cuitláhuac) entre Avenida Manuel Salazar y Calle Renacimiento; entre calle sin nombre y Calle Naranjos; entre Avenida de las Granjas y Cerrada Toronja; y 2 más Azcapotzalco 26 1 % 6 Periférico (Canal de San Juan) entre Avenida Revolución Social y Calle 3 Alej
+
+Calles (llave|alcaldía) con árboles en dos redes:
+   ['eje 4 norte|Azcapotzalco', 'primaria + secundaria', '6', '5'] · en la app va en primaria
+   ['eje 4 oriente|Venustiano Carranza', 'primaria + secundaria', '4', '5'] · en la app va en primaria
+   ['la turba|Tláhuac', 'primaria + secundaria', '1', '2'] · en la app va en secundaria
+   ['san joaquin|Miguel Hidalgo', 'primaria + secundaria', '4', '2'] · en la app va en primaria
+   ['san rafael atlixco|Iztapalapa', 'primaria + secundaria', '4', '2'] · en la app va en secundaria
+   ['supervia poniente|Álvaro Obregón', 'primaria + secundaria', '1', '2'] · en la app va en secundaria

@@ -1,0 +1,615 @@
+{
+ "u-cabo-1": {
+  "dialogos_al_entrar": [],
+  "vista_inicial": "registrar",
+  "pestanas": [
+   "Nuevo registro",
+   "Jornadas",
+   "Registros",
+   "Mi avance"
+  ],
+  "nav_abajo": true,
+  "dialogos_tarde": [],
+  "menu": [
+   "Fulana de Tal Ejemplo",
+   "Cabo",
+   "Modo sol (alto contraste)",
+   "Simular sin señal (pruebas)",
+   "Datos de prueba",
+   "Cambiar usuario (pruebas)",
+   "Cerrar sesión"
+  ],
+  "version_arriba": "Versión 1.4.2",
+  "registros_titulo": "Mis registros",
+  "registros_atajos": [
+   "Todos",
+   "Hoy\n,\n27-OCT-26",
+   "Un día",
+   "Un periodo"
+  ],
+  "registros_mas": [
+   "",
+   "",
+   "",
+   ""
+  ],
+  "registros_orden": "Ordenar\nLo más reciente primero\nLo más antiguo primero",
+  "registros_tarjeta": "Cedro blanco (Cupressus lusitanica)\n24-OCT-2026\nCUH-028-00083\nAndador · Santa Maria · Cuauhtémoc, SANTA MARIA (U HAB)",
+  "jornadas_mas": [
+   "Tipo de jornada",
+   "Programa",
+   "Alcaldía"
+  ],
+  "jornadas_otros": [
+   "Buscar por nombre",
+   "Pendientes"
+  ],
+  "jornada_tarjeta": "Andador · Santa Maria\nsáb 24-OCT-2026\n11 de 11 árboles · \ncompleta\n10 especies\nCerrada a las 10:33\nCuauhtémoc · Col. SANTA MARIA (U HAB) · \nprioridad\nMedia\nReforestación Urbana\nSin reporte todavía",
+  "sup_titulo": "Mi avance",
+  "sup_mas": [
+   "",
+   "",
+   ""
+  ],
+  "sup_cifras": "1,438\nárboles plantados\n13.4 por jornada\n94 %\nde lo previsto\n2,399 de 2,542 previstos en las jornadas\n107\njornadas cerradas",
+  "sup_atender": "Qué atender\n6 jornadas cerradas tienen puntos sin revisar\n10 jornadas cerradas no tienen reporte",
+  "sup_desgloses": [
+   "Por alcaldía 8 alcaldías · 101 colonias · Cuauhtémoc 48 %",
+   "Por calle 225 árboles en vialidades primarias · 1,073 árboles en calles secundarias",
+   "Por prioridad de la colonia 111 en muy alta · 184 en alta · 486 en media · 652 en baja · 5 sin dato",
+   "Por especie 22 especies · 90 % nativas",
+   "Por programa 5 programas · Reforestación Urbana 58 %",
+   "Mis registros 84 % con GPS · 4 % con fotografía"
+  ],
+  "sup_acciones": [
+   "Informe en PDF",
+   "Fotografías"
+  ],
+  "galeria_filtros": [
+   "Buscar",
+   "Especie, jornada o colonia",
+   "Día",
+   "Desde",
+   "Hasta",
+   "Más filtros: jornada, quién registró, especie, programa y alcaldía",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "galeria_zip": "Descargar todas"
+ },
+ "u-demo-c3": {
+  "dialogos_al_entrar": [],
+  "vista_inicial": "registrar",
+  "pestanas": [
+   "Nuevo registro",
+   "Jornadas",
+   "Registros",
+   "Mi avance"
+  ],
+  "nav_abajo": true,
+  "dialogos_tarde": [
+   "Jornada compartida Ahora es cabo de apoyo en la jornada compartida «Plaza cívica · El Mirador», que coordina Estela Ramírez Demo. Ya puede registrar en ella. Cómo funciona: Registran varios cabos a la vez; cada árbol queda a nombre de quien lo captura. Usted corrige sólo sus árboles. Al acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve. La Coordinación cierra la jornada y genera el reporte. Entendido"
+  ],
+  "menu": [
+   "Rocío Hernández Demo",
+   "Cabo",
+   "Modo sol (alto contraste)",
+   "Simular sin señal (pruebas)",
+   "Datos de prueba",
+   "Cambiar usuario (pruebas)",
+   "Cerrar sesión"
+  ],
+  "version_arriba": "Versión 1.4.2",
+  "registros_titulo": "Mis registros",
+  "registros_atajos": [
+   "Todos",
+   "Hoy\n,\n27-OCT-26",
+   "Un día",
+   "Un periodo"
+  ],
+  "registros_mas": [
+   "",
+   "",
+   "",
+   ""
+  ],
+  "registros_orden": "Ordenar\nLo más reciente primero\nLo más antiguo primero",
+  "registros_tarjeta": "Jacaranda (Jacaranda mimosifolia)\n27-OCT-2026\nPor enviar\nPlaza cívica · El Mirador · Coyoacán, EL MIRADOR",
+  "jornadas_mas": [
+   "Tipo de jornada",
+   "Programa",
+   "Alcaldía"
+  ],
+  "jornadas_otros": [
+   "Buscar por nombre",
+   "Pendientes"
+  ],
+  "jornada_tarjeta": null,
+  "sup_titulo": "Mi avance",
+  "sup_mas": [
+   "",
+   "",
+   ""
+  ],
+  "sup_cifras": "968\nárboles plantados\n13.6 por jornada\n97 %\nde lo previsto\n1,365 de 1,414 previstos en las jornadas\n71\njornadas cerradas\n1 en curso",
+  "sup_atender": "Qué atender\n2 jornadas cerradas tienen puntos sin revisar\n4 jornadas cerradas no tienen reporte",
+  "sup_desgloses": [
+   "Por alcaldía 8 alcaldías · 90 colonias · Venustiano Carranza 48 %",
+   "Por calle 94 árboles en vialidades primarias · 708 árboles en calles secundarias",
+   "Por prioridad de la colonia 80 en muy alta · 464 en alta · 333 en media · 81 en baja · 10 sin dato",
+   "Por especie 22 especies · 92 % nativas",
+   "Por programa 4 programas · Reforestación Urbana 80 %",
+   "Mis registros 84 % con GPS · 5 % con fotografía"
+  ],
+  "sup_acciones": [
+   "Informe en PDF",
+   "Fotografías"
+  ],
+  "galeria_filtros": [
+   "Buscar",
+   "Especie, jornada o colonia",
+   "Día",
+   "Desde",
+   "Hasta",
+   "Más filtros: jornada, quién registró, especie, programa y alcaldía",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "galeria_zip": "Descargar todas"
+ },
+ "u-coord-1": {
+  "dialogos_al_entrar": [],
+  "vista_inicial": "supervision",
+  "pestanas": [
+   "Nuevo registro",
+   "Jornadas",
+   "Registros",
+   "Supervisión"
+  ],
+  "nav_abajo": true,
+  "dialogos_tarde": [],
+  "menu": [
+   "Perengano Gómez Ejemplo",
+   "Coordinador",
+   "Modo sol (alto contraste)",
+   "Simular sin señal (pruebas)",
+   "Datos de prueba",
+   "Cambiar usuario (pruebas)",
+   "Cerrar sesión"
+  ],
+  "version_arriba": "Versión 1.4.2",
+  "registros_titulo": "Registros de mi institución",
+  "registros_atajos": [
+   "Todos",
+   "Hoy\n,\n27-OCT-26",
+   "Un día",
+   "Un periodo"
+  ],
+  "registros_mas": [
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "registros_orden": "Ordenar\nLo más reciente primero\nLo más antiguo primero",
+  "registros_tarjeta": "Cedro limón (Cupressus macrocarpa)\n27-OCT-2026 · Marisol Pérez Demo\nGAM-062-00005\nCentro de salud · Nueva Atzacoalco I · Gustavo A. Madero, NUEVA ATZACOALCO I",
+  "jornadas_mas": [
+   "Quién registró",
+   "Tipo de jornada",
+   "Programa",
+   "Alcaldía"
+  ],
+  "jornadas_otros": [
+   "Buscar por nombre",
+   "Pendientes"
+  ],
+  "jornada_tarjeta": "Plaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos",
+  "sup_titulo": "Supervisión",
+  "sup_mas": [
+   "",
+   "",
+   "",
+   ""
+  ],
+  "sup_cifras": "10,619\nárboles plantados\nen 681 jornadas cerradas\n95 %\nde lo previsto\n10,619 de 11,181 previstos en las jornadas\n7 de 7\ncabos trabajaron\n15.6 árboles por jornada\n6\njornadas en curso\nno se cuentan hasta cerrarse",
+  "sup_atender": "Qué atender\n2 jornadas de días anteriores siguen abiertas\n42 jornadas cerradas tienen puntos sin revisar\n54 jornadas cerradas no tienen reporte",
+  "sup_desgloses": [
+   "Por quién registró 9 con jornadas en el periodo · 9 con pendientes",
+   "Por alcaldía 13 alcaldías · 757 colonias · Cuauhtémoc 14 %",
+   "Por calle 1,044 árboles en vialidades primarias · 7,822 árboles en calles secundarias",
+   "Por prioridad de la colonia 768 en muy alta · 2,564 en alta · 3,741 en media · 3,213 en baja · 234 en muy baja · 99 sin dato",
+   "Por especie 22 especies · 91 % nativas",
+   "Por programa 5 programas · Reforestación Urbana 69 %",
+   "Solicitudes 95 jornadas · 12 % de los árboles",
+   "Calidad del dato 84 % con GPS · 4 % con fotografía · 153 eliminados"
+  ],
+  "sup_acciones": [
+   "Informe en PDF",
+   "Tabla en CSV",
+   "Fotografías"
+  ],
+  "galeria_filtros": [
+   "Buscar",
+   "Especie, jornada o colonia",
+   "Día",
+   "Desde",
+   "Hasta",
+   "Más filtros: jornada, quién registró, especie, programa y alcaldía",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "galeria_zip": "Descargar todas"
+ },
+ "u-demo-k1": {
+  "dialogos_al_entrar": [],
+  "vista_inicial": "supervision",
+  "pestanas": [
+   "Nuevo registro",
+   "Jornadas",
+   "Registros",
+   "Supervisión"
+  ],
+  "nav_abajo": true,
+  "dialogos_tarde": [],
+  "menu": [
+   "Estela Ramírez Demo",
+   "Coordinador",
+   "Modo sol (alto contraste)",
+   "Simular sin señal (pruebas)",
+   "Datos de prueba",
+   "Cambiar usuario (pruebas)",
+   "Cerrar sesión"
+  ],
+  "version_arriba": "Versión 1.4.2",
+  "registros_titulo": "Registros de mi institución",
+  "registros_atajos": [
+   "Todos",
+   "Hoy\n,\n27-OCT-26",
+   "Un día",
+   "Un periodo"
+  ],
+  "registros_mas": [
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "registros_orden": "Ordenar\nLo más reciente primero\nLo más antiguo primero",
+  "registros_tarjeta": "Cedro limón (Cupressus macrocarpa)\n27-OCT-2026 · Marisol Pérez Demo\nGAM-062-00005\nCentro de salud · Nueva Atzacoalco I · Gustavo A. Madero, NUEVA ATZACOALCO I",
+  "jornadas_mas": [
+   "Quién registró",
+   "Tipo de jornada",
+   "Programa",
+   "Alcaldía"
+  ],
+  "jornadas_otros": [
+   "Buscar por nombre",
+   "Pendientes"
+  ],
+  "jornada_tarjeta": "Plaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos",
+  "sup_titulo": "Supervisión",
+  "sup_mas": [
+   "",
+   "",
+   "",
+   ""
+  ],
+  "sup_cifras": "10,619\nárboles plantados\nen 681 jornadas cerradas\n95 %\nde lo previsto\n10,619 de 11,181 previstos en las jornadas\n7 de 7\ncabos trabajaron\n15.6 árboles por jornada\n6\njornadas en curso\nno se cuentan hasta cerrarse",
+  "sup_atender": "Qué atender\n2 jornadas de días anteriores siguen abiertas\n42 jornadas cerradas tienen puntos sin revisar\n54 jornadas cerradas no tienen reporte",
+  "sup_desgloses": [
+   "Por quién registró 9 con jornadas en el periodo · 9 con pendientes",
+   "Por alcaldía 13 alcaldías · 757 colonias · Cuauhtémoc 14 %",
+   "Por calle 1,044 árboles en vialidades primarias · 7,822 árboles en calles secundarias",
+   "Por prioridad de la colonia 768 en muy alta · 2,564 en alta · 3,741 en media · 3,213 en baja · 234 en muy baja · 99 sin dato",
+   "Por especie 22 especies · 91 % nativas",
+   "Por programa 5 programas · Reforestación Urbana 69 %",
+   "Solicitudes 95 jornadas · 12 % de los árboles",
+   "Calidad del dato 84 % con GPS · 4 % con fotografía · 153 eliminados"
+  ],
+  "sup_acciones": [
+   "Informe en PDF",
+   "Tabla en CSV",
+   "Fotografías"
+  ],
+  "galeria_filtros": [
+   "Buscar",
+   "Especie, jornada o colonia",
+   "Día",
+   "Desde",
+   "Hasta",
+   "Más filtros: jornada, quién registró, especie, programa y alcaldía",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "galeria_zip": "Descargar todas"
+ },
+ "u-dir-1": {
+  "dialogos_al_entrar": [],
+  "vista_inicial": "supervision",
+  "pestanas": [
+   "Supervisión",
+   "Jornadas",
+   "Registros"
+  ],
+  "nav_abajo": true,
+  "dialogos_tarde": [],
+  "menu": [
+   "Zutana Ríos Ejemplo",
+   "Directivo",
+   "Modo sol (alto contraste)",
+   "Simular sin señal (pruebas)",
+   "Datos de prueba",
+   "Cambiar usuario (pruebas)",
+   "Cerrar sesión"
+  ],
+  "version_arriba": "Versión 1.4.2",
+  "registros_titulo": "Todos los registros",
+  "registros_atajos": [
+   "Todos",
+   "Hoy",
+   "Un día",
+   "Un periodo"
+  ],
+  "registros_mas": [
+   "",
+   "",
+   "",
+   ""
+  ],
+  "registros_orden": "",
+  "registros_tarjeta": null,
+  "jornadas_mas": [
+   "Quién registró",
+   "Tipo de jornada",
+   "Programa",
+   "Alcaldía"
+  ],
+  "jornadas_otros": [
+   "Buscar por nombre",
+   "Pendientes"
+  ],
+  "jornada_tarjeta": null,
+  "sup_titulo": "Supervisión",
+  "sup_mas": [
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "sup_cifras": "22,100\nárboles plantados\nen 1,446 jornadas cerradas\n95 %\nde lo previsto\n22,100 de 23,276 previstos en las jornadas\n20 de 20\ncabos trabajaron\n15.3 árboles por jornada\n6\njornadas en curso\nno se cuentan hasta cerrarse",
+  "sup_atender": "Qué atender\n2 jornadas de días anteriores siguen abiertas\n80 jornadas cerradas tienen puntos sin revisar\n113 jornadas cerradas no tienen reporte",
+  "sup_desgloses": [
+   "Por quién registró 26 con jornadas en el periodo · 26 con pendientes",
+   "Por institución 8 instituciones · Secretaría del Medio Ambiente (SEDEMA) 48 %",
+   "Por alcaldía 16 alcaldías · 1,220 colonias · Iztapalapa 21 %",
+   "Por calle 1,861 árboles en vialidades primarias · 16,126 árboles en calles secundarias · 73 árboles en carreteras y caminos",
+   "Por prioridad de la colonia 1,998 en muy alta · 5,218 en alta · 7,699 en media · 5,976 en baja · 863 en muy baja · 346 sin dato",
+   "Por especie 22 especies · 91 % nativas",
+   "Por programa 5 programas · Reforestación Urbana 77 %",
+   "Solicitudes 95 jornadas · 6 % de los árboles",
+   "Calidad del dato 85 % con GPS · 4 % con fotografía · 285 eliminados"
+  ],
+  "sup_acciones": [
+   "Informe en PDF",
+   "Tabla en CSV",
+   "Fotografías"
+  ],
+  "galeria_filtros": [
+   "Buscar",
+   "Especie, jornada o colonia",
+   "Día",
+   "Desde",
+   "Hasta",
+   "Más filtros: jornada, quién registró, especie, programa, alcaldía e institución",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "galeria_zip": "Descargar todas"
+ },
+ "u-admin-1": {
+  "dialogos_al_entrar": [],
+  "vista_inicial": "supervision",
+  "pestanas": [
+   "Supervisión",
+   "Jornadas",
+   "Registros",
+   "Configuración"
+  ],
+  "nav_abajo": true,
+  "dialogos_tarde": [],
+  "menu": [
+   "Administración SIA Ejemplo",
+   "Administración global",
+   "Modo sol (alto contraste)",
+   "Simular sin señal (pruebas)",
+   "Datos de prueba",
+   "Cambiar usuario (pruebas)",
+   "Cerrar sesión"
+  ],
+  "version_arriba": "Versión 1.4.2",
+  "registros_titulo": "Todos los registros",
+  "registros_atajos": [
+   "Todos",
+   "Hoy\n,\n27-OCT-26",
+   "Un día",
+   "Un periodo"
+  ],
+  "registros_mas": [
+   "",
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "registros_orden": "Ordenar\nLo más reciente primero\nLo más antiguo primero",
+  "registros_tarjeta": "Cedro limón (Cupressus macrocarpa)\n27-OCT-2026 · Marisol Pérez Demo\nGAM-062-00005\nCentro de salud · Nueva Atzacoalco I · Gustavo A. Madero, NUEVA ATZACOALCO I",
+  "jornadas_mas": [
+   "Quién registró",
+   "Tipo de jornada",
+   "Programa",
+   "Alcaldía",
+   "Institución"
+  ],
+  "jornadas_otros": [
+   "Buscar por nombre",
+   "Pendientes"
+  ],
+  "jornada_tarjeta": "Plaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos",
+  "sup_titulo": "Supervisión",
+  "sup_mas": [
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "sup_cifras": "22,100\nárboles plantados\nen 1,446 jornadas cerradas\n95 %\nde lo previsto\n22,100 de 23,276 previstos en las jornadas\n20 de 20\ncabos trabajaron\n15.3 árboles por jornada\n6\njornadas en curso\nno se cuentan hasta cerrarse",
+  "sup_atender": "Qué atender\n2 jornadas de días anteriores siguen abiertas\n80 jornadas cerradas tienen puntos sin revisar\n113 jornadas cerradas no tienen reporte",
+  "sup_desgloses": [
+   "Por quién registró 26 con jornadas en el periodo · 26 con pendientes",
+   "Por institución 8 instituciones · Secretaría del Medio Ambiente (SEDEMA) 48 %",
+   "Por alcaldía 16 alcaldías · 1,220 colonias · Iztapalapa 21 %",
+   "Por calle 1,861 árboles en vialidades primarias · 16,126 árboles en calles secundarias · 73 árboles en carreteras y caminos",
+   "Por prioridad de la colonia 1,998 en muy alta · 5,218 en alta · 7,699 en media · 5,976 en baja · 863 en muy baja · 346 sin dato",
+   "Por especie 22 especies · 91 % nativas",
+   "Por programa 5 programas · Reforestación Urbana 77 %",
+   "Solicitudes 95 jornadas · 6 % de los árboles",
+   "Calidad del dato 85 % con GPS · 4 % con fotografía · 285 eliminados"
+  ],
+  "sup_acciones": [
+   "Informe en PDF",
+   "Tabla en CSV",
+   "Fotografías"
+  ],
+  "galeria_filtros": [
+   "Buscar",
+   "Especie, jornada o colonia",
+   "Día",
+   "Desde",
+   "Hasta",
+   "Más filtros: jornada, quién registró, especie, programa, alcaldía e institución",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "galeria_zip": "Descargar todas"
+ },
+ "u-demo-c1": {
+  "dialogos_al_entrar": [],
+  "vista_inicial": "registrar",
+  "pestanas": [
+   "Nuevo registro",
+   "Jornadas",
+   "Registros",
+   "Mi avance"
+  ],
+  "nav_abajo": true,
+  "dialogos_tarde": [
+   "Relevo de cabo Recibió la jornada «Jardín · Obrera Iv» en relevo de Julián Ortega Demo: ya puede registrar en ella. Lo hizo Perengano Gómez Ejemplo el 27-OCT-2026 a las 08:21. Entendido"
+  ],
+  "menu": [
+   "Marisol Pérez Demo",
+   "Cabo",
+   "Modo sol (alto contraste)",
+   "Simular sin señal (pruebas)",
+   "Datos de prueba",
+   "Cambiar usuario (pruebas)",
+   "Cerrar sesión"
+  ],
+  "version_arriba": "Versión 1.4.2",
+  "registros_titulo": "Mis registros",
+  "registros_atajos": [
+   "Todos",
+   "Hoy\n,\n27-OCT-26",
+   "Un día",
+   "Un periodo"
+  ],
+  "registros_mas": [
+   "",
+   "",
+   "",
+   ""
+  ],
+  "registros_orden": "Ordenar\nLo más reciente primero\nLo más antiguo primero",
+  "registros_tarjeta": "Cedro limón (Cupressus macrocarpa)\n27-OCT-2026\nGAM-062-00005\nCentro de salud · Nueva Atzacoalco I · Gustavo A. Madero, NUEVA ATZACOALCO I",
+  "jornadas_mas": [
+   "Tipo de jornada",
+   "Programa",
+   "Alcaldía"
+  ],
+  "jornadas_otros": [
+   "Buscar por nombre",
+   "Pendientes"
+  ],
+  "jornada_tarjeta": null,
+  "sup_titulo": "Mi avance",
+  "sup_mas": [
+   "",
+   "",
+   ""
+  ],
+  "sup_cifras": "1,530\nárboles plantados\n14 por jornada\n97 %\nde lo previsto\n2,540 de 2,607 previstos en las jornadas\n109\njornadas cerradas\n2 en curso",
+  "sup_atender": "Qué atender\n9 jornadas cerradas tienen puntos sin revisar\n6 jornadas cerradas no tienen reporte",
+  "sup_desgloses": [
+   "Por alcaldía 8 alcaldías · 145 colonias · Azcapotzalco 43 %",
+   "Por calle 137 árboles en vialidades primarias · 1,086 árboles en calles secundarias",
+   "Por prioridad de la colonia 77 en muy alta · 394 en alta · 732 en media · 319 en baja · 8 sin dato",
+   "Por especie 22 especies · 91 % nativas",
+   "Por programa 4 programas · Reforestación Urbana 71 %",
+   "Mis registros 82 % con GPS · 4 % con fotografía"
+  ],
+  "sup_acciones": [
+   "Informe en PDF",
+   "Fotografías"
+  ],
+  "galeria_filtros": [
+   "Buscar",
+   "Especie, jornada o colonia",
+   "Día",
+   "Desde",
+   "Hasta",
+   "Más filtros: jornada, quién registró, especie, programa y alcaldía",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "galeria_zip": "Descargar todas"
+ },
+ "errores": [],
+ "escritorio": {
+  "nav_top": 128.5,
+  "logo": "http://127.0.0.1:8133/assets/encabezado-ru-sia.png?v=1.4.2",
+  "ver_detalle_visible": false
+ },
+ "telefono_logo": "http://127.0.0.1:8133/assets/encabezado-ru-sia-movil.png?v=1.4.2"
+}

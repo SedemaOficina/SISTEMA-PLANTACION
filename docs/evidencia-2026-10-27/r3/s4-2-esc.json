@@ -1,0 +1,589 @@
+{
+ "tipo=todas": {
+  "pantalla": "22,100 árboles plantados en 1,446 jornadas cerradas 95 % de lo previsto 22,100 de 23,276 previstos en las jornadas 20 de 20 cabos trabajaron 15.3 árboles por jornada 6 jornadas en curso no se cuentan hasta cerrarse",
+  "modelo": {
+   "jornadas": 1446,
+   "arboles": 22100,
+   "cabosActivos": 20,
+   "cabosAsignados": 20
+  },
+  "independiente": {
+   "jornadas": 1446,
+   "arboles": 22100,
+   "cabosConArboles": 20,
+   "cabosTitulares": 20,
+   "soloApoyo": [],
+   "cuentasCabo": 20
+  },
+  "por_quien": {
+   "cab": [
+    "Quién registró",
+    "Árboles",
+    "De lo previsto",
+    "Jornadas",
+    "Última",
+    "Pendientes"
+   ],
+   "filas": [
+    [
+     "Tomás Díaz Demo",
+     "1,531",
+     "94 %",
+     "98",
+     "26-OCT-2026",
+     "10 sin revisar · 11 sin reporte · 14 eliminados · 40 editados"
+    ],
+    [
+     "Marisol Pérez Demo",
+     "1,530",
+     "96 %",
+     "94",
+     "05-OCT-2026",
+     "12 sin revisar · 4 sin reporte · 28 eliminados · 40 editados"
+    ],
+    [
+     "Yolanda Cruz Demo",
+     "1,506",
+     "92 %",
+     "98",
+     "15-OCT-2026",
+     "1 abierta de antes · 5 sin revisar · 5 sin reporte · 26 eliminados · 45 editados"
+    ],
+    [
+     "Fulana de Tal Ejemplo",
+     "1,438",
+     "91 %",
+     "94",
+     "24-OCT-2026",
+     "9 sin revisar · 10 sin reporte · 26 eliminados · 29 editados"
+    ],
+    [
+     "Julián Ortega Demo",
+     "1,380",
+     "95 %",
+     "83",
+     "22-OCT-2026",
+     "1 abierta de antes · 8 sin revisar · 6 sin reporte · 22 eliminados · 31 editados"
+    ],
+    [
+     "Arturo Méndez Demo",
+     "1,152",
+     "95 %",
+     "68",
+     "09-FEB-2026",
+     "10 sin revisar · 7 sin reporte · 15 eliminados · 25 editados"
+    ],
+    [
+     "Paula Sánchez Demo",
+     "1,040",
+     "95 %",
+     "70",
+     "22-OCT-2026",
+     "4 sin revisar · 6 sin reporte · 14 eliminados · 38 editados"
+    ],
+    [
+     "Olivia Reyes Demo",
+     "1,019",
+     "93 %",
+     "65",
+     "23-OCT-2026",
+     "7 sin revisar · 7 sin reporte · 15 eliminados · 24 editados"
+    ],
+    [
+     "Omar Fuentes Demo",
+     "969",
+     "94 %",
+     "66",
+     "17-OCT-2026",
+     "9 sin revisar · 8 sin reporte · 10 eliminados · 16 editados"
+    ],
+    [
+     "Rocío Hernández Demo",
+     "968",
+     "95 %",
+     "63",
+     "17-OCT-2026",
+     "2 sin revisar · 3 sin reporte · 8 eliminados · 24 editados"
+    ],
+    [
+     "Lucía Méndez Ejemplo",
+     "962",
+     "92 %",
+     "62",
+     "14-OCT-2026",
+     "5 sin revisar · 7 sin reporte · 18 eliminados · 36 editados"
+    ],
+    [
+     "Andrea Solís Ejemplo",
+     "901",
+     "94 %",
+     "61",
+     "26-OCT-2026",
+     "9 sin revisar · 3 sin reporte · 11 eliminados · 22 editados"
+    ],
+    [
+     "Ernesto Luna Demo",
+     "870",
+     "98 %",
+     "56",
+     "21-OCT-2026",
+     "3 sin revisar · 2 sin reporte · 2 eliminados · 26 editados"
+    ],
+    [
+     "Gerardo Paredes Demo",
+     "860",
+     "93 %",
+     "54",
+     "20-OCT-2026",
+     "10 sin revisar · 3 sin reporte · 6 eliminados · 18 editados"
+    ],
+    [
+     "Ramiro Torres Ejemplo",
+     "849",
+     "94 %",
+     "61",
+     "23-OCT-2026",
+     "3 sin revisar · 5 sin reporte · 6 eliminados · 25 editados"
+    ],
+    [
+     "Óscar Rivas Ejemplo",
+     "640",
+     "94 %",
+     "35",
+     "22-OCT-2026",
+     "3 sin revisar · 5 eliminados · 8 editados"
+    ],
+    [
+     "Estela Ramírez Demo",
+     "570",
+     "99 %",
+     "41",
+     "24-SEP-2026",
+     "7 sin revisar · 4 sin reporte · 8 eliminados · 18 editados"
+    ],
+    [
+     "Zacarías Molina Demo",
+     "545",
+     "96 %",
+     "40",
+     "09-OCT-2026",
+     "3 sin reporte · 4 eliminados · 14 editados"
+    ],
+    [
+     "Perengano Gómez Ejemplo",
+     "544",
+     "98 %",
+     "42",
+     "23-SEP-2026",
+     "8 sin revisar · 4 sin reporte · 6 eliminados · 15 editados"
+    ],
+    [
+     "Valeria Castro Demo",
+     "511",
+     "92 %",
+     "27",
+     "29-SEP-2026",
+     "3 sin reporte · 6 eliminados · 7 editados"
+    ],
+    [
+     "Sergio Navarro Ejemplo",
+     "509",
+     "94 %",
+     "39",
+     "14-OCT-2026",
+     "2 sin revisar · 3 sin reporte · 10 eliminados · 12 editados"
+    ],
+    [
+     "Silvia Rangel Demo",
+     "501",
+     "98 %",
+     "37",
+     "13-OCT-2026",
+     "3 sin revisar · 2 sin reporte · 7 eliminados · 16 editados"
+    ],
+    [
+     "Mariana Vega Ejemplo",
+     "386",
+     "96 %",
+     "24",
+     "22-SEP-2026",
+     "3 sin revisar · 1 sin reporte · 5 eliminados · 9 editados"
+    ],
+    [
+     "Nadia Flores Demo",
+     "331",
+     "96 %",
+     "24",
+     "10-OCT-2026",
+     "3 sin revisar · 6 eliminados · 12 editados"
+    ],
+    [
+     "Carmen Ibarra Ejemplo",
+     "300",
+     "97 %",
+     "23",
+     "15-OCT-2026",
+     "1 sin revisar · 2 sin reporte · 4 eliminados · 7 editados"
+    ],
+    [
+     "Héctor Salinas Ejemplo",
+     "288",
+     "100 %",
+     "21",
+     "21-OCT-2026",
+     "6 sin revisar · 4 sin reporte · 3 eliminados · 7 editados"
+    ]
+   ]
+  }
+ },
+ "calles": {
+  "total": 22100,
+  "red": [
+   [
+    "Vialidades primarias",
+    "Gobierno de CDMX y 2 más",
+    "210",
+    "1,861",
+    "8 %"
+   ],
+   [
+    "Calles secundarias",
+    "Alcaldía Iztapalapa y 24 más",
+    "3,567",
+    "16,126",
+    "73 %"
+   ],
+   [
+    "Carreteras y caminos",
+    "Gobierno de CDMX y 2 más",
+    "2",
+    "73",
+    "0 %"
+   ],
+   [
+    "Sin calle cercana",
+    "—",
+    "—",
+    "4,040",
+    "18 %"
+   ]
+  ],
+  "por": [
+   {
+    "red": "Vialidades primarias · Gobierno de CDMX y 2 más",
+    "calles": 210,
+    "sumaPantalla": 93,
+    "arboles": 1880,
+    "distintas": 93,
+    "ejemplos": [
+     {
+      "calle": "Calzada San Antonio Abadentre Calle José Joaquín Pesado y Calle Juan de Dios Peza; entre Calle Francisco Olaguibel y Calle José María Roa Bárcenas; y 2 másCuauhtémoc",
+      "arboles": 7,
+      "pantalla": 1,
+      "exacto": 0.03,
+      "redondeado": 0
+     },
+     {
+      "calle": "Viaducto Río de la Piedadentre Calle Sur 79 y Calzada de la Viga; entre Calle Carlos Pereyra y Calle José Mariano Beristáin de Souza; y 2 másIztacalco",
+      "arboles": 7,
+      "pantalla": 1,
+      "exacto": 0.03,
+      "redondeado": 0
+     },
+     {
+      "calle": "Viaducto Tlalpanentre Calle Hermenegildo Galeana y Calle Tezoquipa; entre Avenida San Fernando y Calle M. de la CruzTlalpan",
+      "arboles": 7,
+      "pantalla": 1,
+      "exacto": 0.03,
+      "redondeado": 0
+     }
+    ]
+   },
+   {
+    "red": "Calles secundarias · Alcaldía Iztapalapa y 24 más",
+    "calles": 3567,
+    "sumaPantalla": 93,
+    "arboles": 16170,
+    "distintas": 87,
+    "ejemplos": [
+     {
+      "calle": "Calle Morelosentre Calle Agujas y Calle Esperanza; entre Calle Juan Escutia y Calle Ignacio Manuel Altamirano; y 3 másIztapalapa",
+      "arboles": 18,
+      "pantalla": 1,
+      "exacto": 0.08,
+      "redondeado": 0
+     },
+     {
+      "calle": "Calle Oyamelentre Camino Real al Zacatón y Calle Álamo; entre Calle Fresno y Calle RobleTlalpan",
+      "arboles": 18,
+      "pantalla": 1,
+      "exacto": 0.08,
+      "redondeado": 0
+     },
+     {
+      "calle": "Calle Tixmehuacentre Calle Bokoba y Calle PanabaTlalpan",
+      "arboles": 18,
+      "pantalla": 1,
+      "exacto": 0.08,
+      "redondeado": 0
+     }
+    ]
+   },
+   {
+    "red": "Carreteras y caminos · Gobierno de CDMX y 2 más",
+    "calles": 2,
+    "sumaPantalla": 2,
+    "arboles": 10,
+    "distintas": 2,
+    "ejemplos": [
+     {
+      "calle": "Carretera Naucalpan-Ecatepec",
+      "arboles": 7,
+      "pantalla": 1,
+      "exacto": 0.03,
+      "redondeado": 0
+     },
+     {
+      "calle": "Camino a la Cantera",
+      "arboles": 3,
+      "pantalla": 1,
+      "exacto": 0.01,
+      "redondeado": 0
+     }
+    ]
+   }
+  ]
+ },
+ "tipo=si": {
+  "pantalla": "3,582 árboles plantados en 38 jornadas cerradas 100 % de lo previsto 3,582 de 3,597 previstos en las jornadas 0 de 20 cabos trabajaron 94.3 árboles por jornada 1 jornada en curso no se cuentan hasta cerrarse",
+  "modelo": {
+   "jornadas": 38,
+   "arboles": 3582,
+   "cabosActivos": 0,
+   "cabosAsignados": 20
+  },
+  "independiente": {
+   "jornadas": 38,
+   "arboles": 3582,
+   "cabosConArboles": 17,
+   "cabosTitulares": 0,
+   "soloApoyo": [
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined ",
+    "undefined "
+   ],
+   "cuentasCabo": 20
+  },
+  "por_quien": {
+   "cab": [
+    "Quién registró",
+    "Árboles",
+    "De lo previsto",
+    "Jornadas",
+    "Última",
+    "Pendientes"
+   ],
+   "filas": [
+    [
+     "Marisol Pérez Demo",
+     "319",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Arturo Méndez Demo",
+     "274",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Fulana de Tal Ejemplo",
+     "272",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Julián Ortega Demo",
+     "263",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Tomás Díaz Demo",
+     "243",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Yolanda Cruz Demo",
+     "190",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Lucía Méndez Ejemplo",
+     "178",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Valeria Castro Demo",
+     "174",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Óscar Rivas Ejemplo",
+     "164",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Gerardo Paredes Demo",
+     "162",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Andrea Solís Ejemplo",
+     "148",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Paula Sánchez Demo",
+     "133",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Olivia Reyes Demo",
+     "128",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Estela Ramírez Demo",
+     "126",
+     "100 %",
+     "9",
+     "01-AGO-2026",
+     "2 sin revisar · 1 sin reporte"
+    ],
+    [
+     "Perengano Gómez Ejemplo",
+     "111",
+     "100 %",
+     "9",
+     "27-AGO-2026",
+     "1 sin reporte"
+    ],
+    [
+     "Rocío Hernández Demo",
+     "109",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Ramiro Torres Ejemplo",
+     "98",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Mariana Vega Ejemplo",
+     "97",
+     "99 %",
+     "5",
+     "17-JUN-2026",
+     "Nada pendiente"
+    ],
+    [
+     "Omar Fuentes Demo",
+     "94",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Ernesto Luna Demo",
+     "87",
+     "—",
+     "0",
+     "Sin jornadas",
+     "Nada pendiente"
+    ],
+    [
+     "Carmen Ibarra Ejemplo",
+     "77",
+     "99 %",
+     "5",
+     "24-AGO-2026",
+     "1 sin reporte"
+    ],
+    [
+     "Héctor Salinas Ejemplo",
+     "76",
+     "100 %",
+     "5",
+     "22-SEP-2026",
+     "4 sin revisar · 1 sin reporte"
+    ],
+    [
+     "Sergio Navarro Ejemplo",
+     "59",
+     "98 %",
+     "5",
+     "15-SEP-2026",
+     "Nada pendiente"
+    ]
+   ]
+  }
+ },
+ "errores": []
+}

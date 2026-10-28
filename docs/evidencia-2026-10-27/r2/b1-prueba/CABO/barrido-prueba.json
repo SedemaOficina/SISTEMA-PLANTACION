@@ -1,0 +1,4685 @@
+{
+ "modo": "prueba",
+ "base": "http://127.0.0.1:8132/",
+ "inicio": "2026-10-27 15:00",
+ "corridas": [
+  {
+   "perfil": "CABO",
+   "tamano": "tel-360",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: span.aviso-texto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: span.aviso-texto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: span.aviso-texto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 18
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tel-390",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "ventanas": {
+    "dlg-prueba": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: p#demo-estado.demo-estado"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: p#demo-estado.demo-estado"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: p#demo-estado.demo-estado"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: p#demo-estado.demo-estado"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: p#demo-estado.demo-estado"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p#demo-estado.demo-estado"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: p#demo-estado.demo-estado"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: p#demo-estado.demo-estado"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-completa": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       2,
+       "#btn-completa-cerrar",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: span#dlg-completa-icono.completa-icono"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p.completa-nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: p.completa-nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: p.completa-nota"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-resumen": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div#revision-mapa.revision-mapa"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: div#revision-mapa.revision-mapa"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: div#revision-mapa.revision-mapa"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-cambiar-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p.nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: p.nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: p.nota"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-editar-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: form#form-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: input#ej-ubicacion."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: input#ej-ubicacion."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: input#ej-ubicacion."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: input#ej-ubicacion."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: label."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-mover-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: h2#dlg-mover-titulo."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: input#mover-buscar."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: input#mover-buscar."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: input#mover-buscar."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-sustituir": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-relevo": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: button#btn-relevo-cerrar.btn"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: label."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: li."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-apoyos": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       1,
+       "#btn-apoyos-guardar",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Enviando 22 registros al servidor. Abrir la guía de qué hace",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: fieldset.campo"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: div.instrucciones"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: p.instrucciones-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: p.instrucciones-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: div.instrucciones"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: li."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: div.instrucciones"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: div.instrucciones"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-foto": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-detalle": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: h2#dlg-detalle-titulo."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div#detalle-mapa.revision-mapa"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: div#detalle-mapa.revision-mapa"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: div#detalle-mapa.revision-mapa"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-catalogo": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "cat-forma",
+        "cat-forma",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-paleta",
+        "cat-paleta",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-fruto",
+        "cat-fruto",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-tipos-org",
+        "cat-tipos-org",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: input#cat-clave."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: input#cat-clave."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: input#cat-clave."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: input#cat-clave."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: input#cat-modelo."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-parametro": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p.nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: p.nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: p.nota"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-cierre": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: textarea#cie-personal."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div#caja-cie-apoyo.campo"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: div#caja-cie-apoyo.campo"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: div#caja-cie-apoyo.campo"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-previa": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-senal": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: strong."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: ol.lista-ayuda"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: li."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: strong."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: strong."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: li#senal-destino."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: li#senal-destino."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-rechazos": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: dialog#dlg-rechazos."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-confirmar": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       1,
+       "#btn-confirmar-si",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: button#btn-confirmar-no.btn"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: div.acciones"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: div.acciones"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-turno": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p#dlg-turno-texto."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: p#dlg-turno-texto."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: p#dlg-turno-texto."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-usuario": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: label#etq-usr-organizacion."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: select#usr-organizacion."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: select#usr-organizacion."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: select#usr-organizacion."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: select#usr-organizacion."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: form#form-usuario."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p#usr-nombre-ayuda.nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: p#usr-nombre-ayuda.nota"
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: p#usr-nombre-ayuda.nota"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-clave-temporal": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: button.btn"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: button#btn-clave-temporal-copiar.btn"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Cedro blanco del 24-OCT-2026",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Acciones de Codo de fraile del 24-OCT-2026",
+        "lo tapa: li."
+       ]
+      ],
+      "cortados": []
+     }
+    }
+   },
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 18
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tel-390",
+   "pasada": "clics",
+   "vistas": {
+    "supervision": {
+     "botones": [
+      [
+       "Semana",
+       "",
+       "ok",
+       {
+        "cambios": 99,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Mes",
+       "",
+       "ok",
+       {
+        "cambios": 113,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Año",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todo",
+       "",
+       "ok",
+       {
+        "cambios": 115,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Periodo anterior",
+       "sup-anterior",
+       "ok",
+       {
+        "cambios": 119,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Fotografías",
+       "btn-sup-fotos",
+       "ok",
+       {
+        "cambios": 82,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "registrar": {
+     "botones": [
+      [
+       "Ver detalle",
+       "btn-franja-detalle",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Editar jornada",
+       "btn-franja-editar",
+       "ok",
+       {
+        "cambios": 84,
+        "vista": null,
+        "dialogos": [
+         "dlg-editar-jornada"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cambiar jornada",
+       "btn-jornada-cambiar",
+       "ok",
+       {
+        "cambios": 60,
+        "vista": null,
+        "dialogos": [
+         "dlg-cambiar-jornada"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cerrar jornada",
+       "btn-jornada-cerrar",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-confirmar"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Registrar ubicación del punto",
+       "btn-ubicacion",
+       "ok",
+       {
+        "cambios": 346,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capturar coordenadas a mano",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Zoom in",
+       "",
+       "ok",
+       {
+        "cambios": 82,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Zoom out",
+       "",
+       "ok",
+       {
+        "cambios": 269,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capas del mapa: mapa base y colonias de la jornada",
+       "",
+       "ok",
+       {
+        "cambios": 222,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Suelo",
+       "",
+       "ok",
+       {
+        "cambios": 63,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Macetón",
+       "",
+       "ok",
+       {
+        "cambios": 65,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Guardar",
+       "btn-revisar",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Lo que viaja a la base de datos",
+       "",
+       "ok",
+       {
+        "cambios": 67,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "registros": {
+     "botones": [
+      [
+       "Filtros",
+       "btn-filtros",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 131,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "chip-hoy",
+       "ok",
+       {
+        "cambios": 144,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 144,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, especie, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Cedro blanco del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Codo de fraile del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Huizache del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Cedro limón del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Mezquite del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Ahuehuete del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Fresno del 24-OCT-2026",
+       "",
+       "ya no está"
+      ],
+      [
+       "Acciones de Magnolia del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 111,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Capulín del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 111,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Capulín del 24-OCT-2026",
+       "",
+       "ya no está"
+      ],
+      [
+       "Página 1",
+       "",
+       "ya no está"
+      ],
+      [
+       "Página 2",
+       "",
+       "ya no está"
+      ],
+      [
+       "Página 3",
+       "",
+       "ya no está"
+      ],
+      [
+       "Página 144, la última",
+       "",
+       "ya no está"
+      ],
+      [
+       "Página siguiente",
+       "",
+       "ya no está"
+      ]
+     ]
+    },
+    "jornadas": {
+     "botones": [
+      [
+       "Filtros",
+       "jornada-btn-filtros",
+       "ok",
+       {
+        "cambios": 140,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "galeria": {
+     "botones": [
+      [
+       "Mi avance",
+       "btn-galeria-volver",
+       "ok",
+       {
+        "cambios": 152,
+        "vista": "supervision",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Quitar filtros",
+       "galeria-quitar",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 91,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy",
+       "galeria-chip-hoy",
+       "ok",
+       {
+        "cambios": 131,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 140,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 129,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    }
+   },
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 48
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tel-430",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Fulana de Tal Ejemplo, Cabo. Abrir menú",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 18
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "horizontal",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 24
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tableta",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 36
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "escritorio",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 36
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "escritorio",
+   "pasada": "clics",
+   "vistas": {
+    "supervision": {
+     "botones": [
+      [
+       "Semana",
+       "",
+       "ok",
+       {
+        "cambios": 58,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Mes",
+       "",
+       "ok",
+       {
+        "cambios": 581,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Año",
+       "",
+       "ok",
+       {
+        "cambios": 111,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todo",
+       "",
+       "ok",
+       {
+        "cambios": 115,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Periodo anterior",
+       "sup-anterior",
+       "ok",
+       {
+        "cambios": 119,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Periodo siguiente",
+       "sup-siguiente",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Fotografías",
+       "btn-sup-fotos",
+       "ok",
+       {
+        "descarga": "Informe_todo_Fulana_de_Tal_Ejemplo.pdf",
+        "cambios": 40,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "registrar": {
+     "botones": [
+      [
+       "Detectar de nuevo la ubicación",
+       "btn-ini-detectar",
+       "ok",
+       {
+        "cambios": 129,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Capturar coordenadas a mano",
+       "",
+       "ok",
+       {
+        "cambios": 99,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Reforestación Urbana",
+       "",
+       "ok",
+       {
+        "cambios": 126,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Centro Histórico",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Solicitud especial",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Hoy",
+       "btn-ini-hoy",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Lo que viaja a la base de datos",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ]
+     ]
+    },
+    "registros": {
+     "botones": [
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 115,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "chip-hoy",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 115,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, especie, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 122,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Cedro blanco del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 62,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Codo de fraile del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 182,
+        "vista": null,
+        "dialogos": [
+         "dlg-detalle"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Acciones de Huizache del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 143,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Cedro limón del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Mezquite del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 165,
+        "vista": null,
+        "dialogos": [
+         "dlg-detalle"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Acciones de Ahuehuete del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 129,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Fresno del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 77,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Magnolia del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 285,
+        "vista": null,
+        "dialogos": [
+         "dlg-detalle"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Acciones de Capulín del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Capulín del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Olmo de texas del 24-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Capulín del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Palo dulce del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Tejocote del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Olmo de texas del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Colorín del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Jacaranda del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Guaje rojo del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Liquidámbar del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Tepozán del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Capulín del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Fresno del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Ahuehuete del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Guaje rojo del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Fresno del 22-OCT-2026",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 1",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 2",
+       "",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 3",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 4",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 5",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 58, la última",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página siguiente",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "jornadas": {
+     "botones": [
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "jornada-chip-hoy",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 116,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros",
+       "",
+       "ok",
+       {
+        "cambios": 105,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "galeria": {
+     "botones": [
+      [
+       "Mi avance",
+       "btn-galeria-volver",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": "supervision",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 126,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "galeria-chip-hoy",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 117,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros: jornada, quién registró, especie, programa y al",
+       "",
+       "ok",
+       {
+        "cambios": 129,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Descargar todas",
+       "btn-galeria-zip",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Aile, 22-OCT-2026, Andador · Obrera Iii",
+       "",
+       "ok",
+       {
+        "cambios": 126,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Fresno, 17-SEP-2026, Glorieta · Roma Norte Iii",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Aile, 15-SEP-2026, Plaza cívica · Merced Gomez",
+       "",
+       "ok",
+       {
+        "cambios": 128,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Colorín, 14-SEP-2026, Jardín · Hipodromo Ii",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Aile, 07-AGO-2026, Parque vecinal · Guerrero Iii",
+       "",
+       "ok",
+       {
+        "cambios": 86,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capulín, 18-JUL-2026, Andador · Centro Ii",
+       "",
+       "ok",
+       {
+        "descarga": "Fotografias_SRP_Fulana_de_Tal_Ejemplo.zip",
+        "cambios": 71,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Colorín, 18-JUL-2026, Andador · Centro Ii",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Fresno, 02-JUL-2026, Unidad habitacional · San Simon Tolnahu",
+       "",
+       "ok",
+       {
+        "cambios": 105,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Liquidámbar, 24-JUN-2026, Unidad habitacional · Portales Iv",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Tepozán, 24-JUN-2026, Unidad habitacional · Portales Iv",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cedro blanco, 10-JUN-2026, Mercado · Iztaccihuatl",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Huizache, 09-JUN-2026, Plaza cívica · Ciudad De Los Deportes",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Fresno, 09-JUN-2026, Plaza cívica · Ciudad De Los Deportes",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Tejocote, 08-JUN-2026, Andador · Napoles",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Liquidámbar, 08-JUN-2026, Andador · Napoles",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cedro blanco, 14-MAY-2026, Biblioteca · Merced Gomez",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Encino Quiebra Hacha, 09-MAY-2026, Biblioteca · Nonoalco-Tla",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Mezquite, 09-MAY-2026, Biblioteca · Nonoalco-Tlatelolco Ii",
+       "",
+       "ok",
+       {
+        "cambios": 105,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Colorín, 02-ABR-2026, Andador · Centro Iii",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Codo de fraile, 01-ABR-2026, Jardín · Mixcoac",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Ahuehuete, 01-ABR-2026, Jardín · Mixcoac",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cedro limón, 14-OCT-2025, Glorieta · El Arenal",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Encino Quiebra Hacha, 10-SEP-2025, Jardín · Guelatao De Juar",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Tepozán, 10-SEP-2025, Jardín · Guelatao De Juarez I",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Pino, 20-AGO-2025, Deportivo · Portales Oriente",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Página 1",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Página 2",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Página 3, la última",
+       "",
+       "ya no está"
+      ],
+      [
+       "Página siguiente",
+       "",
+       "ya no está"
+      ]
+     ]
+    }
+   },
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 81
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "zoom-200",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 24
+    },
+    "csp": []
+   }
+  }
+ ],
+ "fin": "2026-10-27 15:19"
+}

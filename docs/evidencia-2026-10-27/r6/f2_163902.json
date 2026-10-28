@@ -1,0 +1,164 @@
+{
+ "obs": {
+  "corrida": "163902",
+  "JAP": "91d40154-07a2-439e-942a-31b601234c16",
+  "JRE": "3d2cd897-b123-4ca1-ac8d-db4af28fbc77",
+  "casos": {
+   "apoyo": {
+    "antes": {
+     "avisos": [
+      "Jornada compartida"
+     ],
+     "jornada": "91d40154-07a2-439e-942a-31b601234c16",
+     "con_senal": "992ac1f3-b147-4b5a-b58a-c29e5248d9a5",
+     "sin_senal": "09950d80-f05f-40d4-9c3b-1669d60e7ae4",
+     "cache": [
+      [
+       "srp-1.4.2"
+      ],
+      71
+     ],
+     "local_jornada": false,
+     "pantalla": {
+      "activa": "R6 F2 compartida 163902",
+      "enLinea": false,
+      "remoto": "listo",
+      "panelIniciar": false,
+      "franjaJornada": true,
+      "formulario": true,
+      "titulo": "Registrar jornada",
+      "texto": "Nuevo registro JORNADA ACTIVA Ver detalle R6 F2 compartida 163902 Jornada compartida · coordina R6 Coord 3902 2 de 10 árboles · 2 suyos Cambiar jornada Terminar mi parte Guardado: Ahuehuete PROVISIONAL · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · sin señal: se enviará solo Corregir Ver Nuevo árbol Ubicación * Registrar ubicación del punto Capturar coordenadas a mano + − Leaflet |",
+      "franjaRemoto": [],
+      "jornadasLocales": null,
+      "cola": 1
+     }
+    },
+    "despues": {
+     "activa": null,
+     "enLinea": false,
+     "remoto": "sin-senal",
+     "panelIniciar": true,
+     "franjaJornada": false,
+     "formulario": false,
+     "titulo": "Registrar jornada",
+     "texto": "Nuevo registro Registrar jornada Nombre de la jornada * Ubicación de la jornada * Detectar ubicación de la jornada Capturar coordenadas a mano Dirección de la jornada Programa * Reforestación Urbana Seleccione un programa Reforestación Urbana Centro Histórico Compensaciones Palmeras Territorios de Paz Utopías Solicitud especial Árboles que se van a plantar * Fecha * Seleccione la fecha Hoy Comenta",
+     "franjaRemoto": [
+      "Sin señalSólo puede ver y corregir lo que aún no se envía. Lo ya enviado aparece cuando vuelve la señal."
+     ],
+     "jornadasLocales": null,
+     "cola": 1,
+     "local_jornada": false,
+     "arbol_sin_senal_sigue": true,
+     "cambiar_jornada": null,
+     "registra_otro": false,
+     "otro_en_su_jornada": false
+    }
+   },
+   "titular": {
+    "antes": {
+     "avisos": [],
+     "jornada": "4dded71d-92bb-4761-8369-fd367f5517a8",
+     "con_senal": "80ce57c5-68cd-4dc5-886c-def36daa91a5",
+     "sin_senal": "b941f7fe-3363-4d40-b9e8-3be9fb90db05",
+     "cache": [
+      [
+       "srp-1.4.2"
+      ],
+      71
+     ],
+     "local_jornada": true,
+     "pantalla": {
+      "activa": "R6 F2 propia 163902",
+      "enLinea": false,
+      "remoto": "listo",
+      "panelIniciar": false,
+      "franjaJornada": true,
+      "formulario": true,
+      "titulo": "Registrar jornada",
+      "texto": "Nuevo registro JORNADA ACTIVA Ver detalle R6 F2 propia 163902 2 de 10 árboles Editar jornada Cambiar jornada Cerrar jornada Guardado: Ahuehuete PROVISIONAL · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · sin señal: se enviará solo Corregir Ver Nuevo árbol Ubicación * Registrar ubicación del punto Capturar coordenadas a mano + − Leaflet | Powered by Esri | Imagen: Esri, Vantor, Earth",
+      "franjaRemoto": [],
+      "jornadasLocales": null,
+      "cola": 1
+     }
+    },
+    "despues": {
+     "activa": "R6 F2 propia 163902",
+     "enLinea": false,
+     "remoto": "sin-senal",
+     "panelIniciar": false,
+     "franjaJornada": true,
+     "formulario": true,
+     "titulo": "Registrar jornada",
+     "texto": "Nuevo registro JORNADA ACTIVA Ver detalle R6 F2 propia 163902 2 de 10 árboles Editar jornada Cambiar jornada Cerrar jornada Nuevo árbol Ubicación * Registrar ubicación del punto Capturar coordenadas a mano + − Leaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStree",
+     "franjaRemoto": [
+      "Sin señalSólo puede ver y corregir lo que aún no se envía. Lo ya enviado aparece cuando vuelve la señal."
+     ],
+     "jornadasLocales": null,
+     "cola": 1,
+     "local_jornada": true,
+     "arbol_sin_senal_sigue": true,
+     "cambiar_jornada": "Cambiar de jornada\n\nElija una jornada abierta o inicie otra.\n\nR6 F2 propia 163902\n27-OCT-2026 · 2 árboles · activa\nIniciar otra jornada",
+     "registra_otro": true,
+     "otro_en_su_jornada": true
+    }
+   },
+   "relevo": {
+    "antes": {
+     "avisos": [
+      "Relevo de cabo"
+     ],
+     "jornada": "3d2cd897-b123-4ca1-ac8d-db4af28fbc77",
+     "con_senal": "84f11729-a382-4ca3-8302-705798c325a7",
+     "sin_senal": "f8e35b80-c458-4c88-aa0a-2cdef1605073",
+     "cache": [
+      [
+       "srp-1.4.2"
+      ],
+      71
+     ],
+     "local_jornada": false,
+     "pantalla": {
+      "activa": "R6 F2 de origen 163902",
+      "enLinea": false,
+      "remoto": "listo",
+      "panelIniciar": false,
+      "franjaJornada": true,
+      "formulario": true,
+      "titulo": "Registrar jornada",
+      "texto": "Nuevo registro JORNADA ACTIVA Ver detalle R6 F2 de origen 163902 2 de 10 árboles Editar jornada Cambiar jornada Cerrar jornada Guardado: Ahuehuete PROVISIONAL · Iztapalapa · Col. VICENTE GUERRERO SUPER MANZANA 7 (U HAB) · sin señal: se enviará solo Corregir Ver Nuevo árbol Ubicación * Registrar ubicación del punto Capturar coordenadas a mano + − Leaflet | Powered by Esri | Imagen: Esri, Vantor, Ea",
+      "franjaRemoto": [],
+      "jornadasLocales": null,
+      "cola": 1
+     }
+    },
+    "despues": {
+     "activa": null,
+     "enLinea": false,
+     "remoto": "sin-senal",
+     "panelIniciar": true,
+     "franjaJornada": false,
+     "formulario": false,
+     "titulo": "Registrar jornada",
+     "texto": "Nuevo registro Registrar jornada Nombre de la jornada * Ubicación de la jornada * Detectar ubicación de la jornada Capturar coordenadas a mano Dirección de la jornada Programa * Reforestación Urbana Seleccione un programa Reforestación Urbana Centro Histórico Compensaciones Palmeras Territorios de Paz Utopías Solicitud especial Árboles que se van a plantar * Fecha * Seleccione la fecha Hoy Comenta",
+     "franjaRemoto": [
+      "Sin señalSólo puede ver y corregir lo que aún no se envía. Lo ya enviado aparece cuando vuelve la señal."
+     ],
+     "jornadasLocales": null,
+     "cola": 1,
+     "local_jornada": false,
+     "arbol_sin_senal_sigue": true,
+     "cambiar_jornada": null,
+     "registra_otro": false,
+     "otro_en_su_jornada": false
+    }
+   }
+  },
+  "errores_pagina": []
+ },
+ "checks": [
+  "OK    la Coordinación abre la compartida con el cabo de apoyo",
+  "FALLA apoyo: reabierta sin señal, su jornada sigue activa y registra otro árbol en ella: activa=None, formulario=False, panel «Registrar jornada»=True, registró=False",
+  "OK    titular: reabierta sin señal, su jornada sigue activa y registra otro árbol en ella: activa=R6 F2 propia 163902, formulario=True, panel «Registrar jornada»=False, registró=True",
+  "FALLA relevo: reabierta sin señal, su jornada sigue activa y registra otro árbol en ella: activa=None, formulario=False, panel «Registrar jornada»=True, registró=False"
+ ]
+}

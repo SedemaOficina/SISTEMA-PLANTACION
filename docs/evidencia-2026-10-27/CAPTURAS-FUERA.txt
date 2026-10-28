@@ -1,0 +1,242 @@
+Capturas que se dejaron fuera de esta copia para que pese menos de 30 MB.
+Siguen en la carpeta de evidencia de cada revisor (rN/evidencia/), con el mismo nombre.
+
+r2/a6/a6-mapa-calles-centro-aceptable-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-centro-aceptable.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-centro-baja-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-centro-baja.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-centro-buena-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-centro-buena.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-chapultepec-aceptable-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-chapultepec-aceptable.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-chapultepec-baja-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-chapultepec-baja.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-chapultepec-buena-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-calles-chapultepec-buena.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-centro-aceptable-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-centro-aceptable.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-centro-baja-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-centro-baja.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-centro-buena-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-centro-buena.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-chapultepec-aceptable-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-chapultepec-aceptable.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-chapultepec-baja-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-chapultepec-baja.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-chapultepec-buena-sin.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/a6/a6-mapa-satelite-chapultepec-buena.png	A6: capturas completas del mapa (12 casos con y sin círculo); las mediciones están en el hallazgo y se repiten con a6_contraste.py; se quedan los recortes citados
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-acerca.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-cambios.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-carga.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-catalogos.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-configuracion.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-parametros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-revision-especies.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-escritorio-usuarios.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-acerca.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-cambios.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-carga.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-catalogos.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-configuracion.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-parametros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-revision-especies.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/ADMIN/prueba-ADMIN-tel-390-usuarios.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-escritorio-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-escritorio-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-escritorio-registrar.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-escritorio-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-escritorio-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-tel-390-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-tel-390-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-tel-390-registrar.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-tel-390-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/CABO/prueba-CABO-tel-390-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-escritorio-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-escritorio-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-escritorio-registrar.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-escritorio-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-escritorio-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-tel-390-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-tel-390-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-tel-390-registrar.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-tel-390-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/COORDINADOR/prueba-COORDINADOR-tel-390-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-escritorio-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-escritorio-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-escritorio-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-escritorio-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-tel-390-galeria.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-tel-390-jornadas.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-tel-390-registros.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-prueba/DIRECTIVO/prueba-DIRECTIVO-tel-390-supervision.png	barrido de pantallas en modo de prueba: capturas repetidas por tamaño y perfil; resultados en barrido-prueba.json y b1-resumen-prueba.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-acerca.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-cambios.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-carga.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-catalogos.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-configuracion.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-duplicados.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-parametros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-revision-especies.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-escritorio-usuarios.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-acerca.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-cambios.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-carga.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-catalogos.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-configuracion.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-duplicados.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-parametros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-revision-especies.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/ADMIN/real-ADMIN-tel-390-usuarios.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-escritorio-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-escritorio-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-escritorio-registrar.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-escritorio-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-escritorio-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-tel-390-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-tel-390-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-tel-390-registrar.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-tel-390-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/CABO/real-CABO-tel-390-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-escritorio-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-escritorio-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-escritorio-registrar.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-escritorio-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-escritorio-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-tel-390-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-tel-390-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-tel-390-registrar.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-tel-390-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/COORDINADOR/real-COORDINADOR-tel-390-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-escritorio-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-escritorio-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-escritorio-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-escritorio-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-tel-390-galeria.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-tel-390-jornadas.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-tel-390-registros.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b1-real/DIRECTIVO/real-DIRECTIVO-tel-390-supervision.png	barrido de pantallas en modo real: capturas repetidas por tamaño y perfil; resultados en barrido-real.json y b1-resumen-real.txt
+r2/b4/chromium-1440x900-normal-01-formulario-varios.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-02-formulario-error-apoyos.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-03-franja-coordinacion.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-04-ventana-apoyos.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-06-gps-afinando.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-07-aviso-cabo-apoyo.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-08-franja-cabo-apoyo.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-09-terminar-mi-parte.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-10-jornadas-compartidas.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-11-ficha-compartida.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-13-registros-compartidas.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-14-detalle-arbol.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b4/chromium-1440x900-normal-15-supervision-por-calle.png	B4 a 1440 px: los mismos 13 estados que a 390 px; los resultados de axe están en b4/*.json y b4-*.log
+r2/b6-b8/chromium-2-1-coordinacion.png	B6/B8: segunda corrida en Chromium, igual a la primera
+r2/b6-b8/chromium-2-3-cabo2-sin-senal.png	B6/B8: segunda corrida en Chromium, igual a la primera
+r2/b6-b8/chromium-2-5-cabo3-quitado-con-senal.png	idéntica a chromium-1-5-cabo3-quitado-con-senal.png
+r2/b6-b8/chromium-2-7-cabo3-aviso-relevo.png	B6/B8: segunda corrida en Chromium, igual a la primera
+r2/b6-b8/chromium-2-7-relevo.png	B6/B8: segunda corrida en Chromium, igual a la primera
+r2/b6-b8/webkit-2-1-coordinacion.png	B6/B8: segunda corrida en WebKit, igual a la primera
+r2/b6-b8/webkit-2-3-cabo2-sin-senal.png	idéntica a webkit-1-3-cabo2-sin-senal.png
+r2/b6-b8/webkit-2-5-cabo3-quitado-con-senal.png	idéntica a webkit-1-5-cabo3-quitado-con-senal.png
+r2/b6-b8/webkit-2-7-cabo3-aviso-relevo.png	B6/B8: segunda corrida en WebKit, igual a la primera
+r2/b6-b8/webkit-2-7-relevo.png	B6/B8: segunda corrida en WebKit, igual a la primera
+r2/b6/b6-calle-sin-celda-chromium-2.png	idéntica a b6/b6-calle-sin-celda-chromium-1.png
+r2/b6/sesion-vencida-horizontal-2.png	idéntica a b6/sesion-vencida-horizontal-1.png
+r2/b8/b8-fechas-chromium-Asia_Tokyo.png	idéntica a b8/b8-fechas-chromium-America_Mexico_City.png
+r2/b8/b8-fechas-chromium-UTC.png	idéntica a b8/b8-fechas-chromium-America_Mexico_City.png
+r2/b8/b8-fechas-webkit-Asia_Tokyo.png	idéntica a b8/b8-fechas-webkit-America_Mexico_City.png
+r2/b8/foto-chromium-1.4.2-2.png	idéntica a b8/foto-chromium-1.4.2-1.png
+r2/b8/foto-chromium-accept_de_la_1.1-1.png	idéntica a b8/foto-chromium-1.4.2-1.png
+r2/b8/foto-chromium-accept_de_la_1.1-2.png	idéntica a b8/foto-chromium-1.4.2-1.png
+r2/b8/foto-webkit-1.4.2_sin_red-2.png	idéntica a b8/foto-webkit-1.4.2_sin_red-1.png
+r2/b8/foto-webkit-accept_de_la_1.1-1.png	idéntica a b8/foto-webkit-1.4.2-2.png
+r2/b8/foto-webkit-accept_de_la_1.1-2.png	idéntica a b8/foto-webkit-1.4.2-2.png
+r3/capturas/s1-esc-01-rocio-aviso.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-02-rocio-registro.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-03-rocio-gps.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-04-rocio-sitio.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-06-terminar.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-07-tras-terminar.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-08-estela-franja.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-10-cerrar-pendientes.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-11-tras-cerrar.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-12-cierre.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s1-esc-13-previa.png	C1-C5: el mismo recorrido que s1-tel-*, en escritorio
+r3/capturas/s8-2-coord-varios.png	idéntica a capturas/s8-1-coord-varios.png
+r3/manuales/sondeo/escritorio-cabo.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-admin-1-entrada.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-admin-1-supervision.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-cabo-1-entrada.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-cabo-1-supervision.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-coord-1-entrada.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-coord-1-supervision.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-demo-c1-entrada.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-demo-c1-supervision.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-demo-c3-entrada.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-demo-c3-supervision.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-demo-k1-entrada.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-demo-k1-supervision.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-dir-1-entrada.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo/u-dir-1-supervision.png	revisión de los manuales: los textos de cada pantalla están en sondeo.json
+r3/manuales/sondeo2/apoyo-franja.png	revisión de los manuales: los textos de cada pantalla están en sondeo2.json
+r3/manuales/sondeo2/cabos-de-apoyo.png	revisión de los manuales: los textos de cada pantalla están en sondeo2.json
+r3/manuales/sondeo2/cierre-compartida.png	revisión de los manuales: los textos de cada pantalla están en sondeo2.json
+r3/manuales/sondeo2/coord-franja.png	revisión de los manuales: los textos de cada pantalla están en sondeo2.json
+r3/manuales/sondeo2/ficha-revisar.png	revisión de los manuales: los textos de cada pantalla están en sondeo2.json
+r3/manuales/sondeo2/terminar-mi-parte.png	revisión de los manuales: los textos de cada pantalla están en sondeo2.json
+r3/manuales/sondeo2/ver-detalle-abierto.png	revisión de los manuales: los textos de cada pantalla están en sondeo2.json
+r5/capturas/B5_sesion_vencida_c2.png	idéntica a capturas/B5_sesion_vencida_c1.png
+r5/capturas/C2_catalogos_JSONcortado_c2.png	idéntica a capturas/C2_catalogos_JSONcortado_c1.png
+r5/capturas/C2_catalogos_JSONcortado_c3.png	idéntica a capturas/C2_catalogos_JSONcortado_c1.png
+r5/capturas/C2_catalogos_JSONdañadas_c2.png	idéntica a capturas/C2_catalogos_JSONdañadas_c1.png
+r5/capturas/C2_catalogos_JSONdañadas_c3.png	idéntica a capturas/C2_catalogos_JSONdañadas_c1.png
+r5/capturas/C2_catalogos_vacíovacío_c2.png	idéntica a capturas/C2_catalogos_vacíovacío_c1.png
+r5/capturas/C2_catalogos_vacíovacío_c3.png	idéntica a capturas/C2_catalogos_vacíovacío_c1.png
+r6/f1_163145_c2_con_A_cerrada.png	idéntica a f1_163145_c1_quitado.png
+r6/f1_163145_c2_con_A_cerrada_revisar.png	idéntica a f1_163145_c1_quitado_revisar.png
+r6/f1_163145_c2_tras_reabrir_revisar.png	idéntica a f1_163145_c1_vuelto_a_marcar_revisar.png
+r6/f1_163503_c1_quitado.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c1_quitado_revisar.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c1_vuelto_a_marcar_revisar.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c2_con_A_cerrada.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c2_con_A_cerrada_revisar.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c2_sin_senal.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c2_tras_reabrir_revisar.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c3_con_B_eliminada.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c3_con_B_eliminada_revisar.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_c3_mover.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_coord_cierre_A.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_163503_coord_eliminar_B.png	frente 1, segunda corrida (envío automático); sus datos están en f1_163503_auto.json
+r6/f1_164923_c1_quitado.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c1_quitado_revisar.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c1_vuelto_a_marcar_revisar.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c2_con_A_cerrada.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c2_con_A_cerrada_revisar.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c2_sin_senal.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c2_tras_reabrir_revisar.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c3_con_B_eliminada.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c3_con_B_eliminada_revisar.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_c3_mover.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_coord_cierre_A.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f1_164923_coord_eliminar_B.png	frente 1, tercera corrida; sus datos están en f1_164923_manual.json
+r6/f2_163902_titular_antes_de_cerrar.png	idéntica a f2_163902_relevo_antes_de_cerrar.png
+r6/f2_164243_apoyo_antes_de_cerrar.png	frente 2, segunda corrida (cerrando sólo la pestaña); sus datos están en f2_164243.json
+r6/f2_164243_apoyo_reabierta_sin_senal.png	frente 2, segunda corrida (cerrando sólo la pestaña); sus datos están en f2_164243.json
+r6/f2_164243_relevo_antes_de_cerrar.png	frente 2, segunda corrida (cerrando sólo la pestaña); sus datos están en f2_164243.json
+r6/f2_164243_relevo_reabierta_sin_senal.png	frente 2, segunda corrida (cerrando sólo la pestaña); sus datos están en f2_164243.json
+r6/f2_164243_titular_antes_de_cerrar.png	frente 2, segunda corrida (cerrando sólo la pestaña); sus datos están en f2_164243.json
+r6/f2_164243_titular_reabierta_sin_senal.png	frente 2, segunda corrida (cerrando sólo la pestaña); sus datos están en f2_164243.json

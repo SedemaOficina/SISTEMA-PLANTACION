@@ -1,0 +1,172 @@
+paginas 4
+{'/Producer': 'jsPDF 4.2.1', '/Title': 'Informe de plantación', '/Subject': 'Informe de plantación', '/Author': 'Secretaría del Medio Ambiente de la Ciudad de México', '/Creator': 'Sistema de Registro de Plantaciones 1.4.2', '/CreationDate': "D:20261027160650-06'00'"}
+--- pag 1
+INFORME DE PLANTACIÓN
+Todo el registro
+Periodo: del 22-JUL-2025 al 27-OCT-2026
+Cabo: Rocío Hernández Demo
+Jornadas compartidas
+RESUMEN
+Indicador Valor
+Árboles plantados (jornadas cerradas) 109
+Jornadas cerradas 5
+Jornadas en curso (no se cuentan hasta cerrarse) 1
+Avance contra lo previsto en las jornadas 100 % (488 de 486)
+Árboles por jornada 21.8
+Especies distintas 20 (89 % de los árboles son nativos o endémicos)
+Alcaldías y colonias 3 alcaldías · 8 colonias
+Con fotografía 7 (6 %)
+Ubicados con GPS 89 (82 %), precisión típica ±11 m
+QUÉ ATENDER
+Pendiente Jornadas
+1 jornada cerrada no tiene reporte 1
+ÁRBOLES PLANTADOS POR MES
+Mes Jornadas cerradas Árboles
+JUL 25 1 35
+AGO 25 0 0
+SEP 25 1 27
+OCT 25 1 20
+NOV 25 0 0
+DIC 25 0 0
+ENE 0 0
+FEB 0 0
+MAR 0 0
+ABR 0 0
+MAY 0 0
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 22-JUL-2025 al 27-OCT-2026 Página 1 de 4
+--- pag 2
+Mes Jornadas cerradas Árboles
+JUN 1 21
+JUL 0 0
+AGO 1 6
+Total 5 109
+POR ALCALDÍA
+Alcaldía Árboles % del total Jornadas Colonias
+Tlalpan 47 43 % 3 5
+Coyoacán 35 32 % 1 1
+Iztapalapa 27 25 % 1 2
+POR RED VIAL
+Red vial Quién la atiende Calles Árboles % del total
+Vialidades primarias Gobierno de CDMX 1 3 3 %
+Calles secundarias Alcaldía Tlalpan y 2 más 19 102 94 %
+Sin calle cercana — — 4 4 %
+VIALIDADES PRIMARIAS · GOBIERNO DE CDMX
+Calle Entre calles Alcaldía Árboles % del total Jornadas
+Avenida Miguel Ángel de
+Quevedo
+entre Calle Ohio y Calle Quetzal Coyoacán 3 3 % 1
+CALLES SECUNDARIAS · ALCALDÍA TLALPAN Y 2 MÁS
+Calle Entre calles Alcaldía Árboles % del total Jornadas
+Calle Alondra entre Avenida Miguel Ángel de Quevedo
+y Calle Jardín de las Rosas
+Coyoacán 20 19 % 1
+Prolongación Mirador
+Chapultepec
+entre Segunda Privada Mirador de
+Chapultepec y Andador 1
+Tlalpan 10 9 % 1
+Andador del Reformador — Iztapalapa 9 9 % 1
+Calle Ohio entre Avenida Miguel Ángel de Quevedo
+y Calle Jardín de las Rosas
+Coyoacán 9 9 % 1
+Andador Antonio Salanueva — Iztapalapa 8 8 % 1
+Cerrada Primera
+Moctezuma
+a la altura de Prolongación Moctezuma Tlalpan 8 8 % 1
+Prolongación Moctezuma entre Tercera Prolongación Moctezuma
+y Cerrada Primera Moctezuma
+Tlalpan 7 7 % 1
+Calle Ahuacatitla entre Prolongación Mirador
+Chapultepec y Segunda Privada
+Mirador de Chapultepec
+Tlalpan 6 6 % 1
+Cerrada Tercera
+Moctezuma
+a la altura de Tercera Cerrada
+Moctezuma
+Tlalpan 5 5 % 1
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 22-JUL-2025 al 27-OCT-2026 Página 2 de 4
+--- pag 3
+Calle Entre calles Alcaldía Árboles % del total Jornadas
+Calles sin nombre — Iztapalapa 4 4 % 1
+Circuito San Agustín de las
+Cuevas
+a la altura de Calle Olmo Tlalpan 3 3 % 1
+Calle Quetzal entre Avenida Miguel Ángel de Quevedo
+y Calle Jardín de las Rosas
+Coyoacán 3 3 % 1
+Andador Pastor de Ovejas — Iztapalapa 2 2 % 1
+Calle Década Nacional entre Calle Enrique Contel y Cerrada del
+ISSSTE
+Iztapalapa 2 2 % 1
+Segunda Prolongación
+Mirador
+a la altura de Calle Ahuacatitla Tlalpan 2 2 % 1
+Otras 4 calles 4 4 %
+La calle la pone el sistema con la capa de calles de la Ciudad de México (versión 1.0.0): el tramo más cercano al árbol, a 40 m o menos, con su
+red vial y quién lo atiende. Elaborada por SEDEMA con información del INEGI (Marco Geoestadístico, Encuesta Intercensal 2025; Red Nacional
+de Caminos 2025) y de SEMOVI (Vialidades primarias, CC BY 4.0, y el acuerdo de clasificación de vialidades de 2024). En el PDF van las 15
+calles con más árboles de cada red; la lista completa, en la tabla para Excel.
+POR PRIORIDAD DE LA COLONIA
+Prioridad de reforestación Árboles % del total
+Muy alta 52 48 %
+Alta 13 12 %
+Media 3 3 %
+Baja 39 36 %
+Muy baja 0 0 %
+Sin dato en la capa 2 2 %
+Total 109 100 %
+POR ESPECIE
+Especie Nombre científico Distribución Árboles % del total
+Palo dulce Eysenhardtia polystachya Nativa 13 12 %
+Liquidámbar Liquidambar styraciflua Nativa 10 9 %
+Aile Alnus acuminata Nativa 9 8 %
+Colorín Erythrina americana Endémica 9 8 %
+Ahuehuete Taxodium mucronatum Nativa 8 7 %
+Jacaranda Jacaranda mimosifolia Exótica 8 7 %
+Tepozán Buddleja cordata Nativa 8 7 %
+Encino Quiebra Hacha Quercus rugosa Nativa 7 6 %
+Fresno Fraxinus uhdei Nativa 7 6 %
+Tejocote Crataegus mexicana Nativa 5 5 %
+Cedro blanco Cupressus lusitanica Nativa 4 4 %
+Magnolia Magnolia grandiflora Exótica 4 4 %
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 22-JUL-2025 al 27-OCT-2026 Página 3 de 4
+--- pag 4
+Especie Nombre científico Distribución Árboles % del total
+Sauce Salix humboldtiana Nativa 4 4 %
+Olmo de texas Ulmus crassifolia Nativa 3 3 %
+Pino Pinus cembroides Nativa 3 3 %
+Huizache Vachellia farnesiana Nativa 2 2 %
+Palo loco Pittocaulon praecox Endémica 2 2 %
+Capulín Prunus serotina var. salicifolia Nativa 1 1 %
+Codo de fraile Cascabela thevetioides Endémica 1 1 %
+Guaje rojo Leucaena esculenta Nativa 1 1 %
+Total 109 100 %
+POR PROGRAMA
+Programa Árboles % del total Jornadas
+Reforestación Urbana 109 100 % 5
+JORNADAS CERRADAS DEL PERIODO
+Fecha Jornada Lugar Prioridad Árboles Reporte
+01-AGO-2026 Escuela primaria · Bosques De
+Tepeximilpa
+Tlalpan · Col. BOSQUES DE
+TEPEXIMILPA
+Baja 6 de 49 Generado
+26-JUN-2026 Glorieta · San Miguel Toxiac Tlalpan · Col. SAN MIGUEL TOXIAC Alta 21 de 75 Pendiente
+14-OCT-2025 Glorieta · El Arenal Tlalpan · Col. EL ARENAL Muy alta 20 de 101 Generado
+10-SEP-2025 Jardín · Guelatao De Juarez I Iztapalapa · Col. GUELATAO DE
+JUAREZ I (U HAB)
+Muy alta 27 de 126 Generado
+22-JUL-2025 Jardín · El Rosedal I Coyoacán · Col. EL ROSEDAL I Baja 35 de 135 Generado
+TRAZABILIDAD
+Sin árboles eliminados ni editados en el periodo.
+Cuentan sólo las jornadas cerradas: una jornada abierta todavía puede cambiar. La semana va de lunes a domingo. Los árboles eliminados y
+editados se cuentan aparte, como constancia, y no cambian la cifra de árboles.
+Cifra de ejemplares registrados en el sistema. No equivale necesariamente al total plantado. Reúne lo capturado en este equipo.
+Documento de prueba con datos ficticios. Sin validez oficial.
+Generado por Rocío Hernández Demo (Cabo).
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 16:06 h
+Periodo: del 22-JUL-2025 al 27-OCT-2026 Página 4 de 4

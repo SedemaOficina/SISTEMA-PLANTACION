@@ -1,0 +1,113 @@
+real: corridas 36 · pantallas revisadas 243 · botones presionados 753 (sin hacer nada: 0) · no presionados a propósito 62
+
+4383 · error de consola
+      ADMIN/tel-360 Failed to load resource: the server responded with a status of 404 (Not Found)
+      ADMIN/tel-390 Failed to load resource: the server responded with a status of 404 (Not Found)
+      ADMIN/tel-430 Failed to load resource: the server responded with a status of 404 (Not Found)
+      ADMIN/horizontal Failed to load resource: the server responded with a status of 404 (Not Found)
+      ADMIN/tableta Failed to load resource: the server responded with a status of 404 (Not Found)
+      ADMIN/escritorio Failed to load resource: the server responded with a status of 404 (Not Found)
+      ADMIN/zoom-200 Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/tel-360 Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/tel-390 Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/tel-430 Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/horizontal Failed to load resource: the server responded with a status of 404 (Not Found)
+      DIRECTIVO/tableta Failed to load resource: the server responded with a status of 404 (Not Found)
+
+4383 · petición fallida
+      ADMIN/tel-360 404 /api/srp/fotos/678f6716-4c03-5647-bb2a-31a703669199
+      ADMIN/tel-360 404 /api/srp/fotos/5685190c-48fe-5f26-a32f-3f854c079a40
+      ADMIN/tel-360 404 /api/srp/fotos/ed1ef4b0-7936-5414-a473-af91e8ac96cf
+      ADMIN/tel-360 404 /api/srp/fotos/43a2c7d4-032e-5126-a1c8-a421af8ae69f
+      ADMIN/tel-360 404 /api/srp/fotos/5dbe13e0-db88-5cbd-8c2e-8ccf5557c87e
+      ADMIN/tel-360 404 /api/srp/fotos/1198af12-3e6f-5e40-bacf-df50de4411f8
+      ADMIN/tel-360 404 /api/srp/fotos/0048287d-3ff2-5abf-908c-6af138641420
+      ADMIN/tel-360 404 /api/srp/fotos/bb7e2f66-88ea-5096-a9d7-a1428a120d9e
+      ADMIN/tel-360 404 /api/srp/fotos/f4c1a0dc-927f-51f8-b28d-b3b6144d67d7
+      ADMIN/tel-360 404 /api/srp/fotos/7813febc-dbac-54d0-ae45-f985a0dadabb
+      ADMIN/tel-360 404 /api/srp/fotos/1ddb67cc-9f75-5d7d-8224-6793201492a5
+      ADMIN/tel-360 404 /api/srp/fotos/47847b6b-810c-5f11-9bf1-1aed3f67cf0a
+
+70 · error de consola al presionar
+      ADMIN/tel-390 supervision «Fotografías» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 supervision «Por quién registró3 con jornadas en el periodo · 6 con pendi» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 supervision «R5 cabo1» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 supervision «R5 cabo3» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Todas» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Un día» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Un periodo» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Más filtros: jornada, quién registró, especie, programa, alc» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Página 1» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Página 2» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Página 3» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+      ADMIN/tel-390 galeria «Página 30, la última» ['Failed to load resource: the server responded with a status of 404 (Not Found)']
+
+44 · control tapado
+      ADMIN/tel-360 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-360 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      ADMIN/tel-360 usuarios ['button', '', 'Correo', 'lo tapa: tr.']
+      ADMIN/tel-360 usuarios ['button', '', 'Área', 'lo tapa: tr.']
+      ADMIN/tel-360 usuarios ['button', '', 'Perfil de captura', 'lo tapa: tr.']
+      ADMIN/tel-360 usuarios ['button', '', 'Registros', 'lo tapa: tr.']
+      ADMIN/tel-390 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-390 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Correo', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Área', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Perfil de captura', 'lo tapa: tr.']
+      ADMIN/tel-390 usuarios ['button', '', 'Registros', 'lo tapa: tr.']
+
+36 · dominio externo server.arcgisonline.com
+      ADMIN/tel-360 3
+      ADMIN/tel-390 3
+      ADMIN/tel-390 45
+      ADMIN/tel-430 3
+      ADMIN/horizontal 3
+      ADMIN/tableta 3
+      ADMIN/escritorio 3
+      ADMIN/escritorio 219
+      ADMIN/zoom-200 3
+      DIRECTIVO/tel-360 3
+      DIRECTIVO/tel-390 3
+      DIRECTIVO/tel-390 45
+
+28 · objetivo chico (<24 px)
+      COORDINADOR/tel-360 registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tel-360 registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/tel-390 registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tel-390 registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/tel-430 registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tel-430 registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/horizontal registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/horizontal registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/tableta registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tableta registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/escritorio registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/escritorio registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+
+16 · ventana: objetivo chico
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-forma', 'cat-forma', '1×1']
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-paleta', 'cat-paleta', '1×1']
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-fruto', 'cat-fruto', '1×1']
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-tipos-org', 'cat-tipos-org', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-forma', 'cat-forma', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-paleta', 'cat-paleta', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-fruto', 'cat-fruto', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-tipos-org', 'cat-tipos-org', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-forma', 'cat-forma', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-paleta', 'cat-paleta', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-fruto', 'cat-fruto', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-tipos-org', 'cat-tipos-org', '1×1']
+
+12 · axe en ventana button-name
+      ADMIN/tel-390 dlg-completa #btn-completa-cerrar
+      ADMIN/tel-390 dlg-apoyos #btn-apoyos-guardar
+      ADMIN/tel-390 dlg-confirmar #btn-confirmar-si
+      DIRECTIVO/tel-390 dlg-completa #btn-completa-cerrar
+      DIRECTIVO/tel-390 dlg-apoyos #btn-apoyos-guardar
+      DIRECTIVO/tel-390 dlg-confirmar #btn-confirmar-si
+      COORDINADOR/tel-390 dlg-completa #btn-completa-cerrar
+      COORDINADOR/tel-390 dlg-apoyos #btn-apoyos-guardar
+      COORDINADOR/tel-390 dlg-confirmar #btn-confirmar-si
+      CABO/tel-390 dlg-completa #btn-completa-cerrar
+      CABO/tel-390 dlg-apoyos #btn-apoyos-guardar
+      CABO/tel-390 dlg-confirmar #btn-confirmar-si

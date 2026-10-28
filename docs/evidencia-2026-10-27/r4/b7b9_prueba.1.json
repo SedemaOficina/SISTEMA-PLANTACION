@@ -1,0 +1,257 @@
+{
+ "modo": "prueba",
+ "base": "http://127.0.0.1:8134/",
+ "sw": false,
+ "inicio": "2026-10-27 15:21:52",
+ "perfiles": {
+  "ADMIN": {
+   "externos": {
+    "server.arcgisonline.com": 6
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [],
+   "peticiones_origen": 207,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "no es de su perfil",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "abre",
+    "vista:catalogos": "abre",
+    "vista:usuarios": "abre",
+    "vista:parametros": "abre",
+    "vista:cambios": "abre",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "abre",
+    "vista:revision-especies": "abre",
+    "vista:acerca": "abre",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 3 opciones",
+     "filtro-compartida: 3 opciones",
+     "jornada-compartida: 3 opciones"
+    ],
+    "ficha de una compartida + Cabos de apoyo": "ficha (sin botón: no es la titular)",
+    "franja del cabo de apoyo y cambiar jornada": "botón: Cerrar jornada",
+    "calle por celdas (servidor simulado)": "ok · con nombre",
+    "informe PDF": "Informe_semanal_2026-10-26_al_2026-11-01_No_compartidas.pdf",
+    "tabla CSV": "Arboles_semanal_2026-10-26_al_2026-11-01_No_compartidas.csv"
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   }
+  },
+  "DIRECTIVO": {
+   "externos": {
+    "server.arcgisonline.com": 6
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [],
+   "peticiones_origen": 204,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "no es de su perfil",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "no es de su perfil",
+    "vista:catalogos": "no es de su perfil",
+    "vista:usuarios": "no es de su perfil",
+    "vista:parametros": "no es de su perfil",
+    "vista:cambios": "no es de su perfil",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "no es de su perfil",
+    "vista:revision-especies": "no es de su perfil",
+    "vista:acerca": "no es de su perfil",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 3 opciones",
+     "filtro-compartida: 3 opciones",
+     "jornada-compartida: 3 opciones"
+    ],
+    "ficha de una compartida + Cabos de apoyo": "ficha (sin botón: no es la titular)",
+    "franja del cabo de apoyo y cambiar jornada": "botón: Cerrar jornada",
+    "calle por celdas (servidor simulado)": "ok · con nombre",
+    "informe PDF": "ERROR: Page.click: Timeout 30000ms exceeded.",
+    "tabla CSV": "ERROR: Page.click: Timeout 30000ms exceeded."
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   }
+  },
+  "COORDINADOR": {
+   "externos": {
+    "server.arcgisonline.com": 39
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [],
+   "peticiones_origen": 204,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "abre",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "no es de su perfil",
+    "vista:catalogos": "no es de su perfil",
+    "vista:usuarios": "no es de su perfil",
+    "vista:parametros": "no es de su perfil",
+    "vista:cambios": "no es de su perfil",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "no es de su perfil",
+    "vista:revision-especies": "no es de su perfil",
+    "vista:acerca": "no es de su perfil",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 3 opciones",
+     "filtro-compartida: 3 opciones",
+     "jornada-compartida: 3 opciones"
+    ],
+    "ficha de una compartida + Cabos de apoyo": "ficha (sin botón: no es la titular)",
+    "franja del cabo de apoyo y cambiar jornada": "botón: Cerrar jornada",
+    "calle por celdas (servidor simulado)": "ok · con nombre"
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   }
+  },
+  "CABO": {
+   "externos": {
+    "server.arcgisonline.com": 39
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [],
+   "peticiones_origen": 204,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "abre",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "no es de su perfil",
+    "vista:catalogos": "no es de su perfil",
+    "vista:usuarios": "no es de su perfil",
+    "vista:parametros": "no es de su perfil",
+    "vista:cambios": "no es de su perfil",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "no es de su perfil",
+    "vista:revision-especies": "no es de su perfil",
+    "vista:acerca": "no es de su perfil",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 3 opciones",
+     "filtro-compartida: 3 opciones",
+     "jornada-compartida: 3 opciones"
+    ],
+    "ficha de una compartida + Cabos de apoyo": "sin compartida abierta a su alcance",
+    "franja del cabo de apoyo y cambiar jornada": "botón: Cerrar jornada",
+    "calle por celdas (servidor simulado)": "ok · con nombre"
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   }
+  },
+  "CABO_APOYO": {
+   "externos": {
+    "server.arcgisonline.com": 63
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [],
+   "peticiones_origen": 204,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "abre",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "no es de su perfil",
+    "vista:catalogos": "no es de su perfil",
+    "vista:usuarios": "no es de su perfil",
+    "vista:parametros": "no es de su perfil",
+    "vista:cambios": "no es de su perfil",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "no es de su perfil",
+    "vista:revision-especies": "no es de su perfil",
+    "vista:acerca": "no es de su perfil",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 3 opciones",
+     "filtro-compartida: 3 opciones",
+     "jornada-compartida: 3 opciones"
+    ],
+    "ficha de una compartida + Cabos de apoyo": "ficha (sin botón: no es la titular)",
+    "franja del cabo de apoyo y cambiar jornada": "botón: Terminar mi parte",
+    "calle por celdas (servidor simulado)": "ok · con nombre"
+   },
+   "cabo_apoyo": "u-demo-c3",
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   }
+  }
+ },
+ "fin": "2026-10-27 15:27:49",
+ "totales": {
+  "externas": 153,
+  "dominios": [
+   "server.arcgisonline.com"
+  ],
+  "csp_eventos": 0,
+  "csp_consola": 0,
+  "errores": 0,
+  "pasos_con_error": [
+   [
+    "DIRECTIVO",
+    "informe PDF",
+    "ERROR: Page.click: Timeout 30000ms exceeded."
+   ],
+   [
+    "DIRECTIVO",
+    "tabla CSV",
+    "ERROR: Page.click: Timeout 30000ms exceeded."
+   ]
+  ],
+  "inyectado": {
+   "ADMIN": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   },
+   "DIRECTIVO": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   },
+   "COORDINADOR": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   },
+   "CABO": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   },
+   "CABO_APOYO": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 0
+   }
+  }
+ }
+}

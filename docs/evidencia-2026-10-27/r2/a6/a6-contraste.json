@@ -1,0 +1,149 @@
+{
+ "pagina": {},
+ "mapa": [
+  [
+   "satelite",
+   "centro",
+   "buena",
+   "#1E7A46",
+   7,
+   17,
+   "mediana 1.21",
+   "p10 1.18",
+   "mínimo 1.05",
+   "bajo 3:1: 70 de 75"
+  ],
+  [
+   "satelite",
+   "centro",
+   "aceptable",
+   "#8A4B00",
+   22,
+   17,
+   "mediana 1.06",
+   "p10 1.02",
+   "mínimo 1.00",
+   "bajo 3:1: 71 de 75"
+  ],
+  [
+   "satelite",
+   "centro",
+   "baja",
+   "#C62828",
+   53,
+   17,
+   "mediana 1.42",
+   "p10 1.17",
+   "mínimo 1.09",
+   "bajo 3:1: 75 de 75"
+  ],
+  [
+   "satelite",
+   "chapultepec",
+   "buena",
+   "#1E7A46",
+   7,
+   17,
+   "mediana 2.17",
+   "p10 1.05",
+   "mínimo 1.05",
+   "bajo 3:1: 50 de 75"
+  ],
+  [
+   "satelite",
+   "chapultepec",
+   "aceptable",
+   "#8A4B00",
+   22,
+   17,
+   "mediana 3.21",
+   "p10 1.14",
+   "mínimo 1.04",
+   "bajo 3:1: 34 de 75"
+  ],
+  [
+   "satelite",
+   "chapultepec",
+   "baja",
+   "#C62828",
+   53,
+   17,
+   "mediana 1.54",
+   "p10 1.14",
+   "mínimo 1.08",
+   "bajo 3:1: 65 de 75"
+  ],
+  [
+   "calles",
+   "centro",
+   "buena",
+   "#1E7A46",
+   7,
+   17,
+   "mediana 2.15",
+   "p10 1.20",
+   "mínimo 1.05",
+   "bajo 3:1: 70 de 75"
+  ],
+  [
+   "calles",
+   "centro",
+   "aceptable",
+   "#8A4B00",
+   22,
+   17,
+   "mediana 2.74",
+   "p10 1.14",
+   "mínimo 1.04",
+   "bajo 3:1: 70 de 75"
+  ],
+  [
+   "calles",
+   "centro",
+   "baja",
+   "#C62828",
+   53,
+   17,
+   "mediana 2.26",
+   "p10 2.21",
+   "mínimo 1.66",
+   "bajo 3:1: 75 de 75"
+  ],
+  [
+   "calles",
+   "chapultepec",
+   "buena",
+   "#1E7A46",
+   7,
+   17,
+   "mediana 4.54",
+   "p10 1.20",
+   "mínimo 1.05",
+   "bajo 3:1: 26 de 75"
+  ],
+  [
+   "calles",
+   "chapultepec",
+   "aceptable",
+   "#8A4B00",
+   22,
+   17,
+   "mediana 5.21",
+   "p10 1.14",
+   "mínimo 1.04",
+   "bajo 3:1: 15 de 75"
+  ],
+  [
+   "calles",
+   "chapultepec",
+   "baja",
+   "#C62828",
+   53,
+   17,
+   "mediana 4.30",
+   "p10 4.28",
+   "mínimo 4.05",
+   "bajo 3:1: 0 de 75"
+  ]
+ ]
+}

@@ -1,0 +1,43 @@
+F6 · Lo que el SRP lee de la capa de calles contra lo que instala el SIA (paquete calles-cdmx 1.0.0, que el SIA instala tal cual)
+Fecha: 2026-10-27 15:37
+
+Columnas que usa srp.calle() (09-srp-calles.sql) y si las crea el 01 del paquete:
+  territorio.calles.clave      sí
+  territorio.calles.nombre     sí
+  territorio.calles.entre_1    sí
+  territorio.calles.entre_2    sí
+  territorio.calles.red_vial   sí
+  territorio.calles.tipo_via   sí
+  territorio.calles.atiende    sí
+  territorio.calles.llave      sí
+  territorio.calles.geom       sí
+  territorio.calles_version.version    sí
+  territorio.calles_version.instalada  sí
+  índice espacial en geom (para el <-> de srp.calle): 1
+  permiso de lectura a territorio_lectura: 1
+
+De dónde toma el SRP la versión de cada capa:
+servidor/db/srp/04-srp-sobre-territorio.sql:79:    SELECT DISTINCT ON (v.capa) v.capa, v.version FROM territorio.version_capa v
+servidor/db/srp/09-srp-calles.sql:35:  SELECT x.version INTO v FROM territorio.calles_version x ORDER BY x.instalada DESC LIMIT 1;
+servidor/db/srp/09-srp-calles.sql:81:  SELECT x.version INTO v FROM territorio.calles_version x ORDER BY x.instalada DESC LIMIT 1;
+
+El commit más reciente de sia-backend, la versión vigente al 27-10-2026, instala el paquete tal cual y además agrega una fila 'calles' en su tabla de versiones de capas (descrito en términos generales; no se copia su contenido).
+
+Base local (réplica de territorio):
+        capa        |    version     | vigente 
+--------------------+----------------+---------
+ alcaldia           | sia-2026-01-01 | t
+ colonias_iecm_2022 | iecm-2022      | t
+ malla_uga_1km      | sia-2026-09-22 | t
+(3 filas)
+
+ version | instalada  
+---------+------------
+ 1.0.0   | 2026-10-25
+(1 fila)
+
+ tramos 
+--------
+ 178771
+(1 fila)
+

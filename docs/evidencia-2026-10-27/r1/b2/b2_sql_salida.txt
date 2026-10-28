@@ -1,0 +1,93 @@
+== Totales: árboles, jornadas con árboles, lejos, sin calcular (todo / compartidas / no compartidas)
+t | count | count | count | count
+no | 8483 | 644 | 1401 | 0
+si | 4 | 2 | 0 | 0
+todo | 8487 | 646 | 1401 | 0
+(3 filas)
+== Jornadas cerradas de la institución (todas / compartidas)
+count | count
+666 | 22
+(1 fila)
+== Árboles activos en jornadas compartidas de la institución, por estatus de la jornada y por institución del cabo
+estatus | organizacion_id | count
+abierta | o-sedema | 154
+cerrada | o-sedema | 4
+(2 filas)
+== Por red vial (todo): árboles, calles distintas (llave+alcaldía con algún árbol en esa red)
+vialidad_red | count | count
+primaria | 906 | 158
+secundaria | 6180 | 1753
+(2 filas)
+== Calles (llave+alcaldía) con árboles en más de una red vial
+count
+6
+(1 fila)
+== Por quién atiende (todo)
+coalesce | count
+Alcaldía Cuauhtémoc | 889
+Gobierno de CDMX | 889
+Alcaldía Iztapalapa | 621
+Alcaldía Tlalpan | 591
+Alcaldía Coyoacán | 567
+Alcaldía Benito Juárez | 461
+Alcaldía Gustavo A. Madero | 439
+Alcaldía Álvaro Obregón | 437
+Alcaldía Azcapotzalco | 427
+Alcaldía Miguel Hidalgo | 421
+Alcaldía Tláhuac | 420
+Alcaldía Xochimilco | 340
+Alcaldía Iztacalco | 316
+Alcaldía Venustiano Carranza | 239
+Gobierno Federal | 16
+Alcaldías Iztapalapa y Tláhuac | 7
+Alcaldías Iztacalco y Iztapalapa | 5
+Concesión | 1
+(18 filas)
+== Por red vial y quién atiende (todo)
+vialidad_red | coalesce | count
+primaria | Gobierno de CDMX | 889
+primaria | Gobierno Federal | 16
+primaria | Concesión | 1
+secundaria | Alcaldía Cuauhtémoc | 889
+secundaria | Alcaldía Iztapalapa | 621
+secundaria | Alcaldía Tlalpan | 591
+secundaria | Alcaldía Coyoacán | 567
+secundaria | Alcaldía Benito Juárez | 461
+secundaria | Alcaldía Gustavo A. Madero | 439
+secundaria | Alcaldía Álvaro Obregón | 437
+secundaria | Alcaldía Azcapotzalco | 427
+secundaria | Alcaldía Miguel Hidalgo | 421
+secundaria | Alcaldía Tláhuac | 420
+secundaria | Alcaldía Xochimilco | 340
+secundaria | Alcaldía Iztacalco | 316
+secundaria | Alcaldía Venustiano Carranza | 239
+secundaria | Alcaldías Iztapalapa y Tláhuac | 7
+secundaria | Alcaldías Iztacalco y Iztapalapa | 5
+(18 filas)
+== Por calle (todo): número de calles y las 15 con más árboles
+count
+1905
+(1 fila)
+k | count | count
+|Tláhuac | 64 | 15
+|Cuauhtémoc | 45 | 7
+|Iztapalapa | 42 | 7
+|Xochimilco | 40 | 14
+|Coyoacán | 35 | 10
+|Tlalpan | 26 | 9
+eje 3 norte|Azcapotzalco | 26 | 6
+periferico|Iztapalapa | 26 | 6
+|Álvaro Obregón | 23 | 10
+totonacas|Coyoacán | 22 | 2
+|Gustavo A. Madero | 21 | 5
+constituyentes|Miguel Hidalgo | 19 | 3
+jose antonio torres|Cuauhtémoc | 19 | 3
+rosa maria sequeira|Coyoacán | 19 | 4
+universidad|Coyoacán | 19 | 6
+(15 filas)
+== Por red vial (compartidas / no)
+compartida | vialidad_red | count | count
+f | primaria | 906 | 158
+f | secundaria | 6176 | 1749
+t | secundaria | 4 | 4
+(3 filas)

@@ -1,0 +1,43 @@
+El despliegue de duración está activado.
+BEGIN
+Duración: 0.198 ms
+CREATE TABLE
+Duración: 11.770 ms
+INSERT 0 18515
+Duración: 48.794 ms
+ arboles_copia 
+---------------
+         18515
+(1 fila)
+
+Duración: 2.275 ms
+UPDATE 18515
+Duración: 118.536 ms
+UPDATE 18515
+Duración: 53359.854 ms (00:53.360)
+ comparados | distintos 
+------------+-----------
+      18515 |         0
+(1 fila)
+
+Duración: 107.050 ms
+INSERT 0 55545
+Duración: 441227.988 ms (07:21.228)
+ arboles_copia_x4 
+------------------
+            74060
+(1 fila)
+
+Duración: 81.367 ms
+UPDATE 74060
+Duración: 980.621 ms
+UPDATE 74060
+Duración: 102512.836 ms (01:42.513)
+ count 
+-------
+   200
+(1 fila)
+
+Duración: 176.619 ms
+ROLLBACK
+Duración: 41.468 ms

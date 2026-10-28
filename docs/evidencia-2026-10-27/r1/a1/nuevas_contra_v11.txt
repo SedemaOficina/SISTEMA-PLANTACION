@@ -1,0 +1,6 @@
+ 83  ctx100: la calle de cada árbol: el servidor simulado la pone a   20 s  DETENIDO: [renglón 7621]     at UtilityScript.<anonymous> (<anonymous>:1:44)
+ 84  ctx101: la jornada compartida (la abre la Coordinación; sus ca   72 s  DETENIDO: [renglón 7706]   - waiting for locator("#btn-jornada-apoyos")
+       FALLA en la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»  [renglón 7705]
+ 85  ctx102: abrir la jornada compartida desde el formulario y la f   38 s  DETENIDO: [renglón 7793]     at async <anonymous>:337:30
+
+tramos: 3 · comprobaciones: 0 · fallas: 1 · tramos detenidos: 3 (83, 84, 85) · 2 min

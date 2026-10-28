@@ -1,0 +1,25 @@
+{
+ "motor": "chromium",
+ "vuelta": "1",
+ "jornada": "c9069d85-c600-4038-9a28-b0e2ddd19d27",
+ "resultado": [
+  "OK    la lista de «Varios cabos» trae a los cabos de su institución · 12",
+  "OK    la jornada nace compartida en el servidor con los dos cabos · {\"estatus\": \"abierta\", \"apoyos\": [[\"a2a2a2a2-0000-4000-8000-000000000005\", null], [\"a2a2a2a2-0000-4000-8000-000000000006\", null]], \"arboles\": []}",
+  "OK    a los dos cabos les llega el aviso «Jornada compartida» al entrar con señal (segundos desde entrar) · {\"cabo2\": [2.6, \"Ahora es cabo de apoyo en la jornada compartida «Compartida r2 chromium 1», que coordina Revision Dos Coordinacion. Ya puede registrar en ella.\"], \"cabo3\": [4.9, \"Ahora es cabo de apoyo en la jornada compartida «Compartida r2 chromium 1», que coordina Revision Dos Coordinacion. Ya puede registrar en ella.\"]}",
+  "OK    los dos quedan en la jornada compartida",
+  "OK    el cabo de apoyo ve «Terminar mi parte»",
+  "OK    sin señal, los dos guardan su árbol en el teléfono · [\"2fe0ff79-b7e0-45f4-9e6b-d080f0d3df62\", \"95130167-6794-4670-9da2-4d30e36f7718\"]",
+  "OK    quedan en su cola por enviar · [2, 2]",
+  "OK    la franja del cabo 2 dice «1 suyo» · \"huehuete\\nPROVISIONAL · Miguel Hidalgo · Col. BOSQUES DE CHAPULTEPEC (POLANCO) · sin señal: se enviará solo\\n\\nCorregir\\nVer\"",
+  "OK    en el servidor el cabo 3 queda «quitado» · {\"estatus\": \"abierta\", \"apoyos\": [[\"a2a2a2a2-0000-4000-8000-000000000005\", null], [\"a2a2a2a2-0000-4000-8000-000000000006\", \"quitado\"]], \"arboles\": []}",
+  "OK    con señal llega al servidor el árbol del cabo 2 (segundos: 91.7) · {\"estatus\": \"abierta\", \"apoyos\": [[\"a2a2a2a2-0000-4000-8000-000000000005\", null], [\"a2a2a2a2-0000-4000-8000-000000000006\", \"quitado\"]], \"arboles\": [\"a2a2a2a2-0000-4000-8000-000000000005\"]}",
+  "OK    el árbol del cabo 3 (ya quitado, registrado sin señal antes de que lo quitaran): NO llegó al servidor · {\"cola3\": 2, \"rechazos\": [[\"registro.crear\", \"SIN_PERMISO\", \"No tiene permiso para registrar en esta jornada.\"]], \"pantalla\": [null, [], \"Con conexión · 1\"], \"en_el_telefono\": [\"activo\", \"c9069d85-c600-4038-9a28-b0e2ddd19d27\"], \"activa\": \"c9069d85-c600-4038-9a28-b0e2ddd19d27\"}",
+  "OK    «Terminar mi parte» pregunta con «1 árbol suyo» y el servidor lo anota · [\"¿Terminar su parte en «Compartida r2 chromium 1», con 1 árbol suyo?\", {\"estatus\": \"abierta\", \"apoyos\": [[\"a2a2a2a2-0000-4000-8000-000000000005\", \"terminado\"], [\"a2a2a2a2-0000-4000-8000-000000000006\", \"quitado\"]], \"arboles\": [\"a2a2a2a2-0000-4000-8000-000000000005\"]}]",
+  "OK    la jornada sale de la lista del cabo 2",
+  "OK    la ficha de la jornada del cabo 2 ofrece «Relevo de cabo» a la Coordinación",
+  "OK    el relevo queda en el servidor · {\"arbol\": null, \"jornada\": {\"estatus\": \"abierta\", \"reporte\": false, \"nombre\": \"Relevo r2 chromium 1\"}, \"fotos\": 0}",
+  "OK    sin señal, el teléfono del cabo 3 todavía no tiene el relevo",
+  "OK    al volver la señal el cabo 3 recibe la jornada en relevo, con su aviso · {\"aviso\": [1.1, \"Recibió la jornada «Relevo r2 chromium 1» en relevo de Revision Dos Cabo Dos: ya puede registrar en ella. Lo hizo Revision Dos Coordinacion el 27-OCT-2026 a las 15:48.\"], \"opciones_relevo\": 10}",
+  "OK    sin errores de página · []"
+ ]
+}

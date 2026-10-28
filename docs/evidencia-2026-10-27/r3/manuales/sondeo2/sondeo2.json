@@ -1,0 +1,60 @@
+{
+ "apoyo_franja": "JORNADA ACTIVA\n\nVer detalle\n\nPlaza cívica · El Mirador\nJornada compartida · coordina Estela Ramírez Demo\n9 de 60 árboles · 3 suyos\n\nCambiar jornada\nTerminar mi parte",
+ "ver_detalle": {
+  "antes": [
+   "registrar",
+   "Ver detalle"
+  ],
+  "despues": [
+   "registrar",
+   "Ocultar detalle"
+  ]
+ },
+ "terminar_dialogo": [
+  "Terminar mi parte ¿Terminar su parte en «Plaza cívica · El Mirador», con 3 árboles suyos? Lo que tenga por enviar se envía en cuanto haya señal. La jornada sale de su lista y ya no registra en ella. La Coordinación cierra la jornada y genera el reporte. Terminar mi parte Cancelar"
+ ],
+ "coord_vista": "registrar",
+ "coord_franja": "JORNADA ACTIVA\n\nVer detalle\n\nPlaza cívica · El Mirador\n9 de 60 árboles\n\nEditar jornada\nCambiar jornada\nCabos de apoyo\nCerrar jornada",
+ "apoyos_dialogo": [
+  "Cabos de apoyo Marque a los cabos de su institución que registran en «Plaza cívica · El Mirador». Con ellos, la jornada pasa a ser compartida. Cabos de Secretaría del Medio Ambiente (SEDEMA) Arturo Méndez Demo Fulana de Tal Ejemplo Julián Ortega Demo Marisol Pérez Demo Rocío Hernández Demo Tomás Díaz Demo Yolanda Cruz Demo Cómo funciona una jornada compartida La Coordinación la abre el mismo día del evento: una jornada no se puede abrir con fecha futura. Agregue aquí a los cabos antes de empezar a plantar, de preferencia en el punto de reunión. Cada cabo abre el sistema con señal un momento: así le llega la jornada a su teléfono. Todos registran a la vez; cada árbol queda a nombre de quien lo captura. Al acabar, cada cabo toca «Terminar mi parte». La Coordinación cierra la jornada y genera el reporte. Guardar: 2 cabos de apoyo"
+ ],
+ "apoyos_boton": "Guardar: 2 cabos de apoyo",
+ "cierre_dialogo": [
+  "Cerrar jornada ¿Cerrar la jornada «Plaza cívica · El Mirador» con 9 árboles? Queda pendiente: Rocío Hernández Demo no ha terminado su parte: 3 árboles recibidos, el último a las 08:35. Yolanda Cruz Demo no ha terminado su parte: 3 árboles recibidos, el último a las 08:47. 51 árboles por debajo de lo previsto (9 de 60). Se puede cerrar de todos modos. Si después llegan árboles de un cabo de apoyo, se quedan en su teléfono hasta que se reabra la jornada. Cerrar jornada Cancelar"
+ ],
+ "cierre_botones": [
+  "Cerrar jornada",
+  "Cancelar"
+ ],
+ "ficha": {
+  "jornada": "demo-j-00552",
+  "boton": "Marcar los 2 como revisados",
+  "botones": [
+   "Jornadas",
+   "Reabrir jornada",
+   "Editar jornada",
+   "Mapa",
+   "Conciliación",
+   "Puntos (22)",
+   "Marcar los 2 como revisados",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Ver",
+   "Está bien",
+   "Eliminar",
+   "Ver",
+   "Ver",
+   "Está bien"
+  ]
+ }
+}

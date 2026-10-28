@@ -1,0 +1,8 @@
+  8  Datos de demostración                                           130 s  DETENIDO: [renglón 2902]        - waiting 500ms
+ 54  ctx71: Nuevo registro compacto y tarjeta de jornada con avance   41 s  0 fallas de 8
+ 83  ctx100: la calle de cada árbol: el servidor simulado la pone a   70 s  0 fallas de 12
+ 84  ctx101: la jornada compartida (la abre la Coordinación; sus ca   92 s  DETENIDO: [renglón 7706]        - waiting 500ms
+       FALLA en la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»  [renglón 7705]
+ 85  ctx102: abrir la jornada compartida desde el formulario y la f   66 s  DETENIDO: [renglón 7829]     at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+tramos: 5 · comprobaciones: 20 · fallas: 1 · tramos detenidos: 3 (8, 84, 85) · 7 min

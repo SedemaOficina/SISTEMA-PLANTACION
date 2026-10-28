@@ -1,0 +1,34 @@
+[
+ {
+  "tramo": 8,
+  "renglon": 2890,
+  "nombre": "Datos de demostración",
+  "segundos": 137,
+  "comprobaciones": null,
+  "fallas": [],
+  "detenido": "[renglón 3020] FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\sia-rev\\\\tmp\\\\aud1027\\\\r1\\\\evidencia\\\\a1\\\\ajustada\\\\index.html'",
+  "final": "Traceback (most recent call last):\n  File \"<carpeta del usuario>\\AppData\\Local\\Temp\\srp_tramos_1dncu0qc\\tramo_08.py\", line 399, in <module>\n    for _n in ['index.html', 'sw.js', 'manifest.webmanifest']: _sh.copy(os.path.join(_app, _n), raiz22)\n                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\shutil.py\", line 435, in copy\n    copyfile(src, dst, follow_symlinks=follow_symlinks)\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\shutil.py\", line 260, in copyfile\n    with open(src, 'rb') as fsrc:\n         ^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\sia-rev\\\\tmp\\\\aud1027\\\\r1\\\\evidencia\\\\a1\\\\ajustada\\\\index.html'\n"
+ },
+ {
+  "tramo": 84,
+  "renglon": 7694,
+  "nombre": "ctx101: la jornada compartida (la abre la Coordinación; sus cabos de apoyo registran a la vez y terminan su parte) y la Coordinación con toda su institución",
+  "segundos": 97,
+  "comprobaciones": null,
+  "fallas": [
+   "FALLA quedan los dos cabos de apoyo, la ficha dice que es compartida, quién coordina y quiénes la apoyan, y el historial lo anota: {'apoyos': [['u-cabo-1', 'u-coord-1', None], ['u-demo-c4', 'u-coord-1', None]], 'sub': 'martes 27-OCT-2026 · Perengano Gómez Ejemplo\\nCuauhtémoc · Col. CENTRO IV · \\nprioridad\\nMuy alta · abierta', 'bit': ['Agrega: Fulana de Tal Ejemplo, Tomás Díaz Demo']}  [renglón 7723]"
+  ],
+  "detenido": "[renglón 7770]     at UtilityScript.<anonymous> (<anonymous>:1:44)",
+  "final": "FALLA quedan los dos cabos de apoyo, la ficha dice que es compartida, quién coordina y quiénes la apoyan, y el historial lo anota: {'apoyos': [['u-cabo-1', 'u-coord-1', None], ['u-demo-c4', 'u-coord-1', None]], 'sub': 'martes 27-OCT-2026 · Perengano Gómez Ejemplo\\nCuauhtémoc · Col. CENTRO IV · \\nprioridad\\nMuy alta · abierta', 'bit': ['Agrega: Fulana de Tal Ejemplo, Tomás Díaz Demo']}  [renglón 298]\nTraceback (most recent call last):\n  File \"<carpeta del usuario>\\AppData\\Local\\Temp\\srp_tramos_1dncu0qc\\tramo_84.py\", line 345, in <module>\n    u101 = pg101.evaluate(\"\"\"() => { SRP.usuarios.abrirFormulario(SRP.ref.usuarioPorId['u-coord-1']);\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py\", line 9413, in evaluate\n    self._sync(\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py\", line 474, in evaluate\n    return await self._main_frame.evaluate(expression, arg)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py\", line 346, in evaluate\n    await self._channel.send(\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 76, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<carpeta del usuario>\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 632, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.Error: Page.evaluate: TypeError: Cannot read properties of null (reading 'textContent')\n    at eval (eval at evaluate (:311:30), <anonymous>:3:118)\n    at UtilityScript.evaluate (<anonymous>:318:18)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n"
+ },
+ {
+  "tramo": 85,
+  "renglon": 7779,
+  "nombre": "ctx102: abrir la jornada compartida desde el formulario y la franja, el filtro «Tipo de jornada» y los datos de demostración con compartidas y relevos",
+  "segundos": 129,
+  "comprobaciones": 19,
+  "fallas": [],
+  "detenido": "",
+  "final": ""
+ }
+]

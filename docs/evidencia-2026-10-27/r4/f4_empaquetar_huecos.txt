@@ -1,0 +1,18 @@
+Parecen tener una dirección interna, una llave o una contraseña; no se armó el paquete:
+  deploy/notas.txt
+
+Revise cada uno. Si no lleva un secreto, anótelo en AVISOS-REVISADOS.txt con el motivo:
+cdd042b88cffda649d7c92b27a24db41789d7b136a890a864fc45be13e916802  deploy/notas.txt  <por qué no es un secreto>
+Versión 1.4.2
+126 archivos en el manifiesto
+Paquete: C:\sia-rev\tmp\aud1027\r4\paquete\prueba-empaquetador.zip
+Suma:    C:\sia-rev\tmp\aud1027\r4\paquete\prueba-empaquetador.zip.sha256
+Aviso revisado: app/vendor/jspdf.umd.min.js (la biblioteca de PDF: los nombres de sus propios campos de contraseña)
+Aviso revisado: backend/completos/src/db.ts (el archivo del SIA tal como está en su repositorio, con sus valores por omisión, más la conexión del SRP)
+--- lo que entrÃ³ al ZIP:
+        3  2026-10-27 15:32   prueba-empaquetador/.vscode/settings.json
+     5149  2026-10-27 15:32   prueba-empaquetador/app/js/datos-ficticios.js
+       79  2026-10-27 15:32   prueba-empaquetador/backend/.env
+       58  2026-10-27 15:32   prueba-empaquetador/datos/cuentas.csv
+     2048  2026-10-27 15:32   prueba-empaquetador/db/srp_respaldo.dump
+        1  2026-10-27 15:32   prueba-empaquetador/manual/captura-pantalla.png

@@ -1,0 +1,2 @@
+nginx: the configuration file C:/sia-rev/tmp/aud1027/r4/evidencia/nginx/conf/nginx.conf syntax is ok
+nginx: configuration file C:/sia-rev/tmp/aud1027/r4/evidencia/nginx/conf/nginx.conf test is successful

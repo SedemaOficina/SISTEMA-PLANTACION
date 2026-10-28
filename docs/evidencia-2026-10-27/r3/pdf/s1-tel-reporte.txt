@@ -1,0 +1,116 @@
+paginas 3
+{'/Producer': 'jsPDF 4.2.1', '/Title': 'Reporte de la jornada de plantación · 27-OCT-2026', '/Subject': 'Reporte de la jornada de plantación · 27-OCT-2026', '/Author': 'Secretaría del Medio Ambiente de la Ciudad de México', '/Creator': 'Sistema de Registro de Plantaciones 1.4.2', '/CreationDate': "D:20261027152614-06'00'"}
+--- pag 1
+REPORTE DE LA JORNADA DE PLANTACIÓN
+Jornada compartida, coordina: Estela Ramírez Demo
+Nombre de la jornada: Plaza cívica · El Mirador Día de la jornada: Martes 27 de octubre de 2026
+Cabos de apoyo: Rocío Hernández Demo (4 árboles) y
+Yolanda Cruz Demo (3 árboles)
+Alcaldía: Coyoacán
+Colonia: EL MIRADOR Programa: Reforestación Urbana
+Prioridad de reforestación: Media Árboles en otra colonia: 2 en Haciendas de Coyoacan,
+de prioridad media y 1 en
+Centro, de prioridad muy alta
+Institución que ejecuta: Secretaría del Medio Ambiente
+(SEDEMA)
+Hora de finalización: 13:30 h
+10
+árboles plantados
+60
+previstos en la jornada
+17 %
+de lo previsto
+7
+especies
+90 %
+nativas o endémicas
+1.  CROQUIS DE LA JORNADA
+Puntos numerados en el orden de la tabla de ejemplares. Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community · Vías: Esri, HERE, Garmin, ©
+OpenStreetMap contributors · Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community · Powered by Esri.
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 15:26 h
+Página 1 de 3
+--- pag 2
+2.  EJEMPLARES PLANTADOS
+N.º Especie Sitio Calle Precisión Cabo
+1 Fresno (Fraxinus uhdei) Macetón Sin calle a menos de 40 m ±5 m Rocío
+Hernández
+Demo
+2 Cedro blanco (Cupressus
+lusitanica)
+Suelo Calle Anáhuac, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±18 m Estela
+Ramírez
+Demo
+3 Mezquite (Neltuma laevigata) Suelo Calle Mirador, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±19 m Rocío
+Hernández
+Demo
+4 Encino Quiebra Hacha
+(Quercus rugosa)
+Suelo Calle Anáhuac, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±4 m Yolanda Cruz
+Demo
+5 Fresno (Fraxinus uhdei) Suelo Calle Mirador, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±13 m Estela
+Ramírez
+Demo
+6 Ahuehuete (Taxodium
+mucronatum)
+Suelo Calle Mirador, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±12 m Rocío
+Hernández
+Demo
+7 Encino Quiebra Hacha
+(Quercus rugosa)
+Suelo Calle Mirador, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±14 m Yolanda Cruz
+Demo
+8 Cedro blanco (Cupressus
+lusitanica)
+Suelo Calle Anáhuac, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±14 m Estela
+Ramírez
+Demo
+9 Jacaranda (Jacaranda
+mimosifolia)
+Suelo Calle Mirador, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±18 m Rocío
+Hernández
+Demo
+10 Colorín (Erythrina americana) Suelo Calle Anáhuac, entre Calzada del Hueso y
+Calle Hacienda Vista Hermosa
+±3 m Yolanda Cruz
+Demo
+Precisión del GPS: en verde, ±10 m o menos; en ámbar, hasta ±30 m; en rojo, más de ±30 m (conviene revisar el punto). «En el mapa» y «A mano» no tienen
+medida del GPS.
+3.  TOTALES POR ESPECIE
+Especie Distribución Ejemplares % del total
+Cedro blanco (Cupressus lusitanica) Nativa 2 20 %
+Encino Quiebra Hacha (Quercus rugosa) Nativa 2 20 %
+Fresno (Fraxinus uhdei) Nativa 2 20 %
+Ahuehuete (Taxodium mucronatum) Nativa 1 10 %
+Colorín (Erythrina americana) Endémica 1 10 %
+Jacaranda (Jacaranda mimosifolia) Exótica 1 10 %
+Mezquite (Neltuma laevigata) Nativa 1 10 %
+Total 10 100 %
+El conteo se calcula a partir de los registros del sistema; no se captura a mano.
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 15:26 h
+Página 2 de 3
+--- pag 3
+Distribución de las especies
+80 % 10 % 10 %
+Nativa: 80 % (8) Endémica: 10 % (1) Exótica: 10 % (1)
+Ubicados con GPS del teléfono: 10 de 10 (100 %).
+Cifra de ejemplares registrados en el sistema para esta jornada. No equivale necesariamente al total plantado en ella.
+Generado por Estela Ramírez Demo (Coordinador).
+Documento de prueba con datos ficticios. Sin validez oficial.
+SEDEMA, Sistema de Registro de Plantaciones. Generado el 27-OCT-2026, 15:26 h
+Página 3 de 3

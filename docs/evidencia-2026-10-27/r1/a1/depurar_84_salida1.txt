@@ -1,0 +1,32 @@
+FALLA en la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»  [renglón 278]
+ESTADO {
+ "jid": null,
+ "jornada": null,
+ "usuario": "u-coord-1",
+ "perfil": "COORDINADOR",
+ "permisos": {
+  "etiqueta": "Coordinador",
+  "alcance": "institucion",
+  "registrar": true,
+  "editar": true,
+  "eliminar": true,
+  "eliminarJornadaVacia": true,
+  "relevar": true,
+  "catalogos": false,
+  "usuarios": false,
+  "galeria": true,
+  "descripcion": "Registra, y ve, edita y elimina los registros de todos los cabos de su institución y los suyos. Elimina también las jornadas vacías, pasa una jornada abierta a otro cabo (relevo) y abre jornadas compartidas."
+ },
+ "compartir": null,
+ "relevo": null,
+ "guardada": null,
+ "vista": "jornadas",
+ "activa": "53bd5d8f-aa7b-4472-9703-0bb3430e012c",
+ "errores": "",
+ "panel": false,
+ "apoyosOculto": true,
+ "relevoOculto": true,
+ "dialogos": []
+}
+
+

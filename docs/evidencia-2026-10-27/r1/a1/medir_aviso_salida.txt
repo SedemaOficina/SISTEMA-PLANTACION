@@ -1,0 +1,4 @@
+  aviso 4.3 s · vuelve: no en 20 s
+corrida 1: demostración 20.0 s · página lista 1.6 s · aviso «Jornada compartida» 4.3 s después de recargar · ¿vuelve tras cerrarlo sin «Entendido»? no en 20 s · jornada activa 0.79 s después de «Iniciar jornada»
+  aviso 4.0 s · vuelve: no en 20 s
+corrida 2: demostración 14.7 s · página lista 1.3 s · aviso «Jornada compartida» 4.0 s después de recargar · ¿vuelve tras cerrarlo sin «Entendido»? no en 20 s · jornada activa 1.41 s después de «Iniciar jornada»

@@ -1,0 +1,35 @@
+·      Ensayo de instalación · EN SECO · 2026-10-27 15:39
+·      Paquete: C:\sia-rev\tmp\aud1027\r4\paquete\srp-sia-provisional
+OK     el paquete trae LEEME.md
+OK     el LEEME dice la versión del paquete (1.4.2)
+OK     MANIFIESTO.sha256: 120 archivos, 0 con otra suma o ausentes []
+OK     existe db/srp/instalar.sql
+OK     existe datos/srp-datos-arranque.sql
+OK     existe backend/srp.diff
+OK     existe deploy/srp-cuenta-inicial.mjs
+OK     existe servidor-web/srp.conf
+OK     existe app/index.html
+FALLA  el LEEME nombra el guion de la cuenta srp_api que trae el paquete (['10-srp-rol-y-grants.sql'])
+FALLA  el LEEME dice que se corre SELECT srp.recalcular_calles() después de la capa de calles
+FALLA  el LEEME dice que la capa territorio.calles va primero
+OK     srp_local tiene el esquema srp original (versión 1)
+·      otras conexiones abiertas a srp_local: 0
+·      huella de srp: 23 tablas, 83489 renglones
+OK     pg_dump del esquema srp (sólo estructura, en seco) → C:\sia-rev\tmp\aud1027\r4\ensayo-f5\srp_esquema_seco.dump 
+OK     pg_restore lee el respaldo y trae las 23 tablas de la huella
+·      verificación del paquete (10-srp-rol-y-grants.sql): 7 consultas que deben funcionar, 15 que deben fallar y el control global
+OK     copia desechable de sia-backend en la carpeta de trabajo 
+·      sia-backend vigente al 27-10-2026
+OK     backend/srp.diff aplica limpio (paso 3.3 del LEEME) 
+OK     backend/completos/ es idéntico, byte por byte, a sia-backend con el diff aplicado []
+OK     el package-lock de sia-backend es el mismo de la copia con dependencias (C:\sia-rev\tmp\v11-srp)
+OK     npm run typecheck sin errores (paso 3.4) > typecheck
+> tsc -p tsconfig.check.json
+OK     npm run build incluye el módulo en dist/index.mjs
+OK     «Revertir», paso 2: git apply -R backend/srp.diff aplica limpio 
+OK     … y sia-backend queda como estaba, sin rastro del módulo []
+OK     … y compila sin el módulo
+·      EN SECO: no se tocó la base. Con --ejecutar --confirmo-base-libre haría: DROP SCHEMA srp CASCADE; instalar.sql (dos veces: la segunda debe negarse); la verificación como srp_api; los datos de arranque dos veces; recalcular_calles; la primera cuenta (y que no se dé otra); el backend del SIA con el módulo en 3124 y la aplicación en 8124; la prueba de humo; «Revertir»; y restauraría el respaldo y compararía.
+FALLA  los puertos 3124 y 8124 están libres (en el ensayo de verdad se necesitan)
+
+25 comprobaciones, 4 fallas · bitácora en C:\sia-rev\tmp\aud1027\r4\ensayo-f5\bitacora-20261027-153933.txt

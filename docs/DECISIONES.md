@@ -4540,3 +4540,38 @@
     punto» y, para volver a ubicar, «Actualizar ubicación con mi posición». La página de la prueba en campo no lo
     decía en ningún paso.
   · Versión 1.4.2.
+
+- **D339. Lo que Liber decidió sobre la auditoría del 27-10-2026 (bloque 256).**
+  27-10-2026. La auditoría (`docs/AUDITORIA-2026-10-27.md`) dejó 22 preguntas en su sección 8. Liber eligió lo
+  recomendado en todas; en la 15 pidió dejarlo escrito para el SIA en el LEEME. Con los números de esa sección:
+  · **La jornada compartida.**
+    - 1 c: lo que un cabo de apoyo capturó mientras estaba en la jornada llega aunque lo hayan quitado; con la
+      jornada cerrada, el árbol espera y se envía solo al reabrirla; la ventana de cierre dice cuántos pueden
+      faltar.
+    - 2 a: la jornada compartida y la recibida en relevo se guardan en el teléfono mientras la persona registra en
+      ellas (excepción a D301).
+    - 3 a: no se elimina una compartida con cabos de apoyo vigentes.
+    - 7 a: los reenvíos de «Cabos de apoyo» y «Terminar mi parte» llevan lo que conocía el teléfono.
+    - 8 a: no hay relevo en una compartida.
+    - 9 b: en una compartida sólo la Coordinación mueve árboles.
+    - 19 b: el aviso de entrada sigue como ventana, con una marca para las pruebas.
+  · **Las cifras.**
+    - 4 a: «cabos que trabajaron» son los que tienen árboles en lo filtrado, sean titulares, de relevo o de apoyo.
+    - 5 a: una calle con tramos en dos redes se parte.
+    - 22 a: la primera carga, en 2 MB comprimida o menos.
+  · **El servidor y la seguridad.**
+    - 10 a: «Sustituir» revisa el permiso antes de responder.
+    - 11 a: la versión de la calle se lee de la tabla de versiones de capas del SIA.
+    - 12 a: el registro de entradas se borra solo al año, desde el servidor.
+    - 13 a: las sesiones cerradas, también un año.
+    - 14 a: el correo intentado sólo si tiene forma de correo.
+    - 15: el aviso de body-parser va en el LEEME, para que el SIA actualice su backend.
+    - 16 a: recalcular las calles por tandas.
+  · **La entrega.**
+    - 17 a: el SIA confirma por escrito que no tiene nada instalado y el instructivo dice «primera instalación».
+    - 18 a: `coordinadores_ids` se quita antes de la 1.0.0.
+    - 20 a: las diferencias de la calle de la versión de prueba se documentan.
+    - 21: la corrida de GitHub en verde se revisa al cerrar cada bloque, con su indicador en el README.
+  · **La pantalla.** 6 a: «Coordinación» y «Dirección» en todo.
+  · El plan de corrección de la sección 11 se sigue en orden. Las propuestas que cambian una pantalla se enseñan
+    antes con su antes y después.

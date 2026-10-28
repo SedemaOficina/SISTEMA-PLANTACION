@@ -1,0 +1,1 @@
+Otra Coordinación hace relevo a cabo1 (de apoyo) en la compartida de la titular: recibido · la titular registra en su jornada: rechazado:SIN_PERMISO No tiene permiso para registrar en esta jornada. · la otra Coordinación la devuelve a la titular: recibido · cabo1 (apoyo, ex relevo) ELIMINA la jornada vacía: recibido

@@ -1,0 +1,1242 @@
+{
+ "corrida": "2",
+ "fecha": "2026-10-27T20:59:26.686Z",
+ "total": 135,
+ "fallas": 3,
+ "casos": [
+  {
+   "n": 1,
+   "quien": "cx1 (Coord X)",
+   "que": "jornada.crear J",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 2,
+   "quien": "k1 (Cabo X)",
+   "que": "jornada.crear con cabos_apoyo/relevo_id/organizacion_id/cabo_id inyectados",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 3,
+   "quien": "k1 (Cabo X)",
+   "que": "… el servidor ignora lo inyectado (cabos_apoyo=[], relevo nulo, org=X, cabo=k1)",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 4,
+   "quien": "k1",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 5,
+   "quien": "k3",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 6,
+   "quien": "cx2",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 7,
+   "quien": "cy",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 8,
+   "quien": "ky",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 9,
+   "quien": "dx",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 10,
+   "quien": "dy",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 11,
+   "quien": "ds",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 12,
+   "quien": "ad",
+   "que": "jornada.compartir en J (titular cx1)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 13,
+   "quien": "k1",
+   "que": "jornada.compartir en su propia jornada (un cabo no comparte)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 14,
+   "quien": "cx1",
+   "que": "agregar un cabo de OTRA institución",
+   "esperado": "DATOS_INVALIDOS",
+   "observado": "DATOS_INVALIDOS",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 15,
+   "quien": "cx1",
+   "que": "agregar a otra Coordinación como cabo de apoyo",
+   "esperado": "DATOS_INVALIDOS",
+   "observado": "DATOS_INVALIDOS",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 16,
+   "quien": "cx1",
+   "que": "agregar a un Directivo como cabo de apoyo",
+   "esperado": "DATOS_INVALIDOS",
+   "observado": "DATOS_INVALIDOS",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 17,
+   "quien": "cx1",
+   "que": "agregar valores que no son identificadores (inyección)",
+   "esperado": "recibido(repetido)",
+   "observado": "recibido(repetido)",
+   "ok": true,
+   "nota": "se descartan; nada cambia"
+  },
+  {
+   "n": 18,
+   "quien": "cx1",
+   "que": "agregar k1 y k2 (cabos de X)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 19,
+   "quien": "—",
+   "que": "… quedan 2 vigentes",
+   "esperado": 2,
+   "observado": 2,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 20,
+   "quien": "k3",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 21,
+   "quien": "ky",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 22,
+   "quien": "cx1",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 23,
+   "quien": "cx2",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 24,
+   "quien": "cy",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 25,
+   "quien": "dx",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 26,
+   "quien": "ds",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 27,
+   "quien": "ad",
+   "que": "jornada.terminar en J sin ser cabo de apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 28,
+   "quien": "k1",
+   "que": "registro.crear en J (apoyo vigente)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 29,
+   "quien": "k2",
+   "que": "registro.crear en J (apoyo vigente)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 30,
+   "quien": "k3",
+   "que": "registro.crear en J sin ser titular ni apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 31,
+   "quien": "ky",
+   "que": "registro.crear en J sin ser titular ni apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 32,
+   "quien": "cx2",
+   "que": "registro.crear en J sin ser titular ni apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 33,
+   "quien": "cy",
+   "que": "registro.crear en J sin ser titular ni apoyo",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 34,
+   "quien": "dx",
+   "que": "registro.crear en J (perfil que no registra)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 35,
+   "quien": "ds",
+   "que": "registro.crear en J (perfil que no registra)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 36,
+   "quien": "ad",
+   "que": "registro.crear en J (perfil que no registra)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 37,
+   "quien": "k1",
+   "que": "jornada.terminar (apoyo vigente)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 38,
+   "quien": "k1",
+   "que": "jornada.terminar otra vez",
+   "esperado": "recibido(repetido)",
+   "observado": "recibido(repetido)",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 39,
+   "quien": "k1",
+   "que": "registro.crear en J después de terminar",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 40,
+   "quien": "cx1",
+   "que": "quitar a k2",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 41,
+   "quien": "k2",
+   "que": "registro.crear en J después de que lo quitaron",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 42,
+   "quien": "k2",
+   "que": "jornada.terminar después de que lo quitaron",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 43,
+   "quien": "k1",
+   "que": "jornada.editar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 44,
+   "quien": "k1",
+   "que": "jornada.cerrar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 45,
+   "quien": "k1",
+   "que": "jornada.revisar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 46,
+   "quien": "k1",
+   "que": "jornada.eliminar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 47,
+   "quien": "k1",
+   "que": "jornada.relevo J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 48,
+   "quien": "k1",
+   "que": "jornada.compartir J para volver a entrar",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 49,
+   "quien": "k1",
+   "que": "jornada.reporte J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 50,
+   "quien": "k2",
+   "que": "jornada.editar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 51,
+   "quien": "k2",
+   "que": "jornada.cerrar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 52,
+   "quien": "k2",
+   "que": "jornada.revisar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 53,
+   "quien": "k2",
+   "que": "jornada.eliminar J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 54,
+   "quien": "k2",
+   "que": "jornada.relevo J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 55,
+   "quien": "k2",
+   "que": "jornada.compartir J para volver a entrar",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 56,
+   "quien": "k2",
+   "que": "jornada.reporte J (fue apoyo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 57,
+   "quien": "k1",
+   "que": "registro.editar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 58,
+   "quien": "k1",
+   "que": "registro.eliminar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 59,
+   "quien": "k1",
+   "que": "registro.mover el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 60,
+   "quien": "k1",
+   "que": "registro.sustituir el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 61,
+   "quien": "k3",
+   "que": "registro.editar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 62,
+   "quien": "k3",
+   "que": "registro.eliminar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 63,
+   "quien": "k3",
+   "que": "registro.mover el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 64,
+   "quien": "k3",
+   "que": "registro.sustituir el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 65,
+   "quien": "ky",
+   "que": "registro.editar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 66,
+   "quien": "ky",
+   "que": "registro.eliminar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 67,
+   "quien": "ky",
+   "que": "registro.mover el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 68,
+   "quien": "ky",
+   "que": "registro.sustituir el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 69,
+   "quien": "cy",
+   "que": "registro.editar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 70,
+   "quien": "cy",
+   "que": "registro.eliminar el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 71,
+   "quien": "cy",
+   "que": "registro.mover el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 72,
+   "quien": "cy",
+   "que": "registro.sustituir el árbol de k2",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 73,
+   "quien": "dx",
+   "que": "registro.editar el árbol de k2 (Directivo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 74,
+   "quien": "ds",
+   "que": "registro.editar el árbol de k2 (Directivo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 75,
+   "quien": "k1",
+   "que": "registro.editar SU árbol después de terminar (por diseño: corrige los suyos)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 76,
+   "quien": "cx2",
+   "que": "registro.editar el árbol de k2 (Coord X, toda su institución: por diseño)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 77,
+   "quien": "k1",
+   "que": "GET /jornadas/J",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": "2 árboles"
+  },
+  {
+   "n": 78,
+   "quien": "k2",
+   "que": "GET /jornadas/J",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": "2 árboles"
+  },
+  {
+   "n": 79,
+   "quien": "k3",
+   "que": "GET /jornadas/J",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 80,
+   "quien": "ky",
+   "que": "GET /jornadas/J",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 81,
+   "quien": "cx1",
+   "que": "GET /jornadas/J",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": "2 árboles"
+  },
+  {
+   "n": 82,
+   "quien": "cx2",
+   "que": "GET /jornadas/J",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": "2 árboles"
+  },
+  {
+   "n": 83,
+   "quien": "cy",
+   "que": "GET /jornadas/J",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 84,
+   "quien": "dx",
+   "que": "GET /jornadas/J",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": "2 árboles"
+  },
+  {
+   "n": 85,
+   "quien": "dy",
+   "que": "GET /jornadas/J",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 86,
+   "quien": "ds",
+   "que": "GET /jornadas/J",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": "2 árboles"
+  },
+  {
+   "n": 87,
+   "quien": "ad",
+   "que": "GET /jornadas/J",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": "2 árboles"
+  },
+  {
+   "n": 88,
+   "quien": "k1",
+   "que": "… ve también el árbol de k2 (por diseño: quien fue apoyo ve todos)",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 89,
+   "quien": "k1",
+   "que": "GET /jornadas/no-es-uuid",
+   "esperado": 400,
+   "observado": 400,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 90,
+   "quien": "k1",
+   "que": "GET /jornadas/<uuid inexistente>",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 91,
+   "quien": "k3",
+   "que": "GET /jornadas/JK (jornada de otro cabo de su institución)",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 92,
+   "quien": "cy",
+   "que": "GET /jornadas/JK (Coordinación de otra institución)",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 93,
+   "quien": "cx2",
+   "que": "GET /jornadas/JK (Coordinación de su institución)",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 94,
+   "quien": "sin sesión",
+   "que": "GET /jornadas/J",
+   "esperado": 401,
+   "observado": 401,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 95,
+   "quien": "k1",
+   "que": "GET /jornadas lista J",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 96,
+   "quien": "k1",
+   "que": "GET /plantaciones lista el árbol de k2",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 97,
+   "quien": "k3",
+   "que": "GET /jornadas lista J",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 98,
+   "quien": "k3",
+   "que": "GET /plantaciones lista el árbol de k2",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 99,
+   "quien": "ky",
+   "que": "GET /jornadas lista J",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 100,
+   "quien": "ky",
+   "que": "GET /plantaciones lista el árbol de k2",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 101,
+   "quien": "cy",
+   "que": "GET /jornadas lista J",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 102,
+   "quien": "cy",
+   "que": "GET /plantaciones lista el árbol de k2",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 103,
+   "quien": "dy",
+   "que": "GET /jornadas lista J",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 104,
+   "quien": "dy",
+   "que": "GET /plantaciones lista el árbol de k2",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 105,
+   "quien": "cx2",
+   "que": "GET /jornadas lista J",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 106,
+   "quien": "cx2",
+   "que": "GET /plantaciones lista el árbol de k2",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 107,
+   "quien": "dx",
+   "que": "GET /jornadas lista J",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 108,
+   "quien": "dx",
+   "que": "GET /plantaciones lista el árbol de k2",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 109,
+   "quien": "k1",
+   "que": "GET /plantaciones/<árbol de k2>/historial",
+   "esperado": 200,
+   "observado": 200,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 110,
+   "quien": "k3",
+   "que": "GET /plantaciones/<árbol de k2>/historial",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 111,
+   "quien": "cy",
+   "que": "GET /plantaciones/<árbol de k2>/historial",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 112,
+   "quien": "dy",
+   "que": "GET /plantaciones/<árbol de k2>/historial",
+   "esperado": 404,
+   "observado": 404,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 113,
+   "quien": "k1",
+   "que": "GET /cuentas: ningún correo",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 114,
+   "quien": "k1",
+   "que": "GET /cuentas: ve a k2 (aparece en la compartida)",
+   "esperado": "sí",
+   "observado": "sí",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 115,
+   "quien": "k1",
+   "que": "GET /cuentas: no ve a k3 (no aparece en nada que vea)",
+   "esperado": "no",
+   "observado": "no",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 116,
+   "quien": "cy",
+   "que": "GET /cuentas: no ve cuentas de X",
+   "esperado": 0,
+   "observado": 0,
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 117,
+   "quien": "cy",
+   "que": "jornada.relevo J a k3 (Coord de otra institución)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 118,
+   "quien": "dx",
+   "que": "jornada.relevo J a k3 (Directivo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 119,
+   "quien": "cx2",
+   "que": "jornada.relevo J a ky (cabo de otra institución)",
+   "esperado": "DATOS_INVALIDOS",
+   "observado": "DATOS_INVALIDOS",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 120,
+   "quien": "cx2",
+   "que": "jornada.relevo J a k3 (otra Coord de X: por diseño, toda la institución)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 121,
+   "quien": "k3",
+   "que": "registro.crear en J como relevo",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 122,
+   "quien": "cx1",
+   "que": "registro.crear en J siendo titular con relevo puesto",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 123,
+   "quien": "k3",
+   "que": "jornada.compartir J siendo relevo (un cabo no comparte)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 124,
+   "quien": "cx2",
+   "que": "jornada.compartir J (Coord de X que no es titular)",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 125,
+   "quien": "cx1",
+   "que": "jornada.compartir J con relevo puesto: vuelve k2",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 126,
+   "quien": "k2",
+   "que": "registro.crear en J (vigente otra vez)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 127,
+   "quien": "k2",
+   "que": "registro.crear A3 en J",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 128,
+   "quien": "k2",
+   "que": "registro.eliminar A3 (su árbol)",
+   "esperado": "recibido",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 129,
+   "quien": "ky",
+   "que": "registro.sustituir A3 (eliminado, de otro cabo, de otra institución)",
+   "esperado": "SIN_PERMISO",
+   "observado": "NO_SUSTITUIBLE",
+   "ok": false,
+   "nota": "la respuesta trae el árbol completo: 42 campos, entre ellos cabo_id, lat, lng, comentarios=«R4 comentario privado de k2»"
+  },
+  {
+   "n": 130,
+   "quien": "cy",
+   "que": "registro.sustituir A3 (eliminado, de otro cabo, de otra institución)",
+   "esperado": "SIN_PERMISO",
+   "observado": "NO_SUSTITUIBLE",
+   "ok": false,
+   "nota": "la respuesta trae el árbol completo: 42 campos, entre ellos cabo_id, lat, lng, comentarios=«R4 comentario privado de k2»"
+  },
+  {
+   "n": 131,
+   "quien": "k3",
+   "que": "registro.sustituir A3 (eliminado, de otro cabo)",
+   "esperado": "SIN_PERMISO",
+   "observado": "NO_SUSTITUIBLE",
+   "ok": false,
+   "nota": "la respuesta trae el árbol completo: 42 campos, entre ellos cabo_id, lat, lng, comentarios=«R4 comentario privado de k2»"
+  },
+  {
+   "n": 132,
+   "quien": "cx1",
+   "que": "jornada.cerrar J (titular)",
+   "esperado": "recibido|DATOS_INVALIDOS|PUNTOS_SIN_REVISAR",
+   "observado": "recibido",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 133,
+   "quien": "k2",
+   "que": "jornada.terminar con J cerrada",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 134,
+   "quien": "k2",
+   "que": "registro.crear con J cerrada",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  },
+  {
+   "n": 135,
+   "quien": "cx1",
+   "que": "jornada.compartir con J cerrada",
+   "esperado": "SIN_PERMISO",
+   "observado": "SIN_PERMISO",
+   "ok": true,
+   "nota": ""
+  }
+ ],
+ "apoyos_final": {
+  "estatus": "cerrada",
+  "apoyos": [
+   [
+    "2f404d13-4ea9-482d-9ca8-249e1befa584",
+    "terminado"
+   ],
+   [
+    "6715e088-53c4-412e-b2e0-13c3853d6e17",
+    null
+   ]
+  ],
+  "arboles": [
+   "2f404d13-4ea9-482d-9ca8-249e1befa584",
+   "6715e088-53c4-412e-b2e0-13c3853d6e17",
+   "c0d8efed-78ca-4637-abc2-e559b6d59106",
+   "6715e088-53c4-412e-b2e0-13c3853d6e17"
+  ]
+ }
+}

@@ -1,0 +1,4 @@
+# Fin de renglón LF en todo el repositorio, también en un clon de Windows: las herramientas comparan texto
+* text=auto eol=lf
+# La evidencia de las auditorías se guarda tal como salió
+docs/evidencia-*/** -text

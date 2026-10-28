@@ -1,0 +1,137 @@
+ok      1 cx1 (Coord X)  jornada.crear J → esperado recibido, observado recibido
+ok      2 k1 (Cabo X)    jornada.crear con cabos_apoyo/relevo_id/organizacion_id/cabo_id inyectados → esperado recibido, observado recibido
+ok      3 k1 (Cabo X)    … el servidor ignora lo inyectado (cabos_apoyo=[], relevo nulo, org=X, cabo=k1) → esperado sí, observado sí
+ok      4 k1             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok      5 k3             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok      6 cx2            jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok      7 cy             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok      8 ky             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok      9 dx             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     10 dy             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     11 ds             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     12 ad             jornada.compartir en J (titular cx1) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     13 k1             jornada.compartir en su propia jornada (un cabo no comparte) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     14 cx1            agregar un cabo de OTRA institución → esperado DATOS_INVALIDOS, observado DATOS_INVALIDOS
+ok     15 cx1            agregar a otra Coordinación como cabo de apoyo → esperado DATOS_INVALIDOS, observado DATOS_INVALIDOS
+ok     16 cx1            agregar a un Directivo como cabo de apoyo → esperado DATOS_INVALIDOS, observado DATOS_INVALIDOS
+ok     17 cx1            agregar valores que no son identificadores (inyección) → esperado recibido(repetido), observado recibido(repetido) (se descartan; nada cambia)
+ok     18 cx1            agregar k1 y k2 (cabos de X) → esperado recibido, observado recibido
+ok     19 —              … quedan 2 vigentes → esperado 2, observado 2
+ok     20 k3             jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     21 ky             jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     22 cx1            jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     23 cx2            jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     24 cy             jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     25 dx             jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     26 ds             jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     27 ad             jornada.terminar en J sin ser cabo de apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     28 k1             registro.crear en J (apoyo vigente) → esperado recibido, observado recibido
+ok     29 k2             registro.crear en J (apoyo vigente) → esperado recibido, observado recibido
+ok     30 k3             registro.crear en J sin ser titular ni apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     31 ky             registro.crear en J sin ser titular ni apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     32 cx2            registro.crear en J sin ser titular ni apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     33 cy             registro.crear en J sin ser titular ni apoyo → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     34 dx             registro.crear en J (perfil que no registra) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     35 ds             registro.crear en J (perfil que no registra) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     36 ad             registro.crear en J (perfil que no registra) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     37 k1             jornada.terminar (apoyo vigente) → esperado recibido, observado recibido
+ok     38 k1             jornada.terminar otra vez → esperado recibido(repetido), observado recibido(repetido)
+ok     39 k1             registro.crear en J después de terminar → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     40 cx1            quitar a k2 → esperado recibido, observado recibido
+ok     41 k2             registro.crear en J después de que lo quitaron → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     42 k2             jornada.terminar después de que lo quitaron → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     43 k1             jornada.editar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     44 k1             jornada.cerrar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     45 k1             jornada.revisar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     46 k1             jornada.eliminar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     47 k1             jornada.relevo J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     48 k1             jornada.compartir J para volver a entrar → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     49 k1             jornada.reporte J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     50 k2             jornada.editar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     51 k2             jornada.cerrar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     52 k2             jornada.revisar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     53 k2             jornada.eliminar J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     54 k2             jornada.relevo J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     55 k2             jornada.compartir J para volver a entrar → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     56 k2             jornada.reporte J (fue apoyo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     57 k1             registro.editar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     58 k1             registro.eliminar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     59 k1             registro.mover el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     60 k1             registro.sustituir el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     61 k3             registro.editar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     62 k3             registro.eliminar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     63 k3             registro.mover el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     64 k3             registro.sustituir el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     65 ky             registro.editar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     66 ky             registro.eliminar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     67 ky             registro.mover el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     68 ky             registro.sustituir el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     69 cy             registro.editar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     70 cy             registro.eliminar el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     71 cy             registro.mover el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     72 cy             registro.sustituir el árbol de k2 → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     73 dx             registro.editar el árbol de k2 (Directivo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     74 ds             registro.editar el árbol de k2 (Directivo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok     75 k1             registro.editar SU árbol después de terminar (por diseño: corrige los suyos) → esperado recibido, observado recibido
+ok     76 cx2            registro.editar el árbol de k2 (Coord X, toda su institución: por diseño) → esperado recibido, observado recibido
+ok     77 k1             GET /jornadas/J → esperado 200, observado 200 (2 árboles)
+ok     78 k2             GET /jornadas/J → esperado 200, observado 200 (2 árboles)
+ok     79 k3             GET /jornadas/J → esperado 404, observado 404
+ok     80 ky             GET /jornadas/J → esperado 404, observado 404
+ok     81 cx1            GET /jornadas/J → esperado 200, observado 200 (2 árboles)
+ok     82 cx2            GET /jornadas/J → esperado 200, observado 200 (2 árboles)
+ok     83 cy             GET /jornadas/J → esperado 404, observado 404
+ok     84 dx             GET /jornadas/J → esperado 200, observado 200 (2 árboles)
+ok     85 dy             GET /jornadas/J → esperado 404, observado 404
+ok     86 ds             GET /jornadas/J → esperado 200, observado 200 (2 árboles)
+ok     87 ad             GET /jornadas/J → esperado 200, observado 200 (2 árboles)
+ok     88 k1             … ve también el árbol de k2 (por diseño: quien fue apoyo ve todos) → esperado sí, observado sí
+ok     89 k1             GET /jornadas/no-es-uuid → esperado 400, observado 400
+ok     90 k1             GET /jornadas/<uuid inexistente> → esperado 404, observado 404
+ok     91 k3             GET /jornadas/JK (jornada de otro cabo de su institución) → esperado 404, observado 404
+ok     92 cy             GET /jornadas/JK (Coordinación de otra institución) → esperado 404, observado 404
+ok     93 cx2            GET /jornadas/JK (Coordinación de su institución) → esperado 200, observado 200
+ok     94 sin sesión     GET /jornadas/J → esperado 401, observado 401
+ok     95 k1             GET /jornadas lista J → esperado sí, observado sí
+ok     96 k1             GET /plantaciones lista el árbol de k2 → esperado sí, observado sí
+ok     97 k3             GET /jornadas lista J → esperado no, observado no
+ok     98 k3             GET /plantaciones lista el árbol de k2 → esperado no, observado no
+ok     99 ky             GET /jornadas lista J → esperado no, observado no
+ok    100 ky             GET /plantaciones lista el árbol de k2 → esperado no, observado no
+ok    101 cy             GET /jornadas lista J → esperado no, observado no
+ok    102 cy             GET /plantaciones lista el árbol de k2 → esperado no, observado no
+ok    103 dy             GET /jornadas lista J → esperado no, observado no
+ok    104 dy             GET /plantaciones lista el árbol de k2 → esperado no, observado no
+ok    105 cx2            GET /jornadas lista J → esperado sí, observado sí
+ok    106 cx2            GET /plantaciones lista el árbol de k2 → esperado sí, observado sí
+ok    107 dx             GET /jornadas lista J → esperado sí, observado sí
+ok    108 dx             GET /plantaciones lista el árbol de k2 → esperado sí, observado sí
+ok    109 k1             GET /plantaciones/<árbol de k2>/historial → esperado 200, observado 200
+ok    110 k3             GET /plantaciones/<árbol de k2>/historial → esperado 404, observado 404
+ok    111 cy             GET /plantaciones/<árbol de k2>/historial → esperado 404, observado 404
+ok    112 dy             GET /plantaciones/<árbol de k2>/historial → esperado 404, observado 404
+ok    113 k1             GET /cuentas: ningún correo → esperado sí, observado sí
+ok    114 k1             GET /cuentas: ve a k2 (aparece en la compartida) → esperado sí, observado sí
+ok    115 k1             GET /cuentas: no ve a k3 (no aparece en nada que vea) → esperado no, observado no
+ok    116 cy             GET /cuentas: no ve cuentas de X → esperado 0, observado 0
+ok    117 cy             jornada.relevo J a k3 (Coord de otra institución) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok    118 dx             jornada.relevo J a k3 (Directivo) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok    119 cx2            jornada.relevo J a ky (cabo de otra institución) → esperado DATOS_INVALIDOS, observado DATOS_INVALIDOS
+ok    120 cx2            jornada.relevo J a k3 (otra Coord de X: por diseño, toda la institución) → esperado recibido, observado recibido
+ok    121 k3             registro.crear en J como relevo → esperado recibido, observado recibido
+ok    122 cx1            registro.crear en J siendo titular con relevo puesto → esperado SIN_PERMISO, observado SIN_PERMISO
+ok    123 k3             jornada.compartir J siendo relevo (un cabo no comparte) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok    124 cx2            jornada.compartir J (Coord de X que no es titular) → esperado SIN_PERMISO, observado SIN_PERMISO
+ok    125 cx1            jornada.compartir J con relevo puesto: vuelve k2 → esperado recibido, observado recibido
+ok    126 k2             registro.crear en J (vigente otra vez) → esperado recibido, observado recibido
+ok    127 k2             registro.crear A3 en J → esperado recibido, observado recibido
+ok    128 k2             registro.eliminar A3 (su árbol) → esperado recibido, observado recibido
+FALLA 129 ky             registro.sustituir A3 (eliminado, de otro cabo, de otra institución) → esperado SIN_PERMISO, observado NO_SUSTITUIBLE (la respuesta trae el árbol completo: 42 campos, entre ellos cabo_id, lat, lng, comentarios=«R4 comentario privado de k2»)
+FALLA 130 cy             registro.sustituir A3 (eliminado, de otro cabo, de otra institución) → esperado SIN_PERMISO, observado NO_SUSTITUIBLE (la respuesta trae el árbol completo: 42 campos, entre ellos cabo_id, lat, lng, comentarios=«R4 comentario privado de k2»)
+FALLA 131 k3             registro.sustituir A3 (eliminado, de otro cabo) → esperado SIN_PERMISO, observado NO_SUSTITUIBLE (la respuesta trae el árbol completo: 42 campos, entre ellos cabo_id, lat, lng, comentarios=«R4 comentario privado de k2»)
+ok    132 cx1            jornada.cerrar J (titular) → esperado recibido|DATOS_INVALIDOS|PUNTOS_SIN_REVISAR, observado recibido
+ok    133 k2             jornada.terminar con J cerrada → esperado SIN_PERMISO, observado SIN_PERMISO
+ok    134 k2             registro.crear con J cerrada → esperado SIN_PERMISO, observado SIN_PERMISO
+ok    135 cx1            jornada.compartir con J cerrada → esperado SIN_PERMISO, observado SIN_PERMISO
+
+135 casos, 3 fuera de lo esperado

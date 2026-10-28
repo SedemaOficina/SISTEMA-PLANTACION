@@ -1,0 +1,31 @@
+== db/srp: archivos del paquete 1.1 vs servidor/db/srp de 1eb30e6
+9c9,10
+< 09-srp-rol-y-grants.sql
+---
+> 09-srp-calles.sql
+> 10-srp-rol-y-grants.sql
+01-srp-esquema.sql renglones distintos: 2
+02-srp-tablas.sql renglones distintos: 42
+03-srp-acceso.sql renglones distintos: 0
+04-srp-sobre-territorio.sql renglones distintos: 0
+05-srp-fotografias.sql renglones distintos: 0
+06-srp-parametros.sql renglones distintos: 0
+07-srp-duplicados.sql renglones distintos: 0
+08-srp-cargas.sql renglones distintos: 0
+09-srp-rol-y-grants (paquete) vs 10-srp-rol-y-grants (hoy): 11 renglones distintos
+== deploy
+srp-cuenta-inicial.mjs
+== servidor-web
+srp.conf
+== backend módulo
+21
+cambia: bitacora.ts
+cambia: consultas.ts
+cambia: cuentas.ts
+cambia: permisos.ts
+cambia: recepcion-apoyo.ts
+cambia: recepcion-arboles.ts
+cambia: recepcion-jornadas.ts
+cambia: recepcion.ts
+== app
+1.1

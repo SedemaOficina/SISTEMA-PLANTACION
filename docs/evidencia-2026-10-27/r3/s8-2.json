@@ -1,0 +1,71 @@
+{
+ "sw": [
+  false,
+  false,
+  false
+ ],
+ "coord_al_entrar": [],
+ "coord_cabos_en_lista": 12,
+ "coord_alto_formulario": {
+  "palabras": 145,
+  "botones": 21,
+  "campos": 8,
+  "alto": 1763
+ },
+ "coord_aviso_inicio": "Jornada compartida «Evento real r3 2» iniciada con 2 cabos de apoyo: les llega a su teléfono la próxima vez que tengan señal. Ya puede registrar árboles.",
+ "coord_tras_iniciar": [],
+ "jornada": "47f21db1-1b69-4a19-b40b-8a356d4ac470",
+ "cabo1_al_entrar": [
+  "Jornada compartida\n\nAhora es cabo de apoyo en la jornada compartida «Evento real r3 2», que coordina Coordinación Revisión Tres. Ya puede registrar en ella.\n\nCómo funciona:\n\nRegistran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.\nUsted corrige sólo sus árboles.\nAl acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.\nLa Coordinación cierra la jornada y genera el reporte.\nEntendido"
+ ],
+ "cabo1_franja": "Evento real r3 2\nJornada compartida · coordina Coordinación Revisión Tres\n0 de 20 árboles · 0 suyos",
+ "cabo1_activa": "47f21db1-1b69-4a19-b40b-8a356d4ac470",
+ "cabo1_arbol": "c2163005-1f00-4ce7-ac42-a51884a15ab2",
+ "cabo1_detalle_calle": [
+  "ok",
+  "Calle 1 Guadalupe Magaña",
+  "maceton",
+  "IZP-078-00215"
+ ],
+ "cabo1_terminar": [
+  "Terminar mi parte\n\n¿Terminar su parte en «Evento real r3 2», con 1 árbol suyo?\n\nLo que tenga por enviar se envía en cuanto haya señal.\nLa jornada sale de su lista y ya no registra en ella.\nLa Coordinación cierra la jornada y genera el reporte.\nTerminar mi parte\nCancelar"
+ ],
+ "cabo1_aviso_terminar": "Terminó su parte en «Evento real r3 2», con 1 árbol suyo.",
+ "cabo2_al_entrar": [
+  "Jornada compartida\n\nAhora es cabo de apoyo en las jornadas compartidas «Evento real r3 2», que coordina Coordinación Revisión Tres y «Evento real r3 1», que coordina Coordinación Revisión Tres. Ya puede registrar en ellas.\n\nCómo funciona:\n\nRegistran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.\nUsted corrige sólo sus árboles.\nAl acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.\nLa Coordinación cierra la jornada y genera el reporte.\nEntendido"
+ ],
+ "cabo2_activa_con_senal": "47f21db1-1b69-4a19-b40b-8a356d4ac470",
+ "cabo2_arbol_con_senal": "c51a7f69-8e9f-4d10-9189-f5f678ab9b02",
+ "cabo2_jornada_local_antes": false,
+ "cabo2_sin_senal_al_recargar": [],
+ "cabo2_sin_senal_tras_recargar": {
+  "activa": null,
+  "franja": "",
+  "panel_iniciar": true,
+  "abiertas": []
+ },
+ "cabo2_con_senal_otra_vez": [],
+ "cabo2_activa_con_senal_otra_vez": "47f21db1-1b69-4a19-b40b-8a356d4ac470",
+ "cabo2_arbol_sin_senal": "2445c873-dc11-403b-8068-b5c2e6cfe786",
+ "cabo2_cola": 1,
+ "coord_cerrar": [
+  "Cerrar jornada\n\n¿Cerrar la jornada «Evento real r3 2» con 2 árboles?\n\nQueda pendiente:\n\nCabo Dos Revisión no ha terminado su parte: 1 árbol recibido, a las 16:15.\n18 árboles por debajo de lo previsto (2 de 20).\n\nSe puede cerrar de todos modos. Si después llegan árboles de un cabo de apoyo, se quedan en su teléfono hasta que se reabra la jornada.\n\nCerrar jornada\nCancelar"
+ ],
+ "coord_tras_cerrar": [],
+ "srv_tras_cerrar": [
+  200,
+  "{\"jornada\":{\"id\":\"47f21db1-1b69-4a19-b40b-8a356d4ac470\",\"lat\":19.357,\"lng\":-99.06,\"hora\":\"\",\"apoyo\":\"\",\"fecha\":\"2026-10-27\",\"chofer\":\"\",\"nombre\":\"Evento real r3 2\",\"cabo_id\":\"64780c3e-15e9-5611-aeac-e4f211a6affa\",\"colonia\":\"VICENTE GUERRERO SUPER MANZANA 7 (U HAB)\",\"estatus\":\"cerrada\",\"relevos\":[],\""
+ ],
+ "cabo2_tras_senal": {
+  "cola": 1,
+  "aviso": "El servidor no aceptó 1 cambio. No tiene permiso para registrar en esta jornada. Revíselo con «Revisar», arriba.",
+  "dialogos": [],
+  "arbol": {
+   "folio": null,
+   "estado": null
+  },
+  "rechazos": null,
+  "conexion": null
+ },
+ "errores": []
+}

@@ -1,0 +1,265 @@
+{
+ "ids": {
+  "comp": "demo-j-01431",
+  "rel": "demo-j-01452",
+  "cerradaQuitado": null,
+  "apoyosCerrada": null
+ },
+ "coord_comp_abrir": "demo-j-01431",
+ "coord_comp_ficha": "Jornadas\nPlaza cívica · El Mirador\n\nmartes 27-OCT-2026 · Estela Ramírez Demo (Coordinación)\nCoyoacán · \nprioridad\nMedia · abierta · compartida · 2 árboles en otra colonia, de prioridad media\nCabos de apoyo: Rocío Hernández Demo, Yolanda Cruz Demo\n\nRegistrar\n(paso actual)\nCerrar\nRevisar\nReporte\nCerrar jornada\nEditar jornada\nCabos de apoyo\nMapa\nConciliación\nPuntos (9)\nMapa\n1\n2\n3\n4\n5\n6\n7\n8\n9\n+\n−\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n\nCorrecto\n\nConciliación\n60\nprevistos\n9\nregistrados\n\nEn curso: 9 de 60 (faltan 51).\n\nHorario: 08:18 a 08:47 (29 min) · 4 min entre árbol y árbol en promedio\n\nPuntos (9)\n1\nPunto 1:\nCedro blanco\n08:18 · GPS ±18 m\nVer\n2\nPunto 2:\nFresno\n08:24 · GPS ±13 m\nVer\n3\nPunto 3:\nMezquite\n08:26 · Rocío Hernández Demo · GPS ±19 m\nVer\n4\nPunto 4:\nCedro blanco\n08:28 · GPS ±14 m\nVer\n5\nPunto 5:\nEncino Quiebra Hacha\n08:29 · Yolanda Cruz Demo · GPS ±4 m\nVer\n6\nPunto 6:\nAhuehuete\n08:30 · Rocío Hernández Demo · GPS ±12 m\nVer\n7\nPunto 7:\nJacaranda\n08:35 · Rocío Hernández Demo · GPS ±18 m\nVer\n8\nPunto 8:\nEncino Quiebra Hacha\n08:38 · Yolanda Cruz Demo · GPS ±14 m\nVer\n9\nPunto 9:\nColorín\n08:47 · Yolanda Cruz Demo · GPS ±3 m\nVer\nLo que viaja a la base de datos\nRegistrar árbol",
+ "coord_comp_botones": [
+  "Jornadas [btn-texto volver]",
+  "Cerrar jornada [btn-chico btn-primario]",
+  "Editar jornada [btn-editar btn-chico]",
+  "Cabos de apoyo [btn-secundario btn-chico]",
+  "Mapa []",
+  "Conciliación []",
+  "Puntos (9) []",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Registrar árbol [btn-primario]"
+ ],
+ "coord_rel_abrir": "demo-j-01452",
+ "coord_rel_ficha": "Jornadas\nJardín · Obrera Iv\n\nmartes 27-OCT-2026 · Julián Ortega Demo (titular) · relevo: Marisol Pérez Demo\nCuauhtémoc · \nprioridad\nMedia · abierta\n\nRegistrar\n(hecho)\nCerrar\n(paso actual)\nRevisar\nReporte\nEditar jornada\nRelevo de cabo\nMapa\nConciliación\nPuntos (5)\nMapa\n1\n2\n3\n4\n5\n+\n−\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n\nCorrecto\n\nConciliación\n5\nprevistos\n5\nregistrados\n\nCuadra: 5 previstos y 5 registrados.\n\nHorario: 08:18 a 09:05 (47 min) · 12 min entre árbol y árbol en promedio\n\nPuntos (5)\n1\nPunto 1:\nColorín\n08:18 · GPS ±17 m\nVer\n2\nPunto 2:\nLiquidámbar\n08:30 · Marisol Pérez Demo · GPS ±5 m\nVer\n3\nPunto 3:\nLiquidámbar\n08:37 · Marisol Pérez Demo · GPS ±15 m\nVer\n4\nPunto 4:\nPalo loco\n08:51 · Marisol Pérez Demo · GPS ±13 m\nVer\n5\nPunto 5:\nLiquidámbar\n09:05 · Marisol Pérez Demo · GPS ±8 m\nVer\nLo que viaja a la base de datos\nCerrar jornada",
+ "coord_rel_botones": [
+  "Jornadas [btn-texto volver]",
+  "Editar jornada [btn-editar btn-chico]",
+  "Relevo de cabo [btn-secundario btn-chico]",
+  "Mapa []",
+  "Conciliación []",
+  "Puntos (5) []",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Cerrar jornada [btn-primario]"
+ ],
+ "apoyo_comp_abrir": "demo-j-01431",
+ "apoyo_comp_ficha": "Jornadas\nPlaza cívica · El Mirador\n\nmartes 27-OCT-2026 · Estela Ramírez Demo (Coordinación)\nCoyoacán · \nprioridad\nMedia · abierta · compartida · 2 árboles en otra colonia, de prioridad media\nCabos de apoyo: Rocío Hernández Demo, Yolanda Cruz Demo\n\nRegistrar\n(paso actual)\nCerrar\nRevisar\nReporte\nMapa\nConciliación\nPuntos (9)\nMapa\n1\n2\n3\n4\n5\n6\n7\n8\n9\n+\n−\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n\nCorrecto\n\nConciliación\n60\nprevistos\n9\nregistrados\n\nEn curso: 9 de 60 (faltan 51).\n\nHorario: 08:18 a 08:47 (29 min) · 4 min entre árbol y árbol en promedio\n\nPuntos (9)\n1\nPunto 1:\nCedro blanco\n08:18 · GPS ±18 m\nVer\n2\nPunto 2:\nFresno\n08:24 · GPS ±13 m\nVer\n3\nPunto 3:\nMezquite\n08:26 · Rocío Hernández Demo · GPS ±19 m\nVer\n4\nPunto 4:\nCedro blanco\n08:28 · GPS ±14 m\nVer\n5\nPunto 5:\nEncino Quiebra Hacha\n08:29 · Yolanda Cruz Demo · GPS ±4 m\nVer\n6\nPunto 6:\nAhuehuete\n08:30 · Rocío Hernández Demo · GPS ±12 m\nVer\n7\nPunto 7:\nJacaranda\n08:35 · Rocío Hernández Demo · GPS ±18 m\nVer\n8\nPunto 8:\nEncino Quiebra Hacha\n08:38 · Yolanda Cruz Demo · GPS ±14 m\nVer\n9\nPunto 9:\nColorín\n08:47 · Yolanda Cruz Demo · GPS ±3 m\nVer\nLo que viaja a la base de datos\n\nSiguiente: registrar los árboles que faltan (lo hace el cabo) (9 de 60).",
+ "apoyo_comp_botones": [
+  "Jornadas [btn-texto volver]",
+  "Mapa []",
+  "Conciliación []",
+  "Puntos (9) []",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]"
+ ],
+ "apoyo_rel_abrir": "no está en la lista",
+ "apoyo_rel_ficha": "\n      Jornadas\n      Plaza cívica · El Mirador\n      martes 27-OCT-2026 · Estela Ramírez Demo (Coordinación)Coyoacán · prioridad Media · abierta · compartida · 2 árboles en otra colonia, de prioridad mediaCabos de apoyo: Rocío Hernández Demo, Yolanda Cruz Demo\n      \n      \n      Registrar (paso actual)CerrarRevisarReporte\n      \n      \n        Cerrar jornada\n        Editar jornada\n        Relevo de cabo\n        Cabos de apoyo\n        Eliminar jornada\n      \n      \n      \n        Mapa\n        Conciliación\n        Puntos (9)\n      \n      \n      \n      \n      Mapa\n      123456789+−Mapa baseSatéliteCallesColonias de la jornadaOpacidad 45 %Leaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n      CorrectoPor revisarLejos del restoRevisadoSustituto\n      \n      \n      \n      \n      Conciliación\n      \n        \n          60 previstos\n          9 registrados\n        \n        En curso: 9 de 60 (faltan 51).\n        \n        Horario: 08:18 a 08:47 (29 min) · 4 min entre árbol y árbol en promedio\n        Marcar todos como revisados\n      \n      Puntos (9)\n      1Punto 1: Cedro blanco08:18 · GPS ±18 mVer2Punto 2: Fresno08:24 · GPS ±13 mVer3Punto 3: Mezquite08:26 · Rocío Hernández Demo · GPS ±19 mVer4Punto 4: Cedro blanco08:28 · GPS ±14 mVer5Punto 5: Encino Quiebra Hacha08:29 · Yolanda Cruz Demo · GPS ±4 mVerEditarMover a otra jornadaSustituirEliminar6Punto 6: Ahuehuete08:30 · Rocío Hernández Demo · GPS ±12 mVer7Punto 7: Jacaranda08:35 · Rocío Hernández Demo · GPS ±18 mVer8Punto 8: Encino Quiebra Hacha08:38 · Yolanda Cruz Demo · GPS ±14 mVerEditarMov",
+ "apoyo_rel_botones": [
+  "Filtros [btn-secundario btn-filtros]",
+  "Atrás [btn-secundario btn-chico]",
+  "1 [btn-secundario btn-chico paginador-num]",
+  "2 [btn-secundario btn-chico paginador-num]",
+  "3 [btn-secundario btn-chico paginador-num]",
+  "12 [btn-secundario btn-chico paginador-num]",
+  "Siguiente [btn-secundario btn-chico]"
+ ],
+ "dir_comp_abrir": "demo-j-01431",
+ "dir_comp_ficha": "Jornadas\nPlaza cívica · El Mirador\n\nmartes 27-OCT-2026 · Estela Ramírez Demo (Coordinación)\nCoyoacán · \nprioridad\nMedia · abierta · compartida · 2 árboles en otra colonia, de prioridad media\nCabos de apoyo: Rocío Hernández Demo, Yolanda Cruz Demo\n\nRegistrar\n(paso actual)\nCerrar\nRevisar\nReporte\nMapa\nConciliación\nPuntos (9)\nMapa\n1\n2\n3\n4\n5\n6\n7\n8\n9\n+\n−\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n\nCorrecto\n\nConciliación\n60\nprevistos\n9\nregistrados\n\nEn curso: 9 de 60 (faltan 51).\n\nHorario: 08:18 a 08:47 (29 min) · 4 min entre árbol y árbol en promedio\n\nPuntos (9)\n1\nPunto 1:\nCedro blanco\n08:18 · GPS ±18 m\nVer\n2\nPunto 2:\nFresno\n08:24 · GPS ±13 m\nVer\n3\nPunto 3:\nMezquite\n08:26 · Rocío Hernández Demo · GPS ±19 m\nVer\n4\nPunto 4:\nCedro blanco\n08:28 · GPS ±14 m\nVer\n5\nPunto 5:\nEncino Quiebra Hacha\n08:29 · Yolanda Cruz Demo · GPS ±4 m\nVer\n6\nPunto 6:\nAhuehuete\n08:30 · Rocío Hernández Demo · GPS ±12 m\nVer\n7\nPunto 7:\nJacaranda\n08:35 · Rocío Hernández Demo · GPS ±18 m\nVer\n8\nPunto 8:\nEncino Quiebra Hacha\n08:38 · Yolanda Cruz Demo · GPS ±14 m\nVer\n9\nPunto 9:\nColorín\n08:47 · Yolanda Cruz Demo · GPS ±3 m\nVer\nLo que viaja a la base de datos\n\nSiguiente: registrar los árboles que faltan (lo hace el cabo) (9 de 60).",
+ "dir_comp_botones": [
+  "Jornadas [btn-texto volver]",
+  "Mapa []",
+  "Conciliación []",
+  "Puntos (9) []",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]"
+ ],
+ "dir_rel_abrir": "demo-j-01452",
+ "dir_rel_ficha": "Jornadas\nJardín · Obrera Iv\n\nmartes 27-OCT-2026 · Julián Ortega Demo (titular) · relevo: Marisol Pérez Demo\nCuauhtémoc · \nprioridad\nMedia · abierta\n\nRegistrar\n(hecho)\nCerrar\n(paso actual)\nRevisar\nReporte\nMapa\nConciliación\nPuntos (5)\nMapa\n1\n2\n3\n4\n5\n+\n−\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n\nCorrecto\n\nConciliación\n5\nprevistos\n5\nregistrados\n\nCuadra: 5 previstos y 5 registrados.\n\nHorario: 08:18 a 09:05 (47 min) · 12 min entre árbol y árbol en promedio\n\nPuntos (5)\n1\nPunto 1:\nColorín\n08:18 · GPS ±17 m\nVer\n2\nPunto 2:\nLiquidámbar\n08:30 · Marisol Pérez Demo · GPS ±5 m\nVer\n3\nPunto 3:\nLiquidámbar\n08:37 · Marisol Pérez Demo · GPS ±15 m\nVer\n4\nPunto 4:\nPalo loco\n08:51 · Marisol Pérez Demo · GPS ±13 m\nVer\n5\nPunto 5:\nLiquidámbar\n09:05 · Marisol Pérez Demo · GPS ±8 m\nVer\nLo que viaja a la base de datos\n\nSiguiente: cerrar la jornada (5 de 5 árboles) (lo hace el cabo).",
+ "dir_rel_botones": [
+  "Jornadas [btn-texto volver]",
+  "Mapa []",
+  "Conciliación []",
+  "Puntos (5) []",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]"
+ ],
+ "admin_comp_abrir": "demo-j-01431",
+ "admin_comp_ficha": "Jornadas\nPlaza cívica · El Mirador\n\nmartes 27-OCT-2026 · Estela Ramírez Demo (Coordinación)\nCoyoacán · \nprioridad\nMedia · abierta · compartida · 2 árboles en otra colonia, de prioridad media\nCabos de apoyo: Rocío Hernández Demo, Yolanda Cruz Demo\n\nRegistrar\n(paso actual)\nCerrar\nRevisar\nReporte\nCerrar jornada\nEditar jornada\nMapa\nConciliación\nPuntos (9)\nMapa\n1\n2\n3\n4\n5\n6\n7\n8\n9\n+\n−\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n\nCorrecto\n\nConciliación\n60\nprevistos\n9\nregistrados\n\nEn curso: 9 de 60 (faltan 51).\n\nHorario: 08:18 a 08:47 (29 min) · 4 min entre árbol y árbol en promedio\n\nPuntos (9)\n1\nPunto 1:\nCedro blanco\n08:18 · GPS ±18 m\nVer\n2\nPunto 2:\nFresno\n08:24 · GPS ±13 m\nVer\n3\nPunto 3:\nMezquite\n08:26 · Rocío Hernández Demo · GPS ±19 m\nVer\n4\nPunto 4:\nCedro blanco\n08:28 · GPS ±14 m\nVer\n5\nPunto 5:\nEncino Quiebra Hacha\n08:29 · Yolanda Cruz Demo · GPS ±4 m\nVer\n6\nPunto 6:\nAhuehuete\n08:30 · Rocío Hernández Demo · GPS ±12 m\nVer\n7\nPunto 7:\nJacaranda\n08:35 · Rocío Hernández Demo · GPS ±18 m\nVer\n8\nPunto 8:\nEncino Quiebra Hacha\n08:38 · Yolanda Cruz Demo · GPS ±14 m\nVer\n9\nPunto 9:\nColorín\n08:47 · Yolanda Cruz Demo · GPS ±3 m\nVer\nLo que viaja a la base de datos\n\nSiguiente: registrar los árboles que faltan (lo hace el cabo) (9 de 60).",
+ "admin_comp_botones": [
+  "Jornadas [btn-texto volver]",
+  "Cerrar jornada [btn-chico btn-primario]",
+  "Editar jornada [btn-editar btn-chico]",
+  "Mapa []",
+  "Conciliación []",
+  "Puntos (9) []",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]"
+ ],
+ "admin_rel_abrir": "demo-j-01452",
+ "admin_rel_ficha": "Jornadas\nJardín · Obrera Iv\n\nmartes 27-OCT-2026 · Julián Ortega Demo (titular) · relevo: Marisol Pérez Demo\nCuauhtémoc · \nprioridad\nMedia · abierta\n\nRegistrar\n(hecho)\nCerrar\n(paso actual)\nRevisar\nReporte\nEditar jornada\nMapa\nConciliación\nPuntos (5)\nMapa\n1\n2\n3\n4\n5\n+\n−\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community, Colonias prioritarias: modelo de priorización, SIA/SEDEMA\n\nCorrecto\n\nConciliación\n5\nprevistos\n5\nregistrados\n\nCuadra: 5 previstos y 5 registrados.\n\nHorario: 08:18 a 09:05 (47 min) · 12 min entre árbol y árbol en promedio\n\nPuntos (5)\n1\nPunto 1:\nColorín\n08:18 · GPS ±17 m\nVer\n2\nPunto 2:\nLiquidámbar\n08:30 · Marisol Pérez Demo · GPS ±5 m\nVer\n3\nPunto 3:\nLiquidámbar\n08:37 · Marisol Pérez Demo · GPS ±15 m\nVer\n4\nPunto 4:\nPalo loco\n08:51 · Marisol Pérez Demo · GPS ±13 m\nVer\n5\nPunto 5:\nLiquidámbar\n09:05 · Marisol Pérez Demo · GPS ±8 m\nVer\nLo que viaja a la base de datos\nCerrar jornada",
+ "admin_rel_botones": [
+  "Jornadas [btn-texto volver]",
+  "Editar jornada [btn-editar btn-chico]",
+  "Mapa []",
+  "Conciliación []",
+  "Puntos (5) []",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Ver [btn-texto]",
+  "Cerrar jornada [btn-primario]"
+ ],
+ "relevo_dialogo": "Relevo de cabo\n\nHoy registra en «Jardín · Obrera Iv» Marisol Pérez Demo, en relevo de Julián Ortega Demo. Elija quién sigue registrando en ella.\n\nCabo que sigue registrando *\nSeleccione un cabo\nJulián Ortega Demo (titular: se la devuelve)\nArturo Méndez Demo\nFulana de Tal Ejemplo\nRocío Hernández Demo\nTomás Díaz Demo\nYolanda Cruz Demo\nLa jornada sigue a nombre de su titular.\nCada árbol queda a nombre de quien lo capture.\nEl relevo queda en el historial de la jornada.\nHacer el relevo",
+ "relevo_carga": {
+  "palabras": 83,
+  "botones": 2,
+  "campos": 1,
+  "alto": 469
+ },
+ "relevo_opciones": [
+  "Seleccione un cabo",
+  "Julián Ortega Demo (titular: se la devuelve)",
+  "Arturo Méndez Demo",
+  "Fulana de Tal Ejemplo",
+  "Rocío Hernández Demo",
+  "Tomás Díaz Demo",
+  "Yolanda Cruz Demo"
+ ],
+ "relevo_boton": "Hacer el relevo",
+ "jornadas_selects": [
+  "jornada-revision: Todas | Con algo por atender | Con puntos por revisar | No cuadran con lo previsto | Sin reporte todavía | Sin pendientes",
+  "jornada-cabo: ",
+  "jornada-compartida: ",
+  "jornada-programa: ",
+  "jornada-alcaldia: ",
+  "jornada-org: "
+ ],
+ "registros_selects_u-demo-k1": [
+  "filtro-cabo: Todos | Arturo Méndez Demo | Estela Ramírez Demo (coordinación) | Fulana de Tal Ejemplo | Julián Ortega Demo",
+  "filtro-compartida: Todas | Compartidas | No compartidas",
+  "filtro-especie: Todas | Ahuehuete | Aile | Capulín | Cedro blanco",
+  "filtro-programa: Todos | Centro Histórico | Compensaciones | Palmeras | Reforestación Urbana",
+  "filtro-alcaldia: Todas | Álvaro Obregón | Azcapotzalco | Benito Juárez | Coyoacán",
+  "filtro-org: ",
+  "registros-orden-lista: Lo más reciente primero | Lo más antiguo primero",
+  ": 10 | 25 | 50 | 100"
+ ],
+ "registros_selects_u-demo-c3": [
+  "filtro-cabo: ",
+  "filtro-compartida: Todas | Compartidas | No compartidas",
+  "filtro-especie: Todas | Ahuehuete | Aile | Capulín | Cedro blanco",
+  "filtro-programa: Todos | Compensaciones | Palmeras | Reforestación Urbana | Solicitud especial",
+  "filtro-alcaldia: Todas | Azcapotzalco | Iztacalco | Iztapalapa | Tláhuac",
+  "filtro-org: ",
+  "registros-orden-lista: Lo más reciente primero | Lo más antiguo primero",
+  ": 10 | 25 | 50 | 100"
+ ],
+ "sup_titulo_con_filtro": "Filtrar",
+ "sup_alcance": "Supervisión\n\nSólo cuentan las jornadas cerradas.\n\nFiltrar\nQuitar filtros\nJornadas compartidas\nSemana\nMes\nAño\nUn periodo\nTodo\n\nTodo el registro\n\nMás filtros: compartidas\n3,582\nárboles plantados\nen 38 jornadas cerradas\n100 %\nde lo previsto\n3,582 de 3,597 previstos en las jornadas\n0 de 20\ncabos trabajaron\n94.3 árboles por jornada\n1\njornada en curso\nno se cuentan hasta cerrarse\nQué atender\n2 jornadas cerradas tienen puntos sin revisar\n4 jornadas cerradas no tienen reporte\nInforme en PDF\nTabla en CSV\nFotografías\nÁrboles plantados por año\n445\n1188\n1949\n2024\n2025\n2026\nÁrboles plantados\nPeriodo\tÁrboles\tJornadas\n2024\t445\t5\n2025\t1188\t11\n2026\t1949\t22\nPor quién registró\n23 con jornadas en el periodo · 4",
+ "combos": {
+  "jornadas quien=todos tipo=todas": [
+   0,
+   "Más filtros",
+   ""
+  ],
+  "jornadas quien=todos tipo=si": [
+   687,
+   "Más filtros: quién registró, tipo de jornada, programa y alcaldía",
+   ""
+  ],
+  "jornadas quien=todos tipo=no": [
+   687,
+   "Más filtros: quién registró, tipo de jornada, programa y alcaldía",
+   ""
+  ],
+  "jornadas quien=u-demo-c3 tipo=todas": [
+   72,
+   "Más filtros: Rocío Hernández Demo",
+   "Registró: Rocío Hernández Demo"
+  ],
+  "jornadas quien=u-demo-c3 tipo=si": [
+   6,
+   "Más filtros: Rocío Hernández Demo · compartidas",
+   "Registró: Rocío Hernández Demo + Jornadas compartidas"
+  ],
+  "jornadas quien=u-demo-c3 tipo=no": [
+   66,
+   "Más filtros: Rocío Hernández Demo · no compartidas",
+   "Registró: Rocío Hernández Demo + Jornadas no compartidas"
+  ],
+  "registros u-demo-k1 tipo=todas": [
+   0,
+   "",
+   ""
+  ],
+  "registros u-demo-k1 tipo=si": [
+   0,
+   "",
+   ""
+  ],
+  "registros u-demo-k1 tipo=no": [
+   10661,
+   "",
+   ""
+  ],
+  "registros u-demo-c3 tipo=todas": [
+   971,
+   "",
+   ""
+  ],
+  "registros u-demo-c3 tipo=si": [
+   112,
+   "Jornadas compartidas",
+   ""
+  ],
+  "registros u-demo-c3 tipo=no": [
+   859,
+   "Jornadas no compartidas",
+   ""
+  ],
+  "supervision tipo=todas": [
+   1446,
+   22100,
+   "",
+   "Informe_todo.pdf"
+  ],
+  "supervision tipo=si": [
+   38,
+   3582,
+   "Jornadas compartidas",
+   "Informe_todo_Compartidas.pdf"
+  ],
+  "supervision tipo=no": [
+   1408,
+   18518,
+   "Jornadas no compartidas",
+   "Informe_todo_No_compartidas.pdf"
+  ]
+ },
+ "errores": []
+}

@@ -1,0 +1,2 @@
+chromium 2 OK    con señal, la compartida le llega al cabo de apoyo y está en Nuevo registro · {"activa": "21da600a-1558-48b7-8e41-d2222809f8d1", "franja": true}
+chromium 2 FALLA sin señal, tras volver a abrir la aplicación, la compartida sigue en Nuevo registro · {"sesion": true, "activa": null, "panelIniciar": true, "franja": false, "remoto": "sin-senal", "avisos": [], "titulo": "Registrar jornada"}

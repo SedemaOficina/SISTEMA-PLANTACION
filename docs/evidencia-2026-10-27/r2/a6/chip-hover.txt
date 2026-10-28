@@ -1,0 +1,4 @@
+sol 1 «Varios cabos» marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · cabo marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · sin el puntero: ['rgb(255, 255, 255)', 'rgb(27, 95, 170)']
+sol 2 «Varios cabos» marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · cabo marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · sin el puntero: ['rgb(255, 255, 255)', 'rgb(27, 95, 170)']
+normal 1 «Varios cabos» marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · cabo marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · sin el puntero: ['rgb(255, 255, 255)', 'rgb(27, 95, 170)']
+normal 2 «Varios cabos» marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · cabo marcado, con el puntero encima: ['rgb(255, 255, 255)', 'rgb(21, 76, 138)'] · sin el puntero: ['rgb(255, 255, 255)', 'rgb(27, 95, 170)']

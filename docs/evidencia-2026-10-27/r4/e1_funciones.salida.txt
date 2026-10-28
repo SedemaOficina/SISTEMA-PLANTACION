@@ -1,0 +1,39 @@
+  current_user   |  session_user   
+-----------------+-----------------
+ srp_local_admin | srp_local_admin
+(1 fila)
+
+      proname       |                    args                    | security_definer |             proconfig             | provolatile |      dueno      |                            proacl                             
+--------------------+--------------------------------------------+------------------+-----------------------------------+-------------+-----------------+---------------------------------------------------------------
+ bitacora_inmutable |                                            | f                |                                   | v           | srp_local_admin | 
+ calle              | lat numeric, lng numeric                   | f                | {"search_path=\"$user\", public"} | s           | srp_local_admin | {srp_local_admin=X/srp_local_admin,srp_api=X/srp_local_admin}
+ de_carga_oculta    | carga uuid                                 | f                | {"search_path=\"$user\", public"} | s           | srp_local_admin | {srp_local_admin=X/srp_local_admin,srp_api=X/srp_local_admin}
+ derivar            | lat numeric, lng numeric, margen_m integer | f                | {"search_path=\"$user\", public"} | s           | srp_local_admin | {srp_local_admin=X/srp_local_admin,srp_api=X/srp_local_admin}
+ especie_clave      | especie_id text, especie_otra text         | f                |                                   | i           | srp_local_admin | {srp_local_admin=X/srp_local_admin,srp_api=X/srp_local_admin}
+ folio_inmutable    |                                            | f                |                                   | v           | srp_local_admin | 
+ poner_calle        |                                            | f                | {"search_path=\"$user\", public"} | v           | srp_local_admin | 
+ prioridad          | lat numeric, lng numeric                   | f                | {"search_path=\"$user\", public"} | s           | srp_local_admin | {srp_local_admin=X/srp_local_admin,srp_api=X/srp_local_admin}
+ punto              | lat numeric, lng numeric                   | f                | {"search_path=\"$user\", public"} | i           | srp_local_admin | {srp_local_admin=X/srp_local_admin,srp_api=X/srp_local_admin}
+ recalcular_calles  |                                            | f                | {"search_path=\"$user\", public"} | v           | srp_local_admin | {srp_local_admin=X/srp_local_admin}
+ vecinos            | arbol uuid, piso_m numeric                 | f                | {"search_path=\"$user\", public"} | s           | srp_local_admin | {srp_local_admin=X/srp_local_admin,srp_api=X/srp_local_admin}
+(11 filas)
+
+      rolname       | rolsuper | rolinherit | rolcreaterole | rolcreatedb | rolcanlogin | rolconnlimit | rolbypassrls |                     rolconfig                     
+--------------------+----------+------------+---------------+-------------+-------------+--------------+--------------+---------------------------------------------------
+ srp_local_admin    | f        | t          | t             | f           | t           |           -1 | f            | 
+ territorio_lectura | f        | t          | f             | f           | f           |           -1 | f            | 
+ srp_api            | f        | t          | f             | f           | t           |           20 | f            | {"search_path=srp, public",statement_timeout=50s}
+(3 filas)
+
+     miembro     |       grupo        
+-----------------+--------------------
+ srp_local_admin | territorio_lectura
+ srp_api         | territorio_lectura
+ srp_local_admin | srp_api
+(3 filas)
+
+ version |                                                                                                                                  nombre                                                                                                                                   |          aplicada_en          
+---------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+       1 | Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados, lotes de carga masiva, la calle de cada árbol y la jornada compartida | 2026-10-27 14:29:25.289276-06
+(1 fila)
+

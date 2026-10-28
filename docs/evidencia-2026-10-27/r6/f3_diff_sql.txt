@@ -1,0 +1,83 @@
+== 01
+30c30
+< -- Nadie más usa el esquema salvo a quien se le concede en 09-srp-rol-y-grants.sql
+---
+> -- Nadie más usa el esquema salvo a quien se le concede en 10-srp-rol-y-grants.sql
+== 02
+29a30
+>   sitio_plantacion           text           NOT NULL DEFAULT 'suelo',
+35a37,48
+>   calle_estado               text           NULL,
+>   calle_clave                text           NULL,
+>   calle_version              text           NULL,
+>   calle                      text           NULL,
+>   calle_entre_1              text           NULL,
+>   calle_entre_2              text           NULL,
+>   calle_esquina              text           NULL,
+>   vialidad_red               text           NULL,
+>   vialidad_tipo              text           NULL,
+>   calle_atiende              text           NULL,
+>   calle_llave                text           NULL,
+>   calle_distancia_m          integer        NULL,
+39a53,55
+>   CONSTRAINT plantaciones_sitio_plantacion_valido CHECK (sitio_plantacion IN ('suelo', 'maceton')),
+>   CONSTRAINT plantaciones_calle_estado_valido CHECK (calle_estado IN ('ok', 'lejos')),
+>   CONSTRAINT plantaciones_vialidad_red_valido CHECK (vialidad_red IN ('primaria', 'secundaria', 'carretera o camino')),
+187c203
+<   CONSTRAINT bitacora_accion_valido CHECK (accion IN ('CREADO', 'EDITADO', 'ELIMINADO', 'RESTAURADO', 'SUSTITUIDO', 'RELEVO', 'ACTIVADO', 'DESACTIVADO', 'FOLIO_ASIGNADO')),
+---
+>   CONSTRAINT bitacora_accion_valido CHECK (accion IN ('CREADO', 'EDITADO', 'ELIMINADO', 'RESTAURADO', 'SUSTITUIDO', 'RELEVO', 'APOYO', 'ACTIVADO', 'DESACTIVADO', 'FOLIO_ASIGNADO')),
+232a249
+>   cabos_apoyo                jsonb          NOT NULL DEFAULT '[]'::jsonb,
+237c254,255
+<   CONSTRAINT jornadas_relevos_lista CHECK (jsonb_typeof(relevos) = 'array')
+---
+>   CONSTRAINT jornadas_relevos_lista CHECK (jsonb_typeof(relevos) = 'array'),
+>   CONSTRAINT jornadas_cabos_apoyo_lista CHECK (jsonb_typeof(cabos_apoyo) = 'array')
+300a319
+> COMMENT ON COLUMN srp.plantaciones.sitio_plantacion IS 'sitio_plantacion; Cada árbol nuevo empieza en `suelo`; el sustituto toma el del árbol que reemplaza y la carga masiva pone `suelo`. Los árboles guardados antes de existir el campo quedan en `suelo` (migración 11 del teléfono); el servidor pone `suelo` si una versión anterior de la aplicación no lo manda';
+306a326,337
+> COMMENT ON COLUMN srp.plantaciones.calle_estado IS 'calle_estado; Lo pone el servidor al recibir el árbol y cada vez que se corrige el punto, con la capa territorio.calles: `ok` si hay un tramo a 40 m o menos, `lejos` si no. Nulo mientras no se calcula: un árbol sin enviar, o un servidor que todavía no tiene la capa. Con datos de prueba lo pone el servidor simulado, con la copia ligera de la capa (assets/calles/)';
+> COMMENT ON COLUMN srp.plantaciones.calle_clave IS 'Clave INEGI del tramo, de 19 dígitos, válida para su calle_version; El tramo más cercano. Una clave sólo vale para su versión de la capa: con otra versión se pasa por territorio.calles_equivalencia';
+> COMMENT ON COLUMN srp.plantaciones.calle_version IS 'Versión de territorio.calles con que se calculó, como `1.0.0`; srp.recalcular_calles() vuelve a calcular los árboles sin calle o de otra versión, después de instalar o actualizar la capa';
+> COMMENT ON COLUMN srp.plantaciones.calle IS 'Nombre del tramo (`nombre` de la capa); «calle sin nombre» si no tiene; Sólo con calle_estado = ok; si no, nulo, como los demás campos de la calle';
+> COMMENT ON COLUMN srp.plantaciones.calle_entre_1 IS 'La calle de una esquina del tramo (`entre_1`); nula si el tramo no tiene salida por ese lado; Con una sola esquina, o con la misma calle en las dos, la pantalla dice «a la altura de»';
+> COMMENT ON COLUMN srp.plantaciones.calle_entre_2 IS 'La calle de la otra esquina (`entre_2`)';
+> COMMENT ON COLUMN srp.plantaciones.calle_esquina IS 'Otra calle casi igual de cerca: a menos de 4 m más que la del tramo; Avisa que el árbol podría contarse en la otra calle';
+> COMMENT ON COLUMN srp.plantaciones.vialidad_red IS 'vialidad_red; `red_vial` del tramo';
+> COMMENT ON COLUMN srp.plantaciones.vialidad_tipo IS 'En la red primaria, «Vía primaria» o «Vía de acceso controlado» (`tipo_via`); nulo en las demás';
+> COMMENT ON COLUMN srp.plantaciones.calle_atiende IS 'Quién atiende el tramo (`atiende`): «Gobierno de CDMX», «Alcaldía X», «Alcaldías X y Y», «Concesión», «Gobierno Federal» o «Particular»; Todo tramo de la capa lo dice; si faltara, la pantalla dice «quién la atiende, por confirmar», nunca «de la alcaldía»';
+> COMMENT ON COLUMN srp.plantaciones.calle_llave IS 'Nombre para comparar (`llave`): sin tipo, acentos ni mayúsculas; nulo sin nombre; En el informe y en Supervisión, una misma calle es su llave dentro de la alcaldía del árbol';
+> COMMENT ON COLUMN srp.plantaciones.calle_distancia_m IS 'Metros enteros del árbol al tramo, de 0 a 40';
+315c346
+< COMMENT ON COLUMN srp.usuarios.coordinadores_ids IS '→ usuarios.id con perfil COORDINADOR; [] si no tiene; Sólo en cabos; puede tener más de uno, todos de su misma institución; [] en los demás perfiles. Es lo que define la cuadrilla: cada coordinador ve y edita los registros de los cabos que lo tienen asignado, nunca los de otra institución';
+---
+> COMMENT ON COLUMN srp.usuarios.coordinadores_ids IS '→ usuarios.id con perfil COORDINADOR; [] si no tiene; Sin uso desde la 1.4 (D333): la Coordinación trabaja con todos los cabos de su institución, sin cuadrilla. Lo ya capturado se conserva; las altas nuevas lo dejan en []';
+419c450
+< COMMENT ON COLUMN srp.jornadas.relevo_id IS '→ usuarios.id; El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de su cuadrilla y de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella';
+---
+> COMMENT ON COLUMN srp.jornadas.relevo_id IS '→ usuarios.id; El cabo que registra en lugar del titular: lo elige la coordinación entre los cabos activos de la institución de la jornada, con la jornada abierta. Nulo: registra el titular. Sólo quien registra en la jornada (este cabo o, sin relevo, el titular) agrega árboles en ella';
+438c469,470
+< COMMENT ON COLUMN srp.jornadas.hora IS 'HH:MM, de 00:00 a 23:59; '''' si no se elige';
+---
+> COMMENT ON COLUMN srp.jornadas.hora IS 'HH:MM, de 00:00 a 23:59; '''' si no se elige; La aplicación no arma la vista previa del reporte sin ella; '''' en las jornadas que todavía no tienen datos de cierre y en las anteriores a esta regla';
+> COMMENT ON COLUMN srp.jornadas.cabos_apoyo IS '[{ cabo_id → usuarios.id, desde ISO 8601, por_id → usuarios.id, hasta ISO 8601 o nulo, fin «terminado», «quitado» o nulo }]; [] en una jornada de un solo cabo; Jornada compartida: la abre la Coordinación, que queda como titular, y le agrega cabos activos de su institución, que registran a la vez. Un cabo de apoyo vigente (sin hasta) registra hasta que toca «Terminar mi parte» (fin «terminado») o la Coordinación lo quita (fin «quitado»); volver a marcarlo lo deja vigente otra vez. Cada cabo aparece una vez. Quien fue cabo de apoyo sigue viendo la jornada y todos sus árboles, pero sólo corrige los suyos; no cambia los datos de la jornada ni la cierra';
+== 09 vs 10
+28a29
+> --   · Calcular la calle de un árbol; volver a calcular la de todos lo hace quien administra la base.
+79,80c80,83
+< REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid) FROM PUBLIC;
+< GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid) TO srp_api;
+---
+> REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric) FROM PUBLIC;
+> GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric) TO srp_api;
+> -- Volver a calcular la calle de todos los árboles es de quien administra la base, después de instalar la capa
+> REVOKE ALL ON FUNCTION srp.recalcular_calles() FROM PUBLIC;
+86c89
+< VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados y lotes de carga masiva')
+---
+> VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados, lotes de carga masiva, la calle de cada árbol y la jornada compartida')
+95a99
+>       SELECT * FROM srp.calle(19.4326, -99.1332);                -- su calle, si territorio.calles está instalada
+113a118
+>       SELECT srp.recalcular_calles();

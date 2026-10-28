@@ -1,0 +1,18 @@
+IP privada: 1 archivos
+    backend/completos/src/db.ts (1)
+servidor interno: 4 archivos
+    app/js/informes.js (2)
+    app/js/reportes.js (2)
+    app/vendor/jspdf.plugin.autotable.min.js (5)
+    app/vendor/jspdf.umd.min.js (320)
+correo que no es de ejemplo: 1 archivos
+    app/vendor/jspdf.umd.min.js (7)
+cadena de conexion: 0 archivos
+variable de clave con valor: 1 archivos
+    app/vendor/jspdf.umd.min.js (3)
+ruta personal: 0 archivos
+ssh o salto: 0 archivos
+correo de prueba @ejemplo.local: 0 archivos
+cuenta de prueba (u-demo-, u-cabo-1...): 2 archivos
+    app/js/app.js (3)
+    db/srp/02-srp-tablas.sql (3)

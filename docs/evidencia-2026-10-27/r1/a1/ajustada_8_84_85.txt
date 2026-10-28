@@ -1,0 +1,6 @@
+  8  Datos de demostración                                           137 s  DETENIDO: [renglón 3020] FileNotFoundError: [Errno 2] No such file or directory: 'C:\\sia-rev\\tmp\\
+ 84  ctx101: la jornada compartida (la abre la Coordinación; sus ca   97 s  DETENIDO: [renglón 7770]     at UtilityScript.<anonymous> (<anonymous>:1:44)
+       FALLA quedan los dos cabos de apoyo, la ficha dice que es compartida, quién coordina y quiénes la apoyan, y el historial lo anota: {'apoyos': [['u-cabo-1', 'u-coord-1', None], ['u-demo-c4', 'u-coord-1
+ 85  ctx102: abrir la jornada compartida desde el formulario y la f  129 s  0 fallas de 19
+
+tramos: 3 · comprobaciones: 19 · fallas: 1 · tramos detenidos: 2 (8, 84) · 6 min

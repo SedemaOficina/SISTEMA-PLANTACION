@@ -1,0 +1,158 @@
+{
+ "nombre": "=HIPERVINCULO(\"x\") Jornada ñandú r1 154105",
+ "jornada": "baf7df59-bcec-47c6-9569-441ea5c1a3d3",
+ "arbol_coord": "da067c9d-5c45-41ec-8082-ad42b3dfd75f",
+ "aviso_cabo": "Jornada compartida\n\nAhora es cabo de apoyo en las jornadas compartidas «=HIPERVINCULO(\"x\") Jornada ñandú r1 154105», que coordina R1 Coordinación Auditoría y «=HIPERVINCULO(\"x\") Jornada ñandú r1 153918», que coordina R1 Coordinación Auditoría. Ya puede registrar en ellas.\n\nCómo funciona:\n\nRegistran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.\nUsted corrige sólo sus árboles.\nAl acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.\nLa Coordinación cierra la jornada y genera el reporte.\nEntendido",
+ "arboles_cabo": [
+  "31bc7c30-6db8-450d-8c8c-0fcf09e43766",
+  "9860f95d-0d6e-4d1b-bc44-0183ba0288df"
+ ],
+ "terminar_texto": "Terminar mi parte\n\n¿Terminar su parte en «=HIPERVINCULO(\"x\") Jornada ñandú r1 154105», con 2 árboles suyos?\n\nLo que tenga por enviar se envía en cuanto haya señal.\nLa jornada sale de su lista y ya no registra en ella.\nLa Coordinación cierra la jornada y genera el reporte.\nTerminar mi parte\nCancelar",
+ "pendientes_al_cerrar": [
+  "R1 Cabo Dos Auditoría no ha terminado su parte: todavía no llega ningún árbol suyo.",
+  "7 árboles por debajo de lo previsto (3 de 10)."
+ ],
+ "reporte_modelo": {
+  "rotulo": "Jornada compartida, coordina:",
+  "cabo": "R1 Coordinación Auditoría",
+  "identificacion": [
+   [
+    "Nombre de la jornada",
+    "=HIPERVINCULO(\"x\") Jornada ñandú r1 154105"
+   ],
+   [
+    "Día de la jornada",
+    "Martes 27 de octubre de 2026"
+   ],
+   [
+    "Cabos de apoyo",
+    "R1 Cabo Auditoría (2 árboles) y R1 Cabo Dos Auditoría (0 árboles)"
+   ],
+   [
+    "Alcaldía",
+    "Iztacalco"
+   ],
+   [
+    "Colonia",
+    "SAN FCO XICALTONGO (BARR)"
+   ],
+   [
+    "Programa",
+    "Reforestación Urbana"
+   ],
+   [
+    "Prioridad de reforestación",
+    "Alta"
+   ],
+   [
+    "Institución que ejecuta",
+    "Secretaría del Medio Ambiente (SEDEMA)"
+   ]
+  ],
+  "cabecera": [
+   "N.º",
+   "Especie",
+   "Calle",
+   "Precisión",
+   "Cabo"
+  ],
+  "filas": [
+   [
+    "1",
+    "Ahuehuete (Taxodium mucronatum)",
+    "Calle Xicalango, entre Avenida Amacuzac y Calle Xicalhuacan",
+    "±5 m",
+    "R1 Coordinación Auditoría"
+   ],
+   [
+    "2",
+    "Ahuehuete (Taxodium mucronatum)",
+    "Calle Rinconada San Francisco, entre Cerrada 2 de San Francisco y Calle Xicalhuacan",
+    "±5 m",
+    "R1 Cabo Auditoría"
+   ],
+   [
+    "3",
+    "Ahuehuete (Taxodium mucronatum)",
+    "Cerrada 2 de San Francisco, entre Calle San Francisco y Calle Rinconada San Francisco",
+    "±5 m",
+    "R1 Cabo Auditoría"
+   ]
+  ]
+ },
+ "previa_tabla": [
+  [
+   "N.º",
+   "Especie",
+   "Calle",
+   "Precisión",
+   "Cabo"
+  ],
+  [
+   [
+    "1",
+    "Ahuehuete (Taxodium mucronatum)",
+    "Calle Xicalango, entre Avenida Amacuzac y Calle Xicalhuacan",
+    "±5 m",
+    "R1 Coordinación Auditoría"
+   ],
+   [
+    "2",
+    "Ahuehuete (Taxodium mucronatum)",
+    "Calle Rinconada San Francisco, entre Cerrada 2 de San Francisco y Calle Xicalhuacan",
+    "±5 m",
+    "R1 Cabo Auditoría"
+   ],
+   [
+    "3",
+    "Ahuehuete (Taxodium mucronatum)",
+    "Cerrada 2 de San Francisco, entre Calle San Francisco y Calle Rinconada San Francisco",
+    "±5 m",
+    "R1 Cabo Auditoría"
+   ]
+  ]
+ ],
+ "pdf": "Reporte_R1_Coordinacion_Auditoria_2026-10-27_J2.pdf",
+ "mi_avance_cabo": {
+  "titulo": "Mi avance",
+  "arboles": 2,
+  "jornadas": 1,
+  "red": [
+   [
+    "secundaria",
+    2,
+    2
+   ]
+  ]
+ },
+ "csv": [
+  [
+   "'=HIPERVINCULO(\"x\") Jornada ñandú r1 154105",
+   "Sí",
+   "R1 Coordinación Auditoría",
+   "Calle Xicalango",
+   "entre Avenida Amacuzac y Calle Xicalhuacan",
+   "Calle secundaria",
+   "Alcaldía Iztacalco"
+  ],
+  [
+   "'=HIPERVINCULO(\"x\") Jornada ñandú r1 154105",
+   "Sí",
+   "R1 Cabo Auditoría",
+   "Calle Rinconada San Francisco",
+   "entre Cerrada 2 de San Francisco y Calle Xicalhuacan",
+   "Calle secundaria",
+   "Alcaldía Iztacalco"
+  ],
+  [
+   "'=HIPERVINCULO(\"x\") Jornada ñandú r1 154105",
+   "Sí",
+   "R1 Cabo Auditoría",
+   "Cerrada 2 de San Francisco",
+   "entre Calle San Francisco y Calle Rinconada San Francisco",
+   "Calle secundaria",
+   "Alcaldía Iztacalco"
+  ]
+ ],
+ "errores": []
+}

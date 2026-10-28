@@ -1,0 +1,71 @@
+prueba: corridas 36 · pantallas revisadas 234 · botones presionados 599 (sin hacer nada: 0) · no presionados a propósito 17
+
+69 · control tapado
+      ADMIN/tel-360 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-360 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      ADMIN/tel-390 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-390 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      ADMIN/tel-390 acerca ['button', 'conexion', 'Con conexión, todo enviado al servidor simulado. Abrir la gu', 'lo tapa: div#aviso.aviso']
+      ADMIN/tel-390 acerca ['button', 'btn-cuenta', 'Cuenta: Administración SIA Ejemplo, Administración global. A', 'lo tapa: div#aviso.aviso']
+      ADMIN/tel-430 catalogos ['button', '', 'Clave', 'lo tapa: tr.']
+      ADMIN/tel-430 catalogos ['button', '', 'Estado', 'lo tapa: tr.']
+      COORDINADOR/tel-360 registrar ['button', 'conexion', 'Con conexión, todo enviado al servidor simulado. Abrir la gu', 'lo tapa: span.aviso-texto']
+      COORDINADOR/tel-360 registrar ['button', 'btn-cuenta', 'Cuenta: Perengano Gómez Ejemplo, Coordinador. Abrir menú', 'lo tapa: div#aviso.aviso']
+      COORDINADOR/tel-360 registrar ['input', 'campo-sitio', 'suelo', 'lo tapa: label.']
+      COORDINADOR/tel-360 registros ['button', 'conexion', 'Con conexión, todo enviado al servidor simulado. Abrir la gu', 'lo tapa: span.aviso-texto']
+
+36 · dominio externo server.arcgisonline.com
+      ADMIN/tel-360 3
+      ADMIN/tel-390 3
+      ADMIN/tel-430 3
+      ADMIN/horizontal 3
+      ADMIN/tableta 3
+      ADMIN/escritorio 3
+      ADMIN/zoom-200 3
+      DIRECTIVO/tel-360 3
+      DIRECTIVO/tel-390 3
+      DIRECTIVO/tel-430 3
+      DIRECTIVO/horizontal 3
+      DIRECTIVO/tableta 3
+
+28 · objetivo chico (<24 px)
+      COORDINADOR/tel-360 registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tel-360 registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/tel-390 registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tel-390 registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/tel-430 registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tel-430 registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/horizontal registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/horizontal registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/tableta registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/tableta registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+      COORDINADOR/escritorio registrar ['input', 'campo-sitio', 'suelo', '1×1']
+      COORDINADOR/escritorio registrar ['input', 'foto-archivo', 'foto-archivo', '1×1']
+
+16 · ventana: objetivo chico
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-forma', 'cat-forma', '1×1']
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-paleta', 'cat-paleta', '1×1']
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-fruto', 'cat-fruto', '1×1']
+      ADMIN/tel-390 dlg-catalogo ['input', 'cat-tipos-org', 'cat-tipos-org', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-forma', 'cat-forma', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-paleta', 'cat-paleta', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-fruto', 'cat-fruto', '1×1']
+      DIRECTIVO/tel-390 dlg-catalogo ['input', 'cat-tipos-org', 'cat-tipos-org', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-forma', 'cat-forma', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-paleta', 'cat-paleta', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-fruto', 'cat-fruto', '1×1']
+      COORDINADOR/tel-390 dlg-catalogo ['input', 'cat-tipos-org', 'cat-tipos-org', '1×1']
+
+12 · axe en ventana button-name
+      ADMIN/tel-390 dlg-completa #btn-completa-cerrar
+      ADMIN/tel-390 dlg-apoyos #btn-apoyos-guardar
+      ADMIN/tel-390 dlg-confirmar #btn-confirmar-si
+      DIRECTIVO/tel-390 dlg-completa #btn-completa-cerrar
+      DIRECTIVO/tel-390 dlg-apoyos #btn-apoyos-guardar
+      DIRECTIVO/tel-390 dlg-confirmar #btn-confirmar-si
+      COORDINADOR/tel-390 dlg-completa #btn-completa-cerrar
+      COORDINADOR/tel-390 dlg-apoyos #btn-apoyos-guardar
+      COORDINADOR/tel-390 dlg-confirmar #btn-confirmar-si
+      CABO/tel-390 dlg-completa #btn-completa-cerrar
+      CABO/tel-390 dlg-apoyos #btn-apoyos-guardar
+      CABO/tel-390 dlg-confirmar #btn-confirmar-si

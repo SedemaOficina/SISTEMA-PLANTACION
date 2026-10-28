@@ -1,0 +1,47 @@
+{
+ "A_aviso_abierto": [
+  "dlg-confirmar"
+ ],
+ "A_tras_atras": [],
+ "A_vista": "registrar",
+ "A_visto_guardado": null,
+ "A_tras_cambiar_vista": [],
+ "A_tras_recargar": [
+  "Jornada compartida\n\nAhora es cabo de apoyo en la jornada compartida «Plaza cívic"
+ ],
+ "A_visto_tras_entendido": "2026-10-27T14:18:00.000Z",
+ "C_t1_franja": "Plaza cívica · El Mirador\nJornada compartida · coordina Estela Ramírez Demo\n9 de 60 árboles · 3 suyos",
+ "C_visto_antes_t2": "2026-10-27T14:18:00.000Z",
+ "C_t2_al_abrir": [],
+ "C_t2_en_registrar": [],
+ "C_t1_turno": true,
+ "C_t1_turno_texto": "El SRP se abrió en otra pestaña\n\nPara que no se pierda ningún registro, se trabaja en una pestaña a la vez. Lo capturado está guardado en este teléfono.\n\nUsar aquí",
+ "C_t2_aviso": "Terminó su parte en «Plaza cívica · El Mirador», con 3 árboles suyos.",
+ "C_t1_tras_usar": {
+  "activa": null,
+  "franja_visible": false,
+  "panel_iniciar": true,
+  "franja": ""
+ },
+ "B_t1_boton": "Guardar: 2 cabos de apoyo",
+ "B_t2_cerrar": [],
+ "B_t2_estatus": "cerrada",
+ "B_t1_turno": true,
+ "B_t1_apoyos_abierta": true,
+ "B_t1_guardar_sin_turno": "no se puede pulsar: Page.click: Timeout 3000ms exceeded.",
+ "B_t1_tras_usar": {
+  "dialogos": [],
+  "vista": "supervision"
+ },
+ "D_franja": "Plaza cívica · El Mirador\nJornada compartida · coordina Estela Ramírez Demo\n9 de 60 árboles · 3 suyos",
+ "D_dialogo": [
+  "Jornada compartida\n\nAhora es cabo de apoyo en la jornada compartida «Plaza cívica · El Mirador», que"
+ ],
+ "D_tras_recargar": {
+  "dialogos": [],
+  "apoyo_vigente": [
+   "u-demo-c5"
+  ]
+ },
+ "errores": []
+}

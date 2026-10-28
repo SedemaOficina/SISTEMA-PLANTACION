@@ -1,0 +1,6 @@
+# Salida de guiones/fechas_compartida.py (27-10-2026): 5 corridas × 9 comprobaciones = 45 OK, 0 FALLA
+# chromium America/Mexico_City · chromium Asia/Tokyo · chromium UTC · webkit America/Mexico_City · webkit Asia/Tokyo
+# En las cinco: hoy = 2026-12-31 a las 23:50 CDMX; jornada fecha 2026-12-31; árbol 23:52 → 2026-12-31; tras la medianoche hoy = 2027-01-01;
+# el cabo sigue en la compartida con el aviso «Sigue abierta la jornada «Fin de año r2» iniciada el 31-DIC-2026 … toque «Terminar mi parte»»;
+# árbol 00:10 → 2027-01-01 con «Fecha de plantación» visible; «¿Terminar su parte … con 2 árboles suyos?» → terminado;
+# ficha de la Coordinación: «jueves 31-DIC-2026 al 01-ENE-2027 … compartida · Cabos de apoyo: Fulana de Tal Ejemplo (terminó)»; sin errores de página.

@@ -1,0 +1,6 @@
+cola antes de enviar: 5
+envío: {'enviados': 5, 'pendientes': 0, 'hora': '2026-10-27T21:20:33.420Z'} 1.8 s
+calle de los cuatro: [[19.4326, -99.1332, "lejos", null, null], [19.436, -99.13, "ok", "Calle San Ildefonso", 38], [19.4328, -99.133, "lejos", null, null], [19.4327, -99.1331, "lejos", null, null]]
+cola después: 0
+sin calle y con la cola vacía, otro envío: {'enviados': 0, 'pendientes': 0} → calle_estado [None, None, None, None]
+errores de página: []

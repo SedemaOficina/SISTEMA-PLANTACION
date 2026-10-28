@@ -1,0 +1,4 @@
+  8  Datos de demostración                                           154 s  DETENIDO: [renglón 2907]        - waiting 500ms
+ 84  ctx101: la jornada compartida (la abre la Coordinación; sus ca  102 s  0 fallas de 15
+
+tramos: 2 · comprobaciones: 15 · fallas: 0 · tramos detenidos: 1 (8) · 4 min

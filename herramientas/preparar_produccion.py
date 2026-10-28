@@ -10,40 +10,43 @@ Copia la aplicación (index.html, sw.js, el manifiesto, css/, js/, vendor/ y ass
     la demostración (js/demostracion.js) y el espejo de campos (js/espejo.js). Sus botones y bloques se
     quedan en index.html, ocultos: con ES_FICTICIO en false nunca se muestran;
   - no copia la copia ligera de la capa de calles (assets/calles/): en el SIA la calle la pone el servidor.
-El repositorio no cambia. La carpeta destino debe no existir o estar vacía. Al terminar revisa que todo lo
-que index.html pide exista en la copia y que nada de lo quitado se pida. Sólo usa la biblioteca estándar."""
-import os, re, shutil, sys
+El repositorio no cambia. La carpeta destino debe no existir o estar vacía. La copia se arma en una carpeta temporal
+y sólo pasa al destino si termina bien: un error no deja una copia a medias. Funciona con el fin de renglón que
+traiga el clon (LF o CRLF). Al terminar revisa que todo lo que index.html pide exista en la copia y que nada de lo
+quitado se pida. Sólo usa la biblioteca estándar."""
+import os, re, shutil, sys, tempfile
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ARCHIVOS = ['index.html', 'sw.js', 'manifest.webmanifest', 'VERSION']
 CARPETAS = ['css', 'js', 'vendor', 'assets']
 DE_PRUEBA = ['js/datos-ficticios.js', 'assets/catalogos/catalogo-vehiculos.js', 'js/demostracion.js', 'js/espejo.js']
 AVISO_DE_PRUEBA = '<!-- Sólo en la versión de prueba: la versión real no carga estos dos -->\n'
+PREFIJO = '\\\\?\\'
 
 
 def larga(ruta):
     """En Windows, una ruta que admite más de 260 caracteres: la copia anida carpetas."""
-    prefijo = '\\\\?\\'
-    return prefijo + ruta if os.name == 'nt' and not ruta.startswith(prefijo) else ruta
+    return PREFIJO + ruta if os.name == 'nt' and not ruta.startswith(PREFIJO) else ruta
+
+
+def visible(ruta):
+    """La ruta como la escribe la persona, sin el prefijo de ruta larga."""
+    return ruta[len(PREFIJO):] if ruta.startswith(PREFIJO) else ruta
 
 
 def cambiar(ruta, viejo, nuevo):
+    """Cambia un texto que debe estar una sola vez, con el fin de renglón que traiga el archivo."""
     with open(ruta, encoding='utf-8', newline='') as f:
         texto = f.read()
+    if '\r\n' in texto:
+        viejo, nuevo = viejo.replace('\n', '\r\n'), nuevo.replace('\n', '\r\n')
     if texto.count(viejo) != 1:
-        sys.exit('No se encontró una sola vez en %s: %s' % (os.path.relpath(ruta), viejo.strip()))
+        sys.exit('No se encontró una sola vez en %s: %s' % (visible(ruta), viejo.strip()))
     with open(ruta, 'w', encoding='utf-8', newline='') as f:
         f.write(texto.replace(viejo, nuevo))
 
 
-def main():
-    if len(sys.argv) != 2:
-        sys.exit(__doc__.split('\n\n')[1])
-    visible = os.path.abspath(sys.argv[1])
-    destino = larga(visible)
-    if os.path.isdir(destino) and os.listdir(destino):
-        sys.exit('La carpeta destino ya tiene archivos: %s' % visible)
-    os.makedirs(destino, exist_ok=True)
+def armar(destino):
     for a in ARCHIVOS:
         shutil.copy2(os.path.join(RAIZ, a), os.path.join(destino, a))
     for c in CARPETAS:
@@ -53,13 +56,13 @@ def main():
     cambiar(os.path.join(destino, 'js', 'config.js'), '  ES_FICTICIO: true,', '  ES_FICTICIO: false,')
     pagina = os.path.join(destino, 'index.html')
     cambiar(pagina, AVISO_DE_PRUEBA, '')
-    with open(pagina, encoding='utf-8') as f:
+    with open(pagina, encoding='utf-8', newline='') as f:
         html = f.read()
     for rel in DE_PRUEBA:
-        etiqueta = re.search(r'<script src="%s\?v=[^"]+"></script>\n' % re.escape(rel), html)
+        etiqueta = re.search(r'<script src="%s\?v=[^"]+"></script>\r?\n' % re.escape(rel), html)
         if not etiqueta:
             sys.exit('index.html no carga %s: revisar la lista DE_PRUEBA' % rel)
-        cambiar(pagina, etiqueta.group(0), '')
+        cambiar(pagina, etiqueta.group(0).replace('\r\n', '\n'), '')
         os.remove(os.path.join(destino, rel.replace('/', os.sep)))
 
     # Lo que index.html pide existe en la copia, y nada de lo quitado se pide
@@ -71,11 +74,28 @@ def main():
     if faltan or quedan:
         sys.exit('La copia quedó incompleta. Faltan: %s. Se siguen pidiendo: %s' % (faltan, quedan))
     with open(os.path.join(destino, 'js', 'config.js'), encoding='utf-8') as f:
-        version = re.search(r'js/config\.js\?v=([^"]+)"', html).group(1)
         if 'ES_FICTICIO: false,' not in f.read():
             sys.exit('js/config.js no quedó con ES_FICTICIO en false')
-    total = sum(len(n) for _, _, n in os.walk(destino))
-    print('Versión %s, con datos reales: %d archivos en %s' % (version, total, visible))
+    return re.search(r'js/config\.js\?v=([^"]+)"', html).group(1)
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit(__doc__.split('\n\n')[1])
+    ruta = os.path.abspath(sys.argv[1])
+    final = larga(ruta)
+    if os.path.isdir(final) and os.listdir(final):
+        sys.exit('La carpeta destino ya tiene archivos: %s' % ruta)
+    temporal = larga(tempfile.mkdtemp(prefix='srp-produccion-'))
+    try:
+        version = armar(temporal)
+    except SystemExit as e:
+        sys.exit('%s\nNo se creó %s. Lo armado a medias quedó en %s' % (e.code, ruta, visible(temporal)))
+    if os.path.isdir(final):
+        os.rmdir(final)   # vacía: se comprobó arriba
+    shutil.move(temporal, final)
+    total = sum(len(n) for _, _, n in os.walk(final))
+    print('Versión %s, con datos reales: %d archivos en %s' % (version, total, ruta))
     print('Sin: ' + ', '.join(DE_PRUEBA + ['assets/calles/']))
 
 

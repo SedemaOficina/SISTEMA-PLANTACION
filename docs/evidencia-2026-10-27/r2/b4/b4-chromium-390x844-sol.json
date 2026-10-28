@@ -1,0 +1,604 @@
+{
+ "etiqueta": "chromium-390x844-sol",
+ "inicio": "2026-10-27 15:30:13",
+ "pasos": [
+  {
+   "atributo": "alto",
+   "paso": "modo sol"
+  },
+  {
+   "visible": true,
+   "pressed": [
+    [
+     "Sólo yo",
+     "true"
+    ],
+    [
+     "Varios cabosjornada compartida",
+     "false"
+    ]
+   ],
+   "paso": "formulario: la pregunta se ve"
+  },
+  {
+   "foco": {
+    "tag": "button",
+    "id": "btn-ini-hoy",
+    "texto": "Hoy",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "fecha": "2026-10-27",
+   "paso": "teclado: «Hoy» con Intro"
+  },
+  {
+   "teclas": 1,
+   "foco": {
+    "tag": "button",
+    "id": "",
+    "texto": "Sólo yo",
+    "pressed": "true",
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "paso": "teclado: Tab hasta «Sólo yo»"
+  },
+  {
+   "teclas": 1,
+   "foco": {
+    "tag": "button",
+    "id": "",
+    "texto": "Varios cabosjornada compartida",
+    "pressed": "false",
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "paso": "teclado: Tab hasta «Varios cabos»"
+  },
+  {
+   "foco": {
+    "tag": "button",
+    "id": "",
+    "texto": "Varios cabosjornada compartida",
+    "pressed": "true",
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "lista_visible": true,
+   "boton": "Iniciar jornada compartida",
+   "chips": 7,
+   "paso": "teclado: Espacio en «Varios cabos»"
+  },
+  {
+   "sel": "#panel-iniciar-jornada",
+   "violaciones": [],
+   "paso": "axe formulario con «Varios cabos»"
+  },
+  {
+   "teclas": 9,
+   "foco": {
+    "tag": "div",
+    "id": "ini-errores",
+    "texto": "Falta corregir 1 datoMarque a los cabos que registran con us",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "error": [
+    true,
+    "Marque a los cabos que registran con usted, o elija «Sólo yo».",
+    null,
+    "ini-apoyos-error"
+   ],
+   "grupo": {
+    "invalid": "true",
+    "describedby": "ini-apoyos-error",
+    "errorDescribe": true
+   },
+   "resumen": "Falta corregir 1 dato\nMarque a los cabos que registran con usted, o elija «Sólo yo».",
+   "paso": "teclado: iniciar sin marcar cabos"
+  },
+  {
+   "sel": "#panel-iniciar-jornada",
+   "violaciones": [],
+   "paso": "axe formulario con el error de cabos"
+  },
+  {
+   "foco": {
+    "tag": "button",
+    "id": "",
+    "texto": "Fulana de Tal Ejemplo",
+    "pressed": "true",
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "marcados": [
+    "Arturo Méndez Demo",
+    "Fulana de Tal Ejemplo"
+   ],
+   "error_sigue": null,
+   "nombres": [
+    [
+     "Arturo Méndez Demo",
+     null
+    ],
+    [
+     "Fulana de Tal Ejemplo",
+     null
+    ],
+    [
+     "Julián Ortega Demo",
+     null
+    ]
+   ],
+   "paso": "teclado: dos cabos marcados con Espacio"
+  },
+  {
+   "segundos": 0.1,
+   "paso": "segundos hasta la franja"
+  },
+  {
+   "teclas": 7,
+   "foco": {
+    "tag": "button",
+    "id": "btn-ubicacion",
+    "texto": "Registrar ubicación del punto",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "anuncios": [
+    "Enviando 22…",
+    "Falta corregir 1 datoMarque a los cabos que registran con usted, o elija «Sólo yo».",
+    "Ubicación detectada (±5 m).",
+    "Cuauhtémoc · Col. CENTRO IV · prioridad Muy alta",
+    "Cargados: 1,452 jornadas y 22,142 árboles de cabos y coordinaciones de la Secretaría y de otras instituciones, desde enero de 2024 hasta hoy.",
+    "Toque el mapa donde está el árbol o use «Registrar ubicación del punto».",
+    "Jornada compartida «Prueba de teclado r2» iniciada con 2 cabos de apoyo: les llega a su teléfono la próxima vez que tengan señal. Ya puede registrar árboles."
+   ],
+   "franja": true,
+   "dialogos": [],
+   "jornada": [
+    "ac2f0ade-5d14-49f3-bec6-21bad1477716",
+    [
+     "u-demo-c6",
+     "u-cabo-1"
+    ]
+   ],
+   "paso": "teclado: Intro en «Iniciar jornada compartida»"
+  },
+  {
+   "sel": "#franja-jornada",
+   "violaciones": [],
+   "paso": "axe franja de la Coordinación con «Cabos de apoyo»"
+  },
+  {
+   "texto": "JORNADA ACTIVA\n\nVer detalle\n\nPrueba de teclado r2\n0 de 30 árboles\n\nEditar jornada\nCambiar jornada\nCabos de apoyo\nCerrar jornada",
+   "botones": [
+    [
+     "btn-franja-editar",
+     "Editar jornada",
+     "157x40"
+    ],
+    [
+     "btn-jornada-cambiar",
+     "Cambiar jornada",
+     "157x40"
+    ],
+    [
+     "btn-franja-apoyos",
+     "Cabos de apoyo",
+     "321x40"
+    ],
+    [
+     "btn-jornada-cerrar",
+     "Cerrar jornada",
+     "321x40"
+    ]
+   ],
+   "paso": "franja: textos"
+  },
+  {
+   "foco": {
+    "tag": "h2",
+    "id": "dlg-apoyos-titulo",
+    "texto": "Cabos de apoyo",
+    "pressed": null,
+    "contorno": "none 3px rgb(0, 0, 0)",
+    "sombra": "none",
+    "dialogo": "dlg-apoyos"
+   },
+   "texto": "Marque a los cabos de su institución que registran en «Prueba de teclado r2». Con ellos, la jornada pasa a ser compartida.",
+   "guardar": "Guardar: 2 cabos de apoyo",
+   "chips": [
+    [
+     "Arturo Méndez Demo",
+     "true"
+    ],
+    [
+     "Fulana de Tal Ejemplo",
+     "true"
+    ],
+    [
+     "Julián Ortega Demo",
+     "false"
+    ],
+    [
+     "Marisol Pérez Demo",
+     "false"
+    ]
+   ],
+   "paso": "ventana apoyos: al abrir"
+  },
+  {
+   "sel": "#dlg-apoyos",
+   "violaciones": [],
+   "paso": "axe ventana «Cabos de apoyo» (franja)"
+  },
+  {
+   "teclas": 4,
+   "foco": {
+    "tag": "button",
+    "id": "",
+    "texto": "Julián Ortega Demo",
+    "pressed": "true",
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": "dlg-apoyos"
+   },
+   "guardar": "Guardar: 3 cabos de apoyo",
+   "paso": "ventana apoyos: Espacio en un cabo"
+  },
+  {
+   "abierta": false,
+   "foco": {
+    "tag": "button",
+    "id": "btn-franja-apoyos",
+    "texto": "Cabos de apoyo",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "dialogos": [],
+   "vigentes": [
+    "u-demo-c6",
+    "u-cabo-1"
+   ],
+   "paso": "ventana apoyos: Escape"
+  },
+  {
+   "abierta": false,
+   "foco": {
+    "tag": "button",
+    "id": "btn-franja-apoyos",
+    "texto": "Cabos de apoyo",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "paso": "ventana apoyos: «Cerrar» con Intro"
+  },
+  {
+   "estado": "Precisión buena · ±5 m",
+   "vivo": "polite",
+   "anuncios": [
+    "Con conexión · Al día (simulado)",
+    "Obteniendo su ubicación…",
+    "Cargados: 1,452 jornadas y 22,142 árboles de cabos y coordinaciones de la Secretaría y de otras instituciones, desde enero de 2024 hasta hoy.",
+    "Se enviaron 22 registros que estaban pendientes (simulado).",
+    "Precisión buena · ±5 m"
+   ],
+   "paso": "GPS: al ubicar"
+  },
+  {
+   "sel": "#vista-registrar",
+   "violaciones": [],
+   "paso": "axe Nuevo registro con el GPS afinando"
+  },
+  {
+   "segundos": 12.3,
+   "paso": "cabo de apoyo: segundos hasta el aviso"
+  },
+  {
+   "visible": true,
+   "texto": "Jornada compartida\n\nAhora es cabo de apoyo en la jornada compartida «Prueba de teclado r2», que coordina Perengano Gómez Ejemplo. Ya puede registrar en ella.\n\nCómo funciona:\n\nRegistran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.\nUsted corrige sólo sus árboles.\nAl acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.\nLa Coordinación cierra la jornada y genera el reporte.\nEntendido",
+   "foco": {
+    "tag": "button",
+    "id": "btn-confirmar-si",
+    "texto": "Entendido",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": "dlg-confirmar"
+   },
+   "rol": null,
+   "etiqueta": "dlg-confirmar-titulo dlg-confirmar-texto",
+   "describe": "dlg-confirmar-cuerpo",
+   "paso": "cabo de apoyo: el aviso al entrar"
+  },
+  {
+   "sel": "#dlg-confirmar",
+   "violaciones": [],
+   "paso": "axe aviso «Jornada compartida» al cabo de apoyo"
+  },
+  {
+   "abierto": false,
+   "foco": {
+    "tag": "h1",
+    "id": "titulo-registrar",
+    "texto": "Nuevo registro",
+    "pressed": null,
+    "contorno": "none 3px rgb(0, 0, 0)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "paso": "cabo de apoyo: Intro en «Entendido»"
+  },
+  {
+   "sel": "#franja-jornada",
+   "violaciones": [],
+   "paso": "axe franja del cabo de apoyo"
+  },
+  {
+   "texto": "JORNADA ACTIVA\n\nVer detalle\n\nPrueba de teclado r2\nJornada compartida · coordina Perengano Gómez Ejemplo\n0 de 30 árboles · 0 suyos\n\nCambiar jornada\nTerminar mi parte",
+   "cerrar": "Terminar mi parte",
+   "paso": "cabo de apoyo: franja"
+  },
+  {
+   "dialogos": [
+    "dlg-confirmar"
+   ],
+   "foco": {
+    "tag": "button",
+    "id": "btn-confirmar-no",
+    "texto": "Cancelar",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": "dlg-confirmar"
+   },
+   "texto": "Terminar mi parte\n\n¿Terminar su parte en «Prueba de teclado r2», con 0 árboles suyos?\n\nLo que tenga por enviar se envía en cuanto haya señal.\nLa jornada sale de su lista y ya no registra en ella.\nLa Coordinación cierra la jornada y genera el reporte.\nTerminar mi parte\nCancelar",
+   "paso": "«Terminar mi parte»: la pregunta"
+  },
+  {
+   "sel": "#dlg-confirmar",
+   "violaciones": [],
+   "paso": "axe pregunta «Terminar mi parte»"
+  },
+  {
+   "foco": {
+    "tag": "button",
+    "id": "btn-jornada-cerrar",
+    "texto": "Terminar mi parte",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "dialogos": [],
+   "paso": "«Terminar mi parte»: Escape"
+  },
+  {
+   "anuncios": [
+    "Con conexión · Al día (simulado)",
+    "Cargados: 1,452 jornadas y 22,142 árboles de cabos y coordinaciones de la Secretaría y de otras instituciones, desde enero de 2024 hasta hoy."
+   ],
+   "etiqueta": "Tipo de jornada",
+   "tarjetas": [],
+   "paso": "Jornadas: «Tipo de jornada» = compartidas"
+  },
+  {
+   "sel": "#vista-jornadas",
+   "violaciones": [],
+   "paso": "axe Jornadas con el filtro «Tipo de jornada»"
+  },
+  {
+   "foco": {
+    "tag": "h1",
+    "id": "jornada-titulo",
+    "texto": "Prueba de teclado r2",
+    "pressed": null,
+    "contorno": "none 3px rgb(0, 0, 0)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "paso": "ficha: el foco al abrir"
+  },
+  {
+   "dialogos": [],
+   "botones": [
+    [
+     "btn-jornada-volver",
+     "Jornadas"
+    ],
+    [
+     "btn-jornada-estado",
+     "Cerrar jornada"
+    ],
+    [
+     "btn-jornada-editar",
+     "Editar jornada"
+    ],
+    [
+     "btn-jornada-apoyos",
+     "Cabos de apoyo"
+    ],
+    [
+     "btn-jornada-eliminar",
+     "Eliminar jornada"
+    ],
+    [
+     "btn-jornada-faltante",
+     "Registrar árbol"
+    ]
+   ],
+   "paso": "ficha de la jornada compartida"
+  },
+  {
+   "sel": "#vista-jornadas",
+   "violaciones": [],
+   "paso": "axe ficha de la jornada compartida"
+  },
+  {
+   "dialogos": [
+    "dlg-apoyos"
+   ],
+   "foco": {
+    "tag": "h2",
+    "id": "dlg-apoyos-titulo",
+    "texto": "Cabos de apoyo",
+    "pressed": null,
+    "contorno": "none 3px rgb(0, 0, 0)",
+    "sombra": "none",
+    "dialogo": "dlg-apoyos"
+   },
+   "paso": "ficha: «Cabos de apoyo» abre"
+  },
+  {
+   "sel": "#dlg-apoyos",
+   "violaciones": [],
+   "paso": "axe ventana «Cabos de apoyo» (ficha)"
+  },
+  {
+   "foco": {
+    "tag": "button",
+    "id": "btn-jornada-apoyos",
+    "texto": "Cabos de apoyo",
+    "pressed": null,
+    "contorno": "solid 3px rgb(27, 95, 170)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "dialogos": [],
+   "paso": "ficha: Escape en «Cabos de apoyo»"
+  },
+  {
+   "visible": false,
+   "paso": "ficha: «Relevo de cabo» no se ve en la compartida"
+  },
+  {
+   "opciones": [
+    "Todas",
+    "Compartidas",
+    "No compartidas"
+   ],
+   "conteo": null,
+   "paso": "Registros: «Tipo de jornada»"
+  },
+  {
+   "sel": "#vista-registros",
+   "violaciones": [],
+   "paso": "axe Registros con «Tipo de jornada»"
+  },
+  {
+   "aid": [
+    "demo-a-000001",
+    [
+     "calle_estado",
+     "calle_clave",
+     "calle_version",
+     "calle",
+     "calle_entre_1",
+     "calle_entre_2",
+     "calle_esquina",
+     "calle_atiende",
+     "calle_llave",
+     "calle_distancia_m"
+    ]
+   ],
+   "paso": "detalle: árbol elegido"
+  },
+  {
+   "calle": [
+    "Calle Morelos\nentre Calle Ignacio Zaragoza y Calle 5 de Febrero\nCalle secundaria · Alcaldía Xochimilco",
+    "secundaria",
+    "rgb(43, 45, 46)"
+   ],
+   "sustituir": [
+    "Sustituir árbol",
+    "rgb(107, 63, 160)",
+    "rgb(255, 255, 255)",
+    "rgb(107, 63, 160)",
+    "2px"
+   ],
+   "editar": [
+    "Editar",
+    "rgb(0, 0, 0)",
+    "rgb(255, 255, 255)",
+    "rgb(31, 32, 33)"
+   ],
+   "paso": "detalle del árbol"
+  },
+  {
+   "sel": "#dlg-detalle",
+   "violaciones": [],
+   "paso": "axe detalle del árbol con su calle"
+  },
+  {
+   "foco": {
+    "tag": "h1",
+    "id": "titulo-registros",
+    "texto": "Registros de mi institución",
+    "pressed": null,
+    "contorno": "none 3px rgb(0, 0, 0)",
+    "sombra": "none",
+    "dialogo": null
+   },
+   "paso": "detalle: Escape"
+  },
+  {
+   "hay": null,
+   "paso": "detalle desde «Ver»: no hay botón Ver visible"
+  },
+  {
+   "opciones": [
+    "Todas",
+    "Compartidas",
+    "No compartidas"
+   ],
+   "paso": "Supervisión: «Tipo de jornada»"
+  },
+  {
+   "sel": "#vista-supervision",
+   "violaciones": [],
+   "paso": "axe Supervisión con «Tipo de jornada»"
+  },
+  {
+   "contenedor": "bloque sup-apartado sup-seccion",
+   "texto": "Por calle\n17 árboles en calles secundarias\nRed vial\nQuién la atiende\nCalles\nÁrboles\n% del total\nCalles secundarias\nAlcaldía Coyoacán\n6\n17\n100 %\n\nCalles secundarias · Alcaldía Coyoacán\n\nCalle\nÁrboles\n% del total\nJornadas\nCalle Cuicatlán\nentre Calle Alotepec y Calle Ixcatlan\nCoyoacán\n4\n23 %\n1\nCalle Ixcatlan\nentre Calle Cuicatlán y Calle Pochutla\nCoyoacán\n4\n23 %\n1\nCalle Ojitlán\nentre Calle Yucuchito y Calle Cuicatlán\nCoyoacán\n4\n23 %\n1\nCalle Pochutla\nentre Calle Ixcatlan y Calle Alotepec\nCoyoacán\n3\n18 %\n1\nCalle Alotepec\nentre Calle Cuicatlán y Calle Pochutla\nCoyoacán\n1\n6 %\n1\nCalle Ayautla\nentre Ca",
+   "paso": "Supervisión: «Por calle»"
+  },
+  {
+   "sel": "#vista-supervision",
+   "violaciones": [],
+   "paso": "axe Supervisión con «Por calle» abierto"
+  },
+  {
+   "nota": "Una cuenta con árboles o jornadas no se elimina: se desactiva.",
+   "ayuda": "Registra, y ve, edita y elimina los registros de todos los cabos de su institución y los suyos. Elimina también las jornadas vacías, pasa una jornada abierta a otro cabo (relevo) y abre jornadas compartidas.",
+   "paso": "Usuarios: la nota"
+  },
+  {
+   "sel": "#dlg-usuario",
+   "violaciones": [],
+   "paso": "axe ventana de la cuenta (Coordinación)"
+  },
+  {
+   "sel": "#vista-usuarios",
+   "violaciones": [],
+   "paso": "axe Usuarios"
+  }
+ ],
+ "errores": [],
+ "fin": "2026-10-27 15:32:09"
+}

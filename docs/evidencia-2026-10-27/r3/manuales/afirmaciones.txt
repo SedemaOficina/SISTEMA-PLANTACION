@@ -1,0 +1,37 @@
+Revisión de los dos manuales contra la app (copia r3, commit 1eb30e6, 1.4.2), 27-10-2026.
+
+Guiones (se repiten con PYTHONUTF8=1 python -I <guion> ...):
+  citas.py <raíz>              cada texto entre «» de los dos manuales, buscado letra por letra en index.html y js/*.js
+                               salida: citas.txt
+  sondeo.py <salida>           pestañas, vista inicial, menú, filtros, cifras, desgloses y Fotografías de 7 cuentas
+                               (390x844) y escritorio (1440x900), con datos de demostración. Salida: sondeo/sondeo.json
+  sondeo2.py <salida>          «Ver detalle» de la franja, la franja del cabo de apoyo, «Terminar mi parte»,
+                               «Cabos de apoyo», el cierre de la compartida (sin confirmar) y «Marcar … revisados».
+                               Salida: sondeo2/sondeo2.json y capturas
+
+Cifras:
+  Manual del personal: 123 textos citados distintos; 99 están letra por letra en la app; 18 son de ajustes del
+  teléfono (no de la app; M551); 6 son plantillas o ejemplos comprobados en su forma real.
+  Manual de la Administración: 45 textos citados; 40 letra por letra; 5 son mensajes del servidor o plantillas
+  comprobados (acceso.ts:142 y 145, catalogos.js:128, carga.js:313 y 454).
+  Afirmaciones revisadas: unas 150 del manual del personal (19 secciones) y unas 70 del de la Administración (13).
+
+Falsas o atrasadas (detalle en el informe de la bifurcación):
+  M-01 Media  personal §6  :344  «Ver detalle» no abre la ficha: pliega/despliega la tarjeta (sólo teléfono)
+  M-02 Media  personal §13 :654, §9 :490 y §10 :576  el cierre de una compartida deja en el teléfono los árboles
+              que lleguen después; el manual sólo dice «avisa, no impide»
+  M-03 Baja   personal §8  :463  el detalle ya no trae folio (RP-03) y al cabo no le dice quién registró (RP-05)
+  M-04 Baja   personal §4  :266  «ventana con dos botones»: el cierre con puntos trae tres; los avisos, uno
+  M-05 Baja   personal §11 :600  Fotografías no tiene «los mismos filtros» que Mi avance
+  M-06 Baja   personal §15 :697  «por reporte generado o no»: sólo «Sin reporte todavía»; falta «Buscar por nombre»
+  M-07 Baja   personal §12 :607  «todo lo del cabo (secciones 6 a 11)»: la coordinación no tiene Mi avance
+  M-08 Baja   personal §1  :115-116 y §4  perfiles «Coordinación»/«Dirección»; la app dice «Coordinador»/«Directivo»
+  M-09 Baja   personal §9  :505  «Marcar todos como revisados»: la app dice «Marcar los N como revisados»
+  M-10 Info   personal §13 :640  «Guardar»: la app dice «Guardar: N cabos de apoyo»
+  M-11 Info   personal, 27 «coordinación» en minúscula; la app, «la Coordinación»
+  M-12 Info   personal §9/§10/§13  «personal de apoyo» y «cabos de apoyo» juntos, sin aclarar
+  M-13 Info   personal §17 :767  el reporte también lo genera la Administración global
+  M-14 Info   personal §12 :616  encargado: entre quienes registraron en la jornada, no «ese día»; en la compartida
+              el PDF dice la Coordinación y el nombre del archivo, el encargado
+  M-15 Info   admin §6 :290  las instituciones nunca se eliminan
+  M-16 Info   admin §12 :481  cambiar de institución a una coordinación con jornada abierta le quita editarla

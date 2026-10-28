@@ -6706,3 +6706,47 @@ misma sesión decidió lo que falta para la entrega al SIA (D337).
 - No se corrió la prueba completa de la aplicación: sólo cambiaron una nota y el número de versión.
 
 **Siguiente paso.** La prueba en campo, ahora con la 1.4.2, y la auditoría antes del paquete.
+
+## Bloque 256 — Las pruebas en verde (28-10-2026)
+
+**Versión 1.4.3.** El bloque 1 del plan de corrección de la auditoría del 27-10-2026 (`docs/AUDITORIA-2026-10-27.md`),
+con las decisiones de Liber (D339). Sube también el informe de la auditoría y su evidencia de texto.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| «Generar reporte» desde la ficha abierta (A1-01) | Usaba los árboles de cuando se abrió la ficha: la calle o el folio que el envío les ponía después no llegaban al reporte | Vuelve a leer los árboles de la jornada antes de generarlo |
+| La prueba completa (A1-02) | Se detenía o fallaba de vez en cuando en los tramos 8, 13, 18, 40, 42, 54, 84 y 85: esperaba tiempos fijos | Espera lo que pasa en pantalla: que la jornada quede activa, que terminen los avisos de entrada, que se pinte la lista o el aviso |
+| Avisos de entrada (A1-05, decisión 19) | Las pruebas no sabían cuándo terminaba la revisión de avisos | `<html data-avisos>` dice «revisando» y, al terminar, «listos». No cambia nada en pantalla |
+| GitHub (A1-03, decisión 21) | En rojo desde el bloque 252, sin aviso ni constancia | El README lleva el indicador de las pruebas y la regla de cierre: revisar la corrida del commit anterior y anotar su número aquí |
+| `preparar_produccion.py` (A3-01) | En un clon de Windows con fin de renglón CRLF se caía y dejaba una copia a medias | Reconoce LF y CRLF, arma la copia en una carpeta temporal y sólo la pasa al destino si termina bien. `.gitattributes` fija LF |
+| El rol del servicio en las pruebas (A1-04, en parte) | `apoyo_servidor.mjs quitar` le retiraba `srp_api` a la cuenta local aunque otra prueba lo usara | Lo presta sólo si falta y ya no lo retira. Falta una base propia para `npm test`: crearla pide la cuenta de administración de PostgreSQL |
+
+**Qué cambió.**
+- `js/jornadas.js` (`irAlReporte`), `js/jornada-activa.js` (`conAvisos`, `alLlegarLoEnviado`) y `js/app.js` (la entrada).
+- `pruebas/prueba.py`: `aceptar_avisos`, `esperar_avisos` e `iniciar_jornada` esperan condiciones; los tramos 8, 13,
+  18, 40, 42, 54, 84 y 85 sin esperas fijas donde fallaban; ctx102 comprueba la marca `data-avisos`.
+- `pruebas/auditoria.py`: dos comprobaciones nuevas de `preparar_produccion.py` (la copia desde LF y desde CRLF es la
+  misma; ante un error no se crea el destino). Fallan con la herramienta de antes y pasan con la nueva.
+- `pruebas/apoyo_servidor.mjs`, `herramientas/preparar_produccion.py` y `.gitattributes` (nuevo).
+- README (indicador de GitHub, la versión en la franja de arriba, regla de cierre), `VERSION`, marcas de `index.html`,
+  etapa de `js/config.js`, `docs/MEJORAS.md` y `docs/DECISIONES.md` (D339, las 22 decisiones de Liber).
+- `docs/AUDITORIA-2026-10-27.md` con su «Seguimiento de las correcciones», y `docs/evidencia-2026-10-27/` (228 archivos
+  de texto, 2.5 MB). Las capturas y lo sensible se quedan fuera del repositorio.
+
+**Verificación.**
+- `pruebas/por_tramos.py` (la prueba completa): 1,538 de 1,540 comprobaciones, sin tramos detenidos, 55 min. Las dos
+  fallas son las conocidas: el Excel de `originales/`, que compara con un archivo que no está en el repositorio, y los
+  porcentajes del reporte, que esperan la decisión de Liber (R-1 de las muestras). La auditoría había dado 844
+  comprobaciones, 3 fallas y 3 tramos detenidos.
+- Las repeticiones: los tramos 8 y 42, tres veces sin fallas; con el equipo 4 veces más lento, el 42 falló 1 de 2 (la
+  espera al guardar la fecha) y se corrigió. Una segunda corrida completa, con el equipo ocupado por otra sesión, detuvo
+  los tramos 13 y 18 y falló el 40: tres esperas fijas más, corregidas. Después de la última corrección, los tramos 13 y
+  42 pasan 2 de 2, una vez normal y otra con el equipo lento.
+- `pruebas/prueba_conexion.py`: 126 de 126. `pruebas/auditoria.py`: 149 comprobaciones, 0 hallazgos.
+- `npm test` no se corrió: el servidor no cambió.
+- GitHub, la corrida del commit anterior (bloque 255, número 40566918223): en rojo, con 1,489 comprobaciones, 2 fallas
+  (la calle del reporte, que corrige A1-01, y los porcentajes) y los tramos 8 y 85 detenidos (A1-02). De la de este
+  bloque se espera sólo la de los porcentajes.
+
+**Siguiente paso.** El bloque 4 (servidor y base), que no cambia pantallas. Las muestras de los bloques 2, 3 y 5
+esperan la aprobación de Liber en una página aparte.

@@ -1,0 +1,2 @@
+Versión 1.4.2, con datos reales: 76 archivos en C:\sia-rev\tmp\aud1027\r4\paquete\srp-sia-provisional\app
+Sin: js/datos-ficticios.js, assets/catalogos/catalogo-vehiculos.js, js/demostracion.js, js/espejo.js, assets/calles/

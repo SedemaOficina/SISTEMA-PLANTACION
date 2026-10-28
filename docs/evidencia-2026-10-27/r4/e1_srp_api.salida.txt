@@ -1,0 +1,197 @@
+SET
+SET
+BEGIN
+SET
+ ahora_soy |   search_path   
+-----------+-----------------
+ srp_api   | "$user", public
+(1 fila)
+
+SAVEPOINT
+ plantaciones 
+--------------
+        18359
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ alcaldias 
+-----------
+        16
+(1 fila)
+
+RELEASE
+SAVEPOINT
+    capa_calles    |       capa_version        
+-------------------+---------------------------
+ territorio.calles | territorio.calles_version
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ tramos 
+--------
+ 178771
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ version |           instalada           
+---------+-------------------------------
+ 1.0.0   | 2026-10-25 13:37:58.973587-06
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ calle_estado | calle | calle_entre_1 | calle_entre_2 | calle_distancia_m | calle_version 
+--------------+-------+---------------+---------------+-------------------+---------------
+ lejos        |       |               |               |                   | 1.0.0
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ bit_ins | acc_ins 
+---------+---------
+ t       | t
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ statement_timeout 
+-------------------
+ 20s
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ERROR:  permiso denegado a la tabla bitacora
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla bitacora
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla bitacora_acceso
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla folios
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla fotografias
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla duplicados
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla cargas
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla plantaciones
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla sesiones
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla credenciales
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado al esquema srp
+LÕNEA 1: CREATE TABLE srp.otra (x int);
+                     ^
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado al esquema public
+LÕNEA 1: CREATE TABLE public.otra (x int);
+                     ^
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la base de datos srp_local
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla migraciones
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la funci√≥n recalcular_calles
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla alcaldia
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla calles
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla calles_version
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla calles_version
+ROLLBACK
+SAVEPOINT
+ERROR:  permiso denegado a la tabla capa_prioritarias
+ROLLBACK
+SAVEPOINT
+ permisos_directos_fuera_de_srp 
+--------------------------------
+                              0
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ puede_escribir_calle | puede_escribir_calle_version 
+----------------------+------------------------------
+ t                    | t
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ ejecuta_recalcular | ejecuta_calle | ejecuta_poner_calle 
+--------------------+---------------+---------------------
+ f                  | t             | t
+(1 fila)
+
+RELEASE
+SAVEPOINT
+ crea_esquemas | crea_temporales 
+---------------+-----------------
+ f             | t
+(1 fila)
+
+RELEASE
+SAVEPOINT
+        esquema         | usage | crear 
+------------------------+-------+-------
+ public                 | t     | f
+ respaldo_calles_previa | f     | f
+ srp                    | t     | f
+ territorio             | t     | f
+(4 filas)
+
+RELEASE
+SAVEPOINT
+ table_schema |    table_name     |         privilegios         
+--------------+-------------------+-----------------------------
+ srp          | areas             | DELETE,INSERT,SELECT,UPDATE
+ srp          | bitacora          | INSERT,SELECT
+ srp          | bitacora_acceso   | INSERT,SELECT
+ srp          | capa_prioritarias | SELECT
+ srp          | capas             | SELECT
+ srp          | cargas            | INSERT,SELECT,UPDATE
+ srp          | credenciales      | INSERT,SELECT,UPDATE
+ srp          | duplicados        | INSERT,SELECT,UPDATE
+ srp          | especies          | DELETE,INSERT,SELECT,UPDATE
+ srp          | folio_secuencias  | INSERT,SELECT,UPDATE
+ srp          | folios            | INSERT,SELECT
+ srp          | fotografias       | INSERT,SELECT
+ srp          | instituciones     | DELETE,INSERT,SELECT,UPDATE
+ srp          | jornadas          | DELETE,INSERT,SELECT,UPDATE
+ srp          | migraciones       | SELECT
+ srp          | parametros        | INSERT,SELECT,UPDATE
+ srp          | plantaciones      | INSERT,SELECT,UPDATE
+ srp          | prioridades       | INSERT,SELECT,UPDATE
+ srp          | programas         | DELETE,INSERT,SELECT,UPDATE
+ srp          | sesiones          | INSERT,SELECT,UPDATE
+ srp          | solicitantes      | DELETE,INSERT,SELECT,UPDATE
+ srp          | usuarios          | DELETE,INSERT,SELECT,UPDATE
+ srp          | vehiculos         | DELETE,INSERT,SELECT,UPDATE
+(23 filas)
+
+RELEASE
+ROLLBACK

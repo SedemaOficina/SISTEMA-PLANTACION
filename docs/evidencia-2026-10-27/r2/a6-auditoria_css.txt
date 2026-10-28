@@ -1,0 +1,85 @@
+AUDITORÍA DE LA HOJA DE ESTILOS · 1621 renglones · 1022 reglas · 109 variables · 510 clases
+
+A1  Colores escritos fuera de :root: 0
+
+A2  Selectores con #id: 0
+
+A3  !important fuera de reduced-motion y [hidden]: 0
+
+A4  Regla declarada más de una vez en la misma consulta, o lo propio de un selector lejos de su grupo: 0
+
+A5  Variables usadas que no están definidas ni las pone el código: 0
+
+A6  Propiedad repetida dentro de una regla: 0
+
+A7  Reglas vacías: 0
+
+B1  Espacios (margin, padding, gap) con medida suelta en lugar de --e-*: 0
+
+B2  Tamaño de letra sin token --t-*: 0
+
+B3  Radio sin token --radio*: 0
+
+B4  Sombra escrita fuera de :root: 0
+
+B5  z-index fuera de la escala de capas --z-*: 0
+
+B7  Transiciones y animaciones: duraciones sin token: 0
+
+B8  Interlineado fuera de los tres de la norma (1, 1.2, 1.5): 0
+    valores: 1.2 ×11, 1.5 ×8, 1 ×2
+
+B9  Anchos y altos con medida suelta (controles, mapas, iconos): 125
+    valores: 40px ×14, 56px ×12, 44px ×9, 8px ×8, 28px ×8, 10px ×6, 20px ×6, 14px ×4, 26px ×4, 36px ×4, 12px ×4, 32px ×4, 64px ×3, 30rem ×3
+    163  .encabezado-logo { max-height: 40px }
+    170  .menu-cuenta { min-width: 15rem }
+    253  .cfg-icono { width: 44px }
+    253  .cfg-icono { height: 44px }
+    275  .dup-mapa { height: 190px }
+    279  .dup-punto { width: 14px }
+    … y 119 más (--todo)
+
+C1  Variables definidas que nadie usa: 0
+
+C2  Clases de la hoja que no aparecen en index.html ni en js/ (posible código muerto): 0
+
+C3  Bloques idénticos de tres o más declaraciones en el mismo componente (se unen): 0
+
+C3b  Para saber: bloques idénticos en componentes distintos (no se unen): 16
+    272 .dup-lista  =  511 .lista-puntos
+    341 .dialogo-cerrar::after, .franja-cerrar::after  =  966 .aviso-cerrar::after
+    347 .btn-chico::after  =  578 .franja-detalle-boton::after  =  721 .btn-reiniciar::after  =  839 .btn.btn-filtros::after  =  964 .aviso-accion::after  =  1053 .chips-reci
+    416 .jornada-titulo-caja, .jornada-datos  =  1040 .franja-guardado-cuerpo
+    443 .jornada-lugar svg  =  1140 .registro .registro-lugar svg
+    447 .jornada-datos .jornada-cifras  =  1042 .franja-guardado-datos  =  1181 .sup-j-datos
+    … y 10 más (--todo)
+
+C4  Selectores de cuatro o más niveles (frágiles ante cambios de estructura): 9
+    618  .campo-punto .campo-triple .campo + .campo
+    996  .previa-tabla tbody tr:nth-child(even) td
+    1220  .sup-tabla tbody tr:nth-child(even) td
+    1265  [data-contraste="alto"] .zona-filtros .campo select
+    1265  [data-contraste="alto"] .zona-filtros .campo input
+    1378  .campo-punto .campo-triple .campo + .campo
+    … y 3 más (--todo)
+
+C5  Selectores que atan la clase a una etiqueta (div.x, button.x): 0
+
+D1  style="" en index.html: 0
+
+D2  style="" dentro del HTML que arma el código (la CSP lo bloquea): 0
+
+D3  el.style.x = … en js/ (permitido; conviene que sea sólo para valores calculados): 8
+    propiedades: opacity ×2, height ×2, top ×1, left ×1, maxHeight ×1, maxWidth ×1
+    app.js:297  .style.top = (abajo ? r.bottom + 4 : Math.max(8, r.top - m.height - 4)) +
+    app.js:298  .style.left = Math.max(8, Math.min(r.right - m.width, window.innerWidth - 
+    prioritarias.js:237  .style.maxHeight = Math.max(120, t.y - 20) + 'px'
+    prioritarias.js:237  .style.maxWidth = Math.max(160, t.x - 74) + 'px'
+    prioritarias.js:272  .style.opacity = String(e.opacidad)
+    prioritarias.js:294  .style.opacity = String(e.opacidad)
+    … y 2 más (--todo)
+
+Grosor de letra en uso: 500 ×44, 600 ×40, 700 ×32, 400 ×10, 800 ×3
+Altura de línea en uso: 1.2 ×11, 1.5 ×8, 1 ×2
+
+Norma de la hoja: 0 hallazgos

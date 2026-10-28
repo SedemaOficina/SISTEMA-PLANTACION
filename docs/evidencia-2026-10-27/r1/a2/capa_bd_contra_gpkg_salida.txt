@@ -1,0 +1,4 @@
+gpkg: 178771 tramos ({'LineString': 178771}); base: 178771 tramos
+claves sólo en el gpkg: 0 · sólo en la base: 0
+diferencias de atributos: ninguna
+diferencias de geometría: ninguna

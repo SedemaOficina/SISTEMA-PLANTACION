@@ -1,0 +1,15 @@
+[
+ {
+  "tramo": 1,
+  "renglon": 268,
+  "nombre": "ACCESO",
+  "segundos": 590,
+  "comprobaciones": 645,
+  "fallas": [
+   "FALLA la tabla de ejemplares trae número, especie con su nombre científico entre paréntesis, la calle (ya enviados; en medio del Zócalo no hay) y precisión, sin coordenadas, folio ni prioridad por árbol: ['1', 'Ahuehuete (Taxodium mucronatum)', '±6 m']  [renglón 1072]",
+   "FALLA la vista previa dice «Jornada 2 de 3» y su nombre, y sólo trae sus ejemplares  [renglón 1237]"
+  ],
+  "detenido": "",
+  "final": ""
+ }
+]

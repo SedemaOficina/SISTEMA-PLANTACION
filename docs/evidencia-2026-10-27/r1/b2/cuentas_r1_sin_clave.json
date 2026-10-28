@@ -1,0 +1,25 @@
+{
+ "cuentas": [
+  {
+   "id": "78a4cdf1-ca71-4606-9172-dd7e148829d0",
+   "correo": "r1.coord@ejemplo.local",
+   "nombre": "R1 Coordinación Auditoría",
+   "perfil": "COORDINADOR",
+   "organizacion_id": "o-sedema"
+  },
+  {
+   "id": "b7867dd6-7386-45a9-9609-c3b265a2b712",
+   "correo": "r1.cabo@ejemplo.local",
+   "nombre": "R1 Cabo Auditoría",
+   "perfil": "CABO",
+   "organizacion_id": "o-sedema"
+  },
+  {
+   "id": "2afa7717-be2d-4c72-9569-d36f7ee9ab88",
+   "correo": "r1.cabo2@ejemplo.local",
+   "nombre": "R1 Cabo Dos Auditoría",
+   "perfil": "CABO",
+   "organizacion_id": "o-sedema"
+  }
+ ]
+}

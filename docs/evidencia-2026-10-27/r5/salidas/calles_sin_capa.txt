@@ -1,0 +1,72 @@
+--- Lo que cambi√≥ la copia (las referencias que quedan a la capa y a srp.plantaciones):
+1:-- LA CALLE DE CADA √ÅRBOL, sobre territorio.calles_r5_ausente (la capa de calles de la Ciudad de M√©xico, paquete calles-cdmx).
+8:--   SELECT pg_temp.recalcular_calles();
+18:   ¬∑ calle_version: la versi√≥n instalada de la capa (territorio.calles_r5_ausente_version).
+20:CREATE FUNCTION pg_temp.calle(lat numeric, lng numeric)
+30:  IF lat IS NULL OR lng IS NULL OR to_regclass('territorio.calles_r5_ausente') IS NULL OR to_regclass('territorio.calles_r5_ausente_version') IS NULL THEN
+35:  SELECT x.version INTO v FROM territorio.calles_r5_ausente_version x ORDER BY x.instalada DESC LIMIT 1;
+39:      FROM territorio.calles_r5_ausente c ORDER BY c.geom <-> p LIMIT 12),
+52:CREATE FUNCTION pg_temp.poner_calle() RETURNS trigger
+60:    FROM pg_temp.calle(NEW.lat, NEW.lng) x;
+63:CREATE TRIGGER plantaciones_calle_alta BEFORE INSERT ON pg_temp.r5_plantaciones
+64:  FOR EACH ROW EXECUTE FUNCTION pg_temp.poner_calle();
+65:CREATE TRIGGER plantaciones_calle_punto BEFORE UPDATE OF lat, lng ON pg_temp.r5_plantaciones
+66:  FOR EACH ROW WHEN (NEW.lat IS DISTINCT FROM OLD.lat OR NEW.lng IS DISTINCT FROM OLD.lng) EXECUTE FUNCTION pg_temp.poner_calle();
+70:CREATE FUNCTION pg_temp.recalcular_calles() RETURNS integer
+77:  IF to_regclass('territorio.calles_r5_ausente') IS NULL OR to_regclass('territorio.calles_r5_ausente_version') IS NULL THEN
+78:    RAISE EXCEPTION 'territorio.calles_r5_ausente no est√° instalada: primero se instala la capa de calles';
+80:  SELECT x.version INTO v FROM territorio.calles_r5_ausente_version x ORDER BY x.instalada DESC LIMIT 1;
+81:  UPDATE pg_temp.r5_plantaciones x
+83:          calle_atiende, calle_llave, calle_distancia_m) = (SELECT * FROM pg_temp.calle(x.lat, x.lng))
+El despliegue de duraciÛn est· activado.
+BEGIN
+DuraciÛn: 0.250 ms
+ capa_ausente 
+--------------
+ 
+(1 fila)
+
+DuraciÛn: 0.578 ms
+CREATE TABLE
+DuraciÛn: 16.472 ms
+CREATE FUNCTION
+DuraciÛn: 5.309 ms
+CREATE FUNCTION
+DuraciÛn: 0.540 ms
+CREATE TRIGGER
+DuraciÛn: 1.035 ms
+CREATE TRIGGER
+DuraciÛn: 0.730 ms
+CREATE FUNCTION
+DuraciÛn: 0.540 ms
+INSERT 0 200
+DuraciÛn: 11.259 ms
+ altas | sin_calle 
+-------+-----------
+   200 |       200
+(1 fila)
+
+DuraciÛn: 0.798 ms
+UPDATE 5
+DuraciÛn: 1.266 ms
+ sin_calle_tras_mover 
+----------------------
+                  200
+(1 fila)
+
+DuraciÛn: 0.484 ms
+SAVEPOINT
+DuraciÛn: 0.102 ms
+ERROR:  territorio.calles_r5_ausente no est√° instalada: primero se instala la capa de calles
+CONTEXTO:  funci√≥n PL/pgSQL pg_temp_60.recalcular_calles() en la l√≠nea 7 en RAISE
+DuraciÛn: 3.158 ms
+ROLLBACK
+DuraciÛn: 0.119 ms
+ calle_estado | calle_clave | calle_version | calle | calle_entre_1 | calle_entre_2 | calle_esquina | vialidad_red | vialidad_tipo | calle_atiende | calle_llave | calle_distancia_m 
+--------------+-------------+---------------+-------+---------------+---------------+---------------+--------------+---------------+---------------+-------------+-------------------
+              |             |               |       |               |               |               |              |               |               |             |                  
+(1 fila)
+
+DuraciÛn: 0.235 ms
+ROLLBACK
+DuraciÛn: 1.782 ms

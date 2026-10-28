@@ -1,0 +1,6 @@
+Versión 1.4.2
+120 archivos en el manifiesto
+Paquete: C:\sia-rev\tmp\aud1027\r4\paquete\srp-sia-provisional.zip
+Suma:    C:\sia-rev\tmp\aud1027\r4\paquete\srp-sia-provisional.zip.sha256
+Aviso revisado: app/vendor/jspdf.umd.min.js (la biblioteca de PDF: los nombres de sus propios campos de contraseña)
+Aviso revisado: backend/completos/src/db.ts (el archivo del SIA tal como está en su repositorio, con sus valores por omisión, más la conexión del SRP)

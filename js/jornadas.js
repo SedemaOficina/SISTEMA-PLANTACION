@@ -1477,10 +1477,14 @@ SRP.jornadas = {
       : 'La jornada «' + c.nombre + '» ya no tiene cabos de apoyo vigentes.', 'exito');
   },
 
-  // El reporte se genera desde la ficha de su jornada: datos del cierre, vista previa y PDF, sin salir de Jornadas
-  irAlReporte() {
-    const j = this.jornada;
-    if (!j || j.estatus !== 'cerrada') return;
+  /* El reporte se genera desde la ficha de su jornada: datos del cierre, vista previa y PDF, sin salir de Jornadas.
+     Sus árboles se vuelven a leer: desde que se abrió la ficha, el envío pudo ponerles la calle o el folio, o traer
+     los de un cabo de apoyo */
+  async irAlReporte() {
+    if (!this.jornada || this.jornada.estatus !== 'cerrada') return;
+    await this.pintarLista(true);
+    const j = this._todas.find(x => x.clave === this.jornada.clave) || this.jornada;
+    this.jornada = j;
     if (SRP.permisos.puede('jornada.editar', j.dato || j)) SRP.reportes.abrir(j.registros, j.fecha, j.cabo_id, j);
     else SRP.reportes.descargar(j.registros, j.fecha, j.cabo_id, j);
   }

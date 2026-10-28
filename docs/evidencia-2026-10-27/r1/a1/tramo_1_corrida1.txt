@@ -1,0 +1,5 @@
+  1  ACCESO                                                          590 s  2 fallas de 645
+       FALLA la tabla de ejemplares trae número, especie con su nombre científico entre paréntesis, la calle (ya enviados; en medio del Zócalo no hay) y precisión, sin coordenadas, folio ni prioridad por árb
+       FALLA la vista previa dice «Jornada 2 de 3» y su nombre, y sólo trae sus ejemplares  [renglón 1237]
+
+tramos: 1 · comprobaciones: 645 · fallas: 2 · tramos detenidos: 0 · 10 min

@@ -1,0 +1,14 @@
+301 text/html cc=[] exp=[] loc=[/srp/] nosniff=[nosniff] csp=[] xfo=[]  /srp
+200 text/html cc=[no-cache] exp=[Tue, 27 Oct 2026 21:17:49 GMT] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/
+200 application/javascript cc=[no-cache] exp=[Tue, 27 Oct 2026 21:17:49 GMT] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/sw.js?v=1.4.2
+200 application/javascript cc=[max-age=2592000] exp=[Thu, 26 Nov 2026 21:17:50 GMT] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/js/config.js?v=1.4.2
+200 application/manifest+json cc=[no-cache] exp=[Tue, 27 Oct 2026 21:17:50 GMT] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/manifest.webmanifest
+200 application/octet-stream cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/VERSION
+200 application/octet-stream cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/vendor/LICENCIAS.md
+404 text/html cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/js/no-existe.js
+404 text/html cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/assets/calles/indice.json
+404 text/html cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/js/datos-ficticios.js
+404 text/html cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/js/demostracion.js
+401 application/json; charset=utf-8 cc=[no-store] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /api/srp/acceso/yo
+404 text/html cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/../index.html
+404 text/html cc=[] exp=[] loc=[] nosniff=[nosniff] csp=[] xfo=[]  /srp/.git/config

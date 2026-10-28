@@ -219,12 +219,25 @@ SRP.activa = {
      y avisa lo nuevo. */
   async alLlegarLoEnviado() {
     if (!SRP.sesion.usuario || !SRP.almacen.db) return;
-    if (!this.jornada && !this.el('ini-nombre').value.trim()) {
-      const ab = await this.abiertas();
-      if (ab.length) { this.jornada = ab[0]; if (SRP.app.vista === 'registrar') await this.preparar(); }
-    }
-    await this.avisarRelevos();
-    await this.avisarApoyos();
+    await this.conAvisos(async () => {
+      if (!this.jornada && !this.el('ini-nombre').value.trim()) {
+        const ab = await this.abiertas();
+        if (ab.length) { this.jornada = ab[0]; if (SRP.app.vista === 'registrar') await this.preparar(); }
+      }
+      await this.avisarRelevos();
+      await this.avisarApoyos();
+    });
+  },
+
+  /* Los avisos de entrada (otra fecha, relevo, jornada compartida) llegan unos segundos después de entrar. Mientras
+     se buscan o se muestran, <html data-avisos> dice «revisando»; al terminar, «listos». No cambia nada en pantalla:
+     sirve para que las pruebas esperen a los avisos y no un tiempo fijo. */
+  avisosEnCurso: 0,
+  async conAvisos(fn) {
+    const raiz = document.documentElement;
+    this.avisosEnCurso++;
+    raiz.dataset.avisos = 'revisando';
+    try { return await fn(); } finally { if (--this.avisosEnCurso === 0) raiz.dataset.avisos = 'listos'; }
   },
 
   /* AVISO DE RELEVO. Al entrar, quien recibió una jornada en relevo o dejó de registrar en una lo lee

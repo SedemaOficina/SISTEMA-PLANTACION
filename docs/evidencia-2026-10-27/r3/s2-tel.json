@@ -1,0 +1,107 @@
+{
+ "gps_25_2s": "Precisión aceptable · ±25 m\nAfinando la lectura del GPS, hasta 30 s. Mientras, puede llenar lo demás.",
+ "gps_25_boton": "Actualizar ubicación con mi posición",
+ "gps_25_alto": 104,
+ "gps_25_32s": "Precisión aceptable · ±25 m\nRevise en el mapa que el punto esté en el árbol; si no, arrástrelo hasta él.",
+ "gps_45_2s": "Precisión baja · ±45 m\nAfinando la lectura del GPS, hasta 30 s. Mientras, puede llenar lo demás.",
+ "gps_45_boton": "Actualizar ubicación con mi posición",
+ "gps_45_alto": 104,
+ "gps_45_32s": "Precisión baja · ±45 m\nEspere unos segundos al aire libre y vuelva a ubicar o arrastre el punto hasta el árbol.",
+ "quien_inicial": "¿Quién registra en esta jornada? *\n\nSólo yo\nVarios cabos\njornada compartida",
+ "form_iniciar_carga_solo": {
+  "palabras": 78,
+  "botones": 11,
+  "campos": 8,
+  "alto": 1130
+ },
+ "quien_varios": "¿Quién registra en esta jornada? *\n\nSólo yo\nVarios cabos\njornada compartida\n\nMarque a los cabos de su institución que registran con usted:\n\nArturo Méndez Demo\nFulana de Tal Ejemplo\nJulián Ortega Demo\nMarisol Pérez Demo\nRocío Hernández Demo\nTomás Díaz Demo\nYolanda Cruz Demo\n\nCada cabo abre el sistema con señal un momento para que le llegue la jornada. Puede agregar o quitar cabos después, desde la jornada activa.",
+ "form_iniciar_carga_varios": {
+  "palabras": 137,
+  "botones": 18,
+  "campos": 8,
+  "alto": 1616
+ },
+ "boton_iniciar": "Iniciar jornada compartida",
+ "quien_error": "Falta corregir 1 dato\nMarque a los cabos que registran con usted, o elija «Sólo yo».",
+ "quien_error_campo": [
+  "Marque a los cabos que registran con usted, o elija «Sólo yo»."
+ ],
+ "quien_aviso": "",
+ "quien_dialogos": [],
+ "quien_franja": "\n      Jornada activa\n      \n      Ver detalle\n      \n      \n      \n      \n      \n        Editar jornada\n        Cambiar jornada\n        \n        Cabos de apoyo\n        Cerrar jornada\n      \n      \n        \n        \n          Corregir\n          Ver\n          \n        \n      \n    ",
+ "relevo_aviso": [
+  {
+   "id": "dlg-confirmar",
+   "texto": "Relevo de cabo\n\nRecibió la jornada «Jardín · Obrera Iv» en relevo de Julián Ortega Demo: ya puede registrar en ella. Lo hizo Perengano Gómez Ejemplo el 27-OCT-2026 a las 08:21.\n\nEntendido"
+  }
+ ],
+ "relevo_franja": "JORNADA ACTIVA\n\nVer detalle\n\nCentro de salud · Nueva Atzacoalco I\n5 de 5 árboles\n\nSiguiente: cerrar la jornada.\n\nEditar jornada\nCambiar jornada\nCerrar jornada",
+ "relevo_jornada": {
+  "id": "demo-j-01452",
+  "nombre": "Jardín · Obrera Iv",
+  "cabo": "u-demo-c2",
+  "relevo": "u-demo-c1"
+ },
+ "relevo_ficha": "Jornadas\nFiltrar\nFiltros\n\n688 jornadas · 10,661 árboles\n\nOrdenar\nLo más reciente primero\nLo más antiguo primero\nPlaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos\nJardín · Obrera Iv\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n3 especies\nAbierta\nCuauhtémoc · Col. OBRERA IV · \nprioridad\nMedia\nCentro Histórico · Julián Ortega Demo · relevo: Marisol Pérez Demo\nCentro de salud · Nueva Atzacoalco I\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n5 especies\nAbierta\nGustavo A. Madero · Col. NUEVA ATZACOALCO I · \nprioridad\nMuy alta\nReforestación Urbana · Marisol Pérez Demo\nEvento r3\nHoy · mar 27-OCT-2026\n0 de 40 árboles\n0 especies\nAbierta\nCuauhtémoc · Col. CENTRO IV · \nprioridad\nMuy alta\nReforestación Urbana · Perengano Gómez Ejemplo\nEscuela primaria · Adolfo Ruiz Cortines Ii\nHoy · mar 27-OCT-2026\n3 de 2 árboles · \ncompleta\n3 especies\nAbierta\nCoyoacán · Col. ADOLFO RUIZ CORTINES II · \nprioridad\nMedia\nReforestación Urbana · Tomás Díaz Demo\nGlorieta · Cafetales Ii\nAyer · lun 26-OCT-2026\n17 de 17 árboles · \ncompleta\n8 especies\nCerrada a las 12:05\nCoyoacán · Col. CAFETALES II (RDCIAL) · \nprioridad\nMedia · Entre las calles principales\nReforestación Urbana · Tomás Díaz Demo\nSin reporte todavía\nAndador · Santa Maria\nsáb 24-OCT-2026\n11 de 11 árboles · \ncompleta\n10 especies\nCerrada a las 10:33\nCuauhtémoc · Col. SANTA MARIA (U HAB) · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo\nSin reporte todavía\nParque vecinal · Isidro Fabela I\nvie 23-OCT-2026\n7 de 11 árboles\n4 especies\nCerrada a las 09:50\nTlalpan · Col. ISIDRO FABELA I (PONIENTE) · \nprioridad\nMedia\nSolicitud especial · Tomás Díaz Demo\nSolicita: Secretaría de Obras y Servicios (SOBSE)\nFaltaron 4 de lo previsto\nSin reporte todavía\nAndador · Obrera Iii\njue 22-OCT-2026\n22 de 22 árboles · \ncompleta\n13 especies\nCerrada a las 12:11\nReporte: 22-OCT 13:16\nCuauhtémoc · Col. OBRERA III · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo\nDeportivo · Obrera Ii\njue 22-OCT-2026\n13 de 14 árboles\n9 especies\nCerrada a las 11:15\nReporte: 22-OCT 12:20\nCuauhtémoc · Col. OBRERA II · \nprioridad\nMedia\nCompensaciones · Julián Ortega Demo\nFaltó 1 de lo previsto\n\nMostrando 1–10 de 688 jornadas\n\nAtrás\n1\n2\n3\n…\n69\nSiguiente\nResultados por página\n10\n25\n50\n100",
+ "relevo_botones_ficha": [
+  "Filtros [btn btn-secundario btn-filtros]",
+  "Plaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos [jornada-boton]",
+  "Jardín · Obrera Iv\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n3 especies\nAbierta\nCuauhtémoc · Col. OBRERA IV · \nprioridad\nMedia\nCentro Histórico · Julián Ortega Demo · relevo: Marisol Pérez Demo [jornada-boton]",
+  "Centro de salud · Nueva Atzacoalco I\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n5 especies\nAbierta\nGustavo A. Madero · Col. NUEVA ATZACOALCO I · \nprioridad\nMuy alta\nReforestación Urbana · Marisol Pérez Demo [jornada-boton]",
+  "Evento r3\nHoy · mar 27-OCT-2026\n0 de 40 árboles\n0 especies\nAbierta\nCuauhtémoc · Col. CENTRO IV · \nprioridad\nMuy alta\nReforestación Urbana · Perengano Gómez Ejemplo [jornada-boton]",
+  "Escuela primaria · Adolfo Ruiz Cortines Ii\nHoy · mar 27-OCT-2026\n3 de 2 árboles · \ncompleta\n3 especies\nAbierta\nCoyoacán · Col. ADOLFO RUIZ CORTINES II · \nprioridad\nMedia\nReforestación Urbana · Tomás Díaz Demo [jornada-boton]",
+  "Glorieta · Cafetales Ii\nAyer · lun 26-OCT-2026\n17 de 17 árboles · \ncompleta\n8 especies\nCerrada a las 12:05\nCoyoacán · Col. CAFETALES II (RDCIAL) · \nprioridad\nMedia · Entre las calles principales\nReforestación Urbana · Tomás Díaz Demo\nSin reporte todavía [jornada-boton]",
+  "Andador · Santa Maria\nsáb 24-OCT-2026\n11 de 11 árboles · \ncompleta\n10 especies\nCerrada a las 10:33\nCuauhtémoc · Col. SANTA MARIA (U HAB) · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo\nSin reporte todavía [jornada-boton]",
+  "Parque vecinal · Isidro Fabela I\nvie 23-OCT-2026\n7 de 11 árboles\n4 especies\nCerrada a las 09:50\nTlalpan · Col. ISIDRO FABELA I (PONIENTE) · \nprioridad\nMedia\nSolicitud especial · Tomás Díaz Demo\nSolicita: Secretaría de Obras y Servicios (SOBSE)\nFaltaron 4 de lo previsto\nSin reporte todavía [jornada-boton]",
+  "Andador · Obrera Iii\njue 22-OCT-2026\n22 de 22 árboles · \ncompleta\n13 especies\nCerrada a las 12:11\nReporte: 22-OCT 13:16\nCuauhtémoc · Col. OBRERA III · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo [jornada-boton]",
+  "Deportivo · Obrera Ii\njue 22-OCT-2026\n13 de 14 árboles\n9 especies\nCerrada a las 11:15\nReporte: 22-OCT 12:20\nCuauhtémoc · Col. OBRERA II · \nprioridad\nMedia\nCompensaciones · Julián Ortega Demo\nFaltó 1 de lo previsto [jornada-boton]",
+  "Atrás [btn btn-secundario btn-chico]",
+  "1 [btn btn-secundario btn-chico paginador-num]",
+  "2 [btn btn-secundario btn-chico paginador-num]",
+  "3 [btn btn-secundario btn-chico paginador-num]",
+  "69 [btn btn-secundario btn-chico paginador-num]",
+  "Siguiente [btn btn-secundario btn-chico]"
+ ],
+ "relevo_dialogo": null,
+ "compartida_ficha": "Jornadas\nFiltrar\nFiltros\n\n688 jornadas · 10,661 árboles\n\nOrdenar\nLo más reciente primero\nLo más antiguo primero\nPlaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos\nJardín · Obrera Iv\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n3 especies\nAbierta\nCuauhtémoc · Col. OBRERA IV · \nprioridad\nMedia\nCentro Histórico · Julián Ortega Demo · relevo: Marisol Pérez Demo\nCentro de salud · Nueva Atzacoalco I\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n5 especies\nAbierta\nGustavo A. Madero · Col. NUEVA ATZACOALCO I · \nprioridad\nMuy alta\nReforestación Urbana · Marisol Pérez Demo\nEvento r3\nHoy · mar 27-OCT-2026\n0 de 40 árboles\n0 especies\nAbierta\nCuauhtémoc · Col. CENTRO IV · \nprioridad\nMuy alta\nReforestación Urbana · Perengano Gómez Ejemplo\nEscuela primaria · Adolfo Ruiz Cortines Ii\nHoy · mar 27-OCT-2026\n3 de 2 árboles · \ncompleta\n3 especies\nAbierta\nCoyoacán · Col. ADOLFO RUIZ CORTINES II · \nprioridad\nMedia\nReforestación Urbana · Tomás Díaz Demo\nGlorieta · Cafetales Ii\nAyer · lun 26-OCT-2026\n17 de 17 árboles · \ncompleta\n8 especies\nCerrada a las 12:05\nCoyoacán · Col. CAFETALES II (RDCIAL) · \nprioridad\nMedia · Entre las calles principales\nReforestación Urbana · Tomás Díaz Demo\nSin reporte todavía\nAndador · Santa Maria\nsáb 24-OCT-2026\n11 de 11 árboles · \ncompleta\n10 especies\nCerrada a las 10:33\nCuauhtémoc · Col. SANTA MARIA (U HAB) · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo\nSin reporte todavía\nParque vecinal · Isidro Fabela I\nvie 23-OCT-2026\n7 de 11 árboles\n4 especies\nCerrada a las 09:50\nTlalpan · Col. ISIDRO FABELA I (PONIENTE) · \nprioridad\nMedia\nSolicitud especial · Tomás Díaz Demo\nSolicita: Secretaría de Obras y Servicios (SOBSE)\nFaltaron 4 de lo previsto\nSin reporte todavía\nAndador · Obrera Iii\njue 22-OCT-2026\n22 de 22 árboles · \ncompleta\n13 especies\nCerrada a las 12:11\nReporte: 22-OCT 13:16\nCuauhtémoc · Col. OBRERA III · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo\nDeportivo · Obrera Ii\njue 22-OCT-2026\n13 de 14 árboles\n9 especies\nCerrada a las 11:15\nReporte: 22-OCT 12:20\nCuauhtémoc · Col. OBRERA II · \nprioridad\nMedia\nCompensaciones · Julián Ortega Demo\nFaltó 1 de lo previsto\n\nMostrando 1–10 de 688 jornadas\n\nAtrás\n1\n2\n3\n…\n69\nSiguiente\nResultados por página\n10\n25\n50\n100",
+ "compartida_botones_ficha": [
+  "Filtros [btn btn-secundario btn-filtros]",
+  "Plaza cívica · El Mirador\nHoy · mar 27-OCT-2026\n9 de 60 árboles\n7 especies\nAbierta\nCoyoacán · Col. EL MIRADOR · \nprioridad\nMedia\nReforestación Urbana · Estela Ramírez Demo · compartida con 2 cabos [jornada-boton]",
+  "Jardín · Obrera Iv\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n3 especies\nAbierta\nCuauhtémoc · Col. OBRERA IV · \nprioridad\nMedia\nCentro Histórico · Julián Ortega Demo · relevo: Marisol Pérez Demo [jornada-boton]",
+  "Centro de salud · Nueva Atzacoalco I\nHoy · mar 27-OCT-2026\n5 de 5 árboles · \ncompleta\n5 especies\nAbierta\nGustavo A. Madero · Col. NUEVA ATZACOALCO I · \nprioridad\nMuy alta\nReforestación Urbana · Marisol Pérez Demo [jornada-boton]",
+  "Evento r3\nHoy · mar 27-OCT-2026\n0 de 40 árboles\n0 especies\nAbierta\nCuauhtémoc · Col. CENTRO IV · \nprioridad\nMuy alta\nReforestación Urbana · Perengano Gómez Ejemplo [jornada-boton]",
+  "Escuela primaria · Adolfo Ruiz Cortines Ii\nHoy · mar 27-OCT-2026\n3 de 2 árboles · \ncompleta\n3 especies\nAbierta\nCoyoacán · Col. ADOLFO RUIZ CORTINES II · \nprioridad\nMedia\nReforestación Urbana · Tomás Díaz Demo [jornada-boton]",
+  "Glorieta · Cafetales Ii\nAyer · lun 26-OCT-2026\n17 de 17 árboles · \ncompleta\n8 especies\nCerrada a las 12:05\nCoyoacán · Col. CAFETALES II (RDCIAL) · \nprioridad\nMedia · Entre las calles principales\nReforestación Urbana · Tomás Díaz Demo\nSin reporte todavía [jornada-boton]",
+  "Andador · Santa Maria\nsáb 24-OCT-2026\n11 de 11 árboles · \ncompleta\n10 especies\nCerrada a las 10:33\nCuauhtémoc · Col. SANTA MARIA (U HAB) · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo\nSin reporte todavía [jornada-boton]",
+  "Parque vecinal · Isidro Fabela I\nvie 23-OCT-2026\n7 de 11 árboles\n4 especies\nCerrada a las 09:50\nTlalpan · Col. ISIDRO FABELA I (PONIENTE) · \nprioridad\nMedia\nSolicitud especial · Tomás Díaz Demo\nSolicita: Secretaría de Obras y Servicios (SOBSE)\nFaltaron 4 de lo previsto\nSin reporte todavía [jornada-boton]",
+  "Andador · Obrera Iii\njue 22-OCT-2026\n22 de 22 árboles · \ncompleta\n13 especies\nCerrada a las 12:11\nReporte: 22-OCT 13:16\nCuauhtémoc · Col. OBRERA III · \nprioridad\nMedia\nReforestación Urbana · Fulana de Tal Ejemplo [jornada-boton]",
+  "Deportivo · Obrera Ii\njue 22-OCT-2026\n13 de 14 árboles\n9 especies\nCerrada a las 11:15\nReporte: 22-OCT 12:20\nCuauhtémoc · Col. OBRERA II · \nprioridad\nMedia\nCompensaciones · Julián Ortega Demo\nFaltó 1 de lo previsto [jornada-boton]",
+  "Atrás [btn btn-secundario btn-chico]",
+  "1 [btn btn-secundario btn-chico paginador-num]",
+  "2 [btn btn-secundario btn-chico paginador-num]",
+  "3 [btn btn-secundario btn-chico paginador-num]",
+  "69 [btn btn-secundario btn-chico paginador-num]",
+  "Siguiente [btn btn-secundario btn-chico]"
+ ],
+ "arbol": "demo-a-000017",
+ "detalle": "Detalle del registro\nLeaflet | Powered by Esri | Imagen: Esri, Vantor, Earthstar Geographics y GIS User Community, Vías: Esri, HERE, Garmin, © OpenStreetMap contributors, Lugares: Esri, HERE, Garmin, © OpenStreetMap contributors y GIS User Community\nEspecie\nCapulín (Prunus serotina var. salicifolia)\nPrograma\nReforestación Urbana\nJornada\nCentro de salud · Belem\nFecha de plantación\n17-ENE-2024\nSitio de plantación\nSuelo\nAlcaldía\nXochimilco\nColonia\nBELEM (BARR)\nCalle\nCalle 5 de Mayo\nentre Calle Nezahualcóyotl y Privada 5 de Mayo\nJunto a la esquina con Privada 5 de Mayo\nCalle secundaria · Alcaldía Xochimilco\nCoordenadas\n19.26048, -99.10290\nCómo se obtuvo\nSeñalado en el mapa\nCabo\nArturo Méndez Demo\nHistorial\n17-ENE-2024, 08:08 h: creado por Arturo Méndez Demo (Cabo)\nLo que viaja a la base de datos\nEditar\nSustituir árbol",
+ "detalle_carga": {
+  "palabras": 114,
+  "botones": 5,
+  "campos": 0,
+  "alto": 1452
+ },
+ "detalle_botones": [
+  "Cerrar [btn btn-icono-solo btn-texto dialogo-cerrar] fondo rgb(241, 243, 245) letra rgb(43, 45, 46) borde rgba(0, 0, 0, 0) 1px",
+  "Editar [btn btn-editar btn-ancho] fondo rgb(255, 255, 255) letra rgb(0, 0, 0) borde rgb(31, 32, 33) 1px",
+  "Sustituir árbol [btn btn-sustituir btn-ancho] fondo rgb(255, 255, 255) letra rgb(107, 63, 160) borde rgb(107, 63, 160) 2px"
+ ],
+ "sup_calles": "Por calle\n1,861 árboles en vialidades primarias · 16,126 árboles en calles secundarias · 73 árboles en carreteras y caminos\nRed vial\nQuién la atiende\nCalles\nÁrboles\n% del total\nVialidades primarias\nGobierno de CDMX y 2 más\n210\n1,861\n8 %\nCalles secundarias\nAlcaldía Iztapalapa y 24 más\n3,567\n16,126\n73 %\nCarreteras y caminos\nGobierno de CDMX y 2 más\n2\n73\n0 %\nSin calle cercana\n—\n—\n4,040\n18 %\n\nVialidades primarias · Gobierno de CDMX y 2 más\n\nCalle\nÁrboles\n% del total\nJornadas\nPeriférico (Canal de San Juan)\nentre Calle Canal de Chalco y calle sin nombre; entre Avenida Telecomunicaciones y Cerrada Paso Texas; y 15 más\nIztapalapa\n84\n1 %\n15\nAvenida Constituyentes\nentre Calle General Francisco Fagoaga y Calle Gobernador Gregorio V. Gelati; entre Paseo de la Reforma y calle sin nombre; y 1 más\nMiguel Hidalgo\n69\n1 %\n4\nAvenida Niños Héroes\nentre Calle Doctor J. Navarro y Avenida Doctor Río de la Loza\nCuauhtémoc\n62\n1 %\n2\nAvenida Canal Nacional\nentre calle sin nombre y Periférico (Boulevard Adolfo Ruiz Cortines)\nXochimilco\n47\n1 %\n4\nEje 8 Sur (Calzada Ermita Iztapalapa)\nentre Calle Eusebio Guajardo y Privada Primero de Mayo; entre Calle Joaquín Baranda y Calle Hombres Ilustres; y 9 más\nIztapalapa\n43\n1 %\n8\nAvenida Miguel Ángel de Quevedo\nentre Calle Ohio y Calle Quetzal; entre Calle Espíritu Santo y Cerrada Alberto Zamora; y 3 más\nCoyoacán\n40\n1 %\n5\nAvenida División del Norte\nentre Calle Conahuac y Calle Espliego; entre Avenida Las Rosas y Calle Clavellinas; y 5 más\nCoyoacán\n36\n1 %\n7\nEje 2 Oriente (Avenida Canal de Miramontes)\nentre Calzada del Hueso y Calle Monza; entre Calzada Acoxpa y Calzada las Brujas; y 1 más\nTlalpan\n35\n1 %\n5\nCalle Benvenuto Cellini\nentre Cerrada Giotto y Periférico (Boulevard Adolfo López Mateos)\nBenito Juárez\n32\n1 %\n2\nAvenida Canal Nacional\nentre Calzada del Hueso y Periférico (Boulevard Adolfo Ruiz Cortines)\nTlalpan\n32\n1 %\n2\nMostrar 10 más (10 de 210)\n\nCalles secundarias · Alcaldía Iztapalapa y 24 más\n\nCalle\nÁrboles\n% del total\nJornadas\nCalles sin nombre\nIztapalapa\n380\n2 %\n60\nCalles sin nombre\nTlalpan\n219\n1 %\n36\nCalles sin nombre\nXochimilco\n156\n1 %\n47\nCalles sin nombre\nTláhuac\n152\n1 %\n34\nCalles sin nombre\nCoyoacán\n116\n1 %\n25\nAvenida Panamericana\nentre Calle Céfiro y Calle Rinconada de la Fauna; a la altura de calle sin nombre\nCoyoacán\n71\n1 %\n4\nCalles sin nombre\nCuauhtémoc\n65\n1 %\n9\nCalle Alondra\nentre Avenida Miguel Ángel de Quevedo y Calle Jardín de las Rosas\nCoyoacán\n61\n1 %\n1\nCalle Santiago Rebull\nentre Periférico (Boulevard Adolfo López Mateos) y Calle Miguel Cabrera; entre Calle La Castañeda y Calle Los Echave\nBenito Juárez\n58\n1 %\n2\nCalle Gobernador Tiburcio Montiel\nentre Calle General Zuazua y Calle General Gómez Pedraza\nMiguel Hidalgo\n57\n1 %\n1\nMostrar 10 más (10 de 3,567)\n\nCarreteras y caminos · Gobierno de CDMX y 2 más\n\nCalle\nÁrboles\n% del total\nJornadas\nCarretera Naucalpan-Ecatepec\na la altura de Eje 1 Poniente (Calzada Vallejo)\nGustavo A. Madero\n7\n1 %\n1\nCamino a la Cantera\na la altura de calle sin nombre\nXochimilco\n3\n1 %\n1\n\nLa cal",
+ "sup_carga": {
+  "palabras": 1111,
+  "botones": 234,
+  "campos": 5,
+  "alto": 11928
+ },
+ "errores": []
+}

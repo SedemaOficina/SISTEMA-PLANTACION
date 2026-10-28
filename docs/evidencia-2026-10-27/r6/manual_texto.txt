@@ -1,0 +1,434 @@
+
+Manual del personal · Sistema de Registro de Plantaciones
+Sistema de Registro de Plantaciones (SRP)
+Secretaría del Medio Ambiente de la Ciudad de México · Sistema de Información Ambiental
+Manual del personal
+Para cabos, coordinación y dirección: cómo dejar listo el teléfono, registrar cada árbol en campo, cerrar la jornada con su reporte, coordinar a los cabos y consultar el avance.
+Versión del sistema: —
+Fecha de este manual: —
+Las capturas son de un teléfono, con datos y personas de ejemplo.
+Contenido
+Para todos
+Para qué es este manual y qué hace cada perfil
+El teléfono listo para el GPS
+Abrir la app y entrar
+Cómo se lee la pantalla
+Sin señal: lo que funciona y lo que espera
+Cabos
+Iniciar la jornada
+Registrar un árbol
+Corregir, sustituir o eliminar un árbol
+Cerrar la jornada y generar su reporte
+Jornadas de varios días, relevos y jornadas compartidas
+Mi avance y mis fotografías
+Coordinación
+Lo que hace la coordinación
+Abrir una jornada compartida
+Pasar una jornada a otro cabo (relevo)
+Revisar y corregir lo de los cabos
+Supervisión, informes y fotografías
+Dirección
+Lo que ve la dirección y qué puede descargar
+Para todos
+Qué hacer si…
+Buenas prácticas en campo
+La Administración global tiene su propio manual: cuentas, catálogos, parámetros, posibles duplicados y carga masiva.
+1. Para qué es este manual y qué hace cada perfil
+El Sistema de Registro de Plantaciones (SRP) registra cada árbol que se planta en la Ciudad: dónde quedó, de qué especie, en qué jornada y quién lo plantó. Se usa en el teléfono, en campo, y también en la computadora.
+Cada persona entra con su propia cuenta. Lo que ve y lo que puede hacer depende de su perfil:
+PerfilQué haceSecciones de este manual
+CaboRegistra en campo. Inicia sus jornadas, registra cada árbol, cierra la jornada y genera su reporte. Ve, corrige y elimina sólo lo suyo.1 a 11, 18 y 19
+CoordinaciónTodo lo del cabo y, además, ve, corrige y elimina lo de todos los cabos de su institución. Abre jornadas compartidas, pasa una jornada a otro cabo y consulta Supervisión con sus informes.1 a 19, salvo 17
+DirecciónSólo consulta: jornadas, registros, fotografías y avance. Descarga los reportes ya generados y los informes. No registra ni modifica. En la Secretaría ve toda la Ciudad; en otra institución, sólo la suya.1 a 5, 16 a 18
+Cada institución ve sólo lo suyo. Las cuentas las da de alta la Administración global de la Secretaría; nadie se da de alta solo.
+Los textos de los botones van entre comillas: «Guardar», «Cerrar jornada». Donde dice tuerca es el botón con un engrane que tiene cada tarjeta de una lista: abre sus acciones.
+Las capturas de este manual son de un teléfono con datos y personas de ejemplo. En la computadora se ve lo mismo, con las pestañas arriba en lugar de abajo.
+2. El teléfono listo para el GPS
+Para que el punto de cada árbol salga en verde (±10 m o menos), use la app siempre en Chrome, deje estos ajustes una sola vez y, al llegar al sitio, despierte el GPS a cielo abierto antes del primer árbol.
+Siempre en Chrome
+Abra la app sólo en Chrome, en Android y en iPhone. Cada navegador pide la ubicación a su manera; con Chrome todos tienen los mismos permisos y esta guía sirve igual para todos.
+Instale o actualice Chrome desde Play Store o App Store.
+Abra en Chrome la dirección que le dio su coordinación. Si WhatsApp la abre en otro navegador, mantenga el dedo sobre el enlace, cópielo y péguelo en la barra de Chrome.
+Déjela a la mano en la pantalla de inicio:
+Android: menú ⋮ › «Agregar a la pantalla principal» (en algunos teléfonos dice «Instalar app»).
+iPhone: botón de compartir, junto a la barra de dirección › «Agregar a pantalla de inicio».
+La primera vez que toque «Registrar ubicación del punto», la app pide la ubicación: toque «Permitir». Si el teléfono pregunta «Precisa» o «Aproximada», elija Precisa.
+Android: ajustes de todos los modelos
+Los nombres cambian un poco según la marca. Si no encuentra una opción, escriba su nombre en la lupa de Ajustes.
+QuéDónde
+Ubicación encendidaAjustes › Ubicación › «Usar ubicación» activado.
+Precisión de la ubicación de GoogleAjustes › Ubicación › Servicios de ubicación › Precisión de la ubicación › «Mejorar la Precisión de la ubicación» activado. Junta el GPS con el Wi-Fi, la red celular y los sensores, y da el punto más rápido.
+Chrome con ubicación precisaMantenga el dedo sobre el ícono de Chrome › Información de la app › Permisos › Ubicación: «Permitir solo con la app en uso» y «Usar la ubicación precisa» activado. Sin esto, el teléfono sólo da una ubicación aproximada.
+La app con permiso en ChromeCon la app abierta, toque el ícono a la izquierda de la dirección › Permisos › Ubicación: permitida.
+Ahorro de batería apagado durante la jornadaEn algunos teléfonos ese modo limita el GPS.
+Lo que cambia por marca
+Xiaomi, Honor y OPPO frenan las apps para ahorrar batería. Quítele esas restricciones a Chrome para que el teléfono no lo cierre ni lo limite durante la jornada, por ejemplo al abrir la cámara para la foto.
+MarcaDónde
+Xiaomi y RedmiAjustes › Aplicaciones › Administrar aplicaciones › Chrome › Ahorro de batería › «Sin restricciones». En la ficha de Chrome, desmarque «Pausar la actividad de la aplicación si no se usa».
+HonorAjustes › Batería › Inicio de aplicaciones › Chrome: apague «Gestionar automáticamente» y deje encendidas las tres opciones que aparecen.
+OPPOAjustes › Aplicaciones › Gestión de aplicaciones › Chrome › Uso de batería › «Permitir actividad en segundo plano».
+MotorolaAjustes › Apps › Chrome › Uso de batería de la app › «Sin restricciones» (en algunos dice «Permitir uso en segundo plano»).
+Las rutas cambian con la versión del sistema: si no coinciden, busque «batería» o «inicio» en la lupa de Ajustes.
+iPhone
+Ajustes › Privacidad y seguridad › Localización: activada.
+En esa misma lista, toque Chrome: «Al usar la app» y «Ubicación precisa» activada. Apagada, el iPhone sólo comparte una ubicación aproximada.
+En Chrome, cuando el sistema pida la ubicación, toque «Permitir».
+En el sitio, antes del primer árbol
+Colóquese a cielo abierto, lejos de muros altos y fuera de la copa de los árboles.
+Abra Google Maps y espere unos 30 segundos, hasta que el círculo azul alrededor de su punto se haga chico. Así el teléfono ya encontró los satélites cuando abra la app.
+Abra la app en Chrome.
+Qué dice el color bajo el mapa
+Al ubicar cada árbol, bajo el mapa aparece qué tan confiable es el punto. El mismo color tiene el círculo que se dibuja alrededor del punto: es el terreno donde puede estar el árbol.
+Bajo el mapaQué significaQué hacer
+Precisión buena
+±10 m o menosEl punto cae en la misma banqueta.Guarde.
+Precisión aceptable
+hasta ±30 mPuede caer en el árbol de al lado.Mire la imagen del mapa: si el punto no está en el árbol, arrástrelo hasta él. Al guardar, la app le pide revisarlo.
+Precisión baja
+más de ±30 mEl punto no es confiable.Espere unos segundos al aire libre y vuelva a ubicar, o arrastre el punto hasta el árbol.
+Si sigue saliendo ámbar o rojo
+Revise en este orden:
+¿La app está abierta en Chrome y no en otro navegador?
+¿Chrome tiene la ubicación precisa activada?
+¿El ahorro de batería está apagado?
+¿Despertó el GPS con Google Maps a cielo abierto?
+Reinicie el teléfono y vuelva a intentar.
+Si nada funciona, avise a su coordinación con la marca y el modelo del teléfono, la versión de Android o iOS y la precisión que marca, por ejemplo «±25 m». Con eso se sabe si es el teléfono o la app.
+3. Abrir la app y entrar
+    La entrada.
+Abra en Chrome la dirección del sistema, o el ícono que dejó en la pantalla de inicio (sección 2). Escriba su correo y su contraseña, y toque «Entrar».
+Al entrar, el teléfono baja las listas que usa para registrar (programas, especies) y trae lo registrado. La primera vez tarda unos segundos.
+Si no puede entrar
+Cualquier error dice lo mismo: «Correo o contraseña incorrectos». El sistema no dice cuál de los dos falló, para que nadie averigüe qué correos tienen cuenta.
+Varios intentos fallidos seguidos bloquean la cuenta unos minutos. Espere y vuelva a intentar.
+Si olvidó su contraseña, pida a la Administración global una temporal nueva.
+Si no tiene cuenta, la da de alta la Administración global, a petición de su coordinación.
+    «Cambie su contraseña».
+La primera vez: la contraseña temporal
+Con una cuenta nueva, o cuando la Administración le restablece la contraseña, usted entra con una contraseña temporal que le dan en persona o por teléfono. El sistema no deja hacer nada más hasta escribir una propia:
+Escriba la contraseña nueva: al menos 10 caracteres, con letras y números, y que no contenga su correo.
+Escríbala otra vez. «Mostrar lo que escribo» deja ver lo que escribe.
+Toque «Guardar y entrar».
+La temporal vence en 72 horas. Su contraseña es sólo suya: no la comparta ni la apunte en el teléfono.
+La sesión
+La sesión sigue abierta mientras use la app, también sin señal. Si pasa mucho tiempo sin usarla, el sistema le pide la contraseña otra vez, sin perder lo capturado. Para salir, toque el botón de la persona, arriba a la derecha, y «Cerrar sesión».
+4. Cómo se lee la pantalla
+    La pantalla de un cabo, con su jornada activa.
+Arriba
+El membrete: en el teléfono, el SIA y Reforestación Urbana; en la computadora, también el Gobierno de la Ciudad y la Secretaría.
+La pastilla de conexión: «Con conexión · Al día» quiere decir que todo lo suyo ya llegó al servidor. Si dice «Sin conexión» con un número, son los registros que esperan señal. Al tocarla se abre «¿Qué hacer sin internet?» (sección 5).
+El botón de la persona: su nombre, su perfil, «Modo sol (alto contraste)», para ver mejor a pleno sol, y «Cerrar sesión».
+La versión del sistema. Si reporta un problema, dígala.
+Abajo, las pestañas
+PerfilPestañas
+CaboNuevo registro · Jornadas · Registros · Mi avance
+CoordinaciónNuevo registro · Jornadas · Registros · Supervisión
+DirecciónSupervisión · Jornadas · Registros
+En la computadora las pestañas van arriba. El cabo entra a Nuevo registro; la coordinación y la dirección, a Supervisión.
+    El menú de la cuenta.
+Avisos
+Al hacer algo, abajo de la pantalla aparece un aviso que dice qué pasó. Algunos ofrecen «Deshacer» unos segundos, por ejemplo al eliminar un árbol.
+Las preguntas importantes, como cerrar una jornada, se abren en una ventana con dos botones: el que hace la acción y «Cancelar».
+Una pestaña a la vez
+Si abre el sistema en dos pestañas del navegador, la de atrás se detiene y dice que el sistema se abrió en otra pestaña. Toque «Usar aquí» en la que quiere usar.
+Las actualizaciones
+Cuando hay una versión nueva, el teléfono la baja solo al abrir la app con señal y cambia a ella. Lo capturado no se pierde.
+5. Sin señal: lo que funciona y lo que espera
+La app funciona sin internet. El GPS, la captura, la fotografía y el reporte funcionan sin señal. Sólo la imagen del mapa deja de verse: puede tocar el mapa donde está el árbol o capturar la coordenada a mano.
+    Sin señal: el árbol queda en el teléfono y la pastilla cuenta lo que espera.
+Lo que pasa con lo que registra
+Cada árbol se guarda primero en el teléfono y se envía solo al servidor en cuanto hay señal. No tiene que hacer nada.
+Mientras espera, dice «sin señal: se enviará solo» y su folio dice PROVISIONAL. El folio definitivo lo da el servidor al recibirlo.
+La pastilla de arriba dice «Sin conexión» y cuántos registros esperan.
+En Registros, lo que espera dice «Por enviar» en lugar del folio.
+Lo que espera a la señal
+Sin señal, Registros y Jornadas enseñan sólo lo que todavía no se envía, y una franja lo dice.
+Mi avance, Supervisión y Fotografías se arman con lo que ya llegó al servidor: sin señal enseñan un aviso.
+    Al tocar la pastilla: lo que espera, «Enviar ahora» y los cuidados.
+«¿Qué hacer sin internet?»
+Al tocar la pastilla se abre esta guía. Dice cuántos registros esperan y de qué días, y trae «Enviar ahora» para mandarlos en cuanto encuentre señal o una red wifi.
+        Tres cuidados para no perder nada:
+No borre los datos del navegador ni use el modo privado o incógnito: se perderían los registros que esperan.
+Abra la app al menos una vez con señal después de instalarla o de que haya versión nueva: así queda guardada y abre aunque no haya red.
+Antes de cambiar de teléfono, envíe lo pendiente: la pastilla debe decir «Al día».
+Las franjas de aviso
+Si al final del día o de un día para otro quedan registros sin enviar, una franja arriba lo recuerda: «Tiene N registros sin enviar desde…», con «Enviar ahora».
+Si el servidor no aceptó algún cambio, la franja dice «El servidor no aceptó…» y trae «Revisar». Ahí decide qué hacer con cada uno: enviarlo otra vez, quedarse con lo del servidor, corregirlo, eliminarlo o descartarlo. Si no sabe qué elegir, pregunte a su coordinación.
+6. Iniciar la jornada
+Una jornada es una salida a plantar en un sitio. Antes de registrar árboles se declara la jornada, una vez, al llegar. Todos los árboles que registre después quedan en ella.
+    «Registrar jornada», lleno.
+En la pestaña Nuevo registro, sin jornada activa, aparece «Registrar jornada»:
+Nombre de la jornada: el sitio, como lo reconocería cualquiera. Por ejemplo, «Camellón de Amsterdam».
+Ubicación de la jornada: párese en el sitio y toque «Detectar ubicación de la jornada». La app dice la alcaldía, la colonia y su prioridad para reforestar. Sin GPS, use «Capturar coordenadas a mano».
+Dirección de la jornada (opcional): calle y número, entre qué calles o el tramo.
+Programa: el de la jornada. Todos sus árboles lo toman. Cada institución ve sólo los programas que le corresponden.
+Árboles que se van a plantar: los previstos. Con ellos la app dice cuánto lleva y cuánto falta.
+Fecha: el día en que empieza. «Hoy» la pone sola. No puede ser una fecha futura.
+Comentarios (opcional).
+Toque «Iniciar jornada».
+Solicitud especial
+Si la jornada atiende la petición de otra instancia, elija el programa «Solicitud especial». Aparecen dos campos más: «Quién lo solicita», de la lista, y la «Descripción de la solicitud». Si la instancia no está en la lista, elija «Otra instancia» y escriba su nombre.
+La jornada activa
+Al iniciarla, arriba de Nuevo registro queda la tarjeta de la jornada activa, con cuántos árboles lleva de los previstos y sus botones:
+«Ver detalle»: abre la ficha de la jornada en Jornadas.
+«Editar jornada»: corrige su nombre, dirección, programa, árboles previstos o fecha.
+«Cambiar jornada»: pasa a otra de sus jornadas abiertas, o inicia una nueva.
+«Cerrar jornada»: al terminar (sección 9).
+Si la app se cierra a medio llenar «Registrar jornada», lo escrito se guarda como borrador y vuelve al abrirla.
+7. Registrar un árbol
+Con la jornada iniciada, cada árbol se registra en la pestaña Nuevo registro, parado junto a él.
+    La jornada activa y el punto, con precisión buena.
+1. La ubicación
+Párese junto al árbol y toque «Registrar ubicación del punto».
+El punto aparece enseguida en el mapa. El GPS sigue afinando hasta 30 segundos; mientras, puede llenar lo demás.
+Mire el color bajo el mapa (sección 2). En verde, siga.
+Si el punto no quedó en el árbol, arrastre el marcador o toque el sitio correcto en el mapa. Las coordenadas se actualizan solas.
+Debajo del mapa la app dice la alcaldía, la colonia y las coordenadas. No se escriben: salen del punto.
+El color de fondo del mapa es la prioridad para reforestar de la colonia de la jornada, del crema (muy baja) al rojo oscuro (muy alta). El botón de capas, arriba a la derecha del mapa, cambia entre «Satélite» y «Calles», y deja ocultar ese color o hacerlo más claro.
+Sin GPS, «Capturar coordenadas a mano» deja escribir la latitud y la longitud, o pegarlas juntas como las copia Google Maps, y tocar «Colocar punto».
+    Precisión aceptable: el círculo ámbar es el terreno donde puede estar el árbol. El punto verde es un árbol ya registrado.
+Si sale ámbar o rojo
+La franja dice qué hacer. En ámbar, revise en la imagen que el punto esté en el árbol; si no, arrástrelo hasta él. En rojo, espere unos segundos al aire libre y toque «Actualizar ubicación con mi posición», o arrastre el punto.
+Una precisión baja no impide guardar: al guardar, la app le pide revisar el punto antes.
+En el mapa, los puntos verdes son los árboles ya registrados en esta jornada: sirven para no registrar dos veces el mismo. Al tocar uno, la app dice cuál es y deja verlo.
+    Lo demás del árbol, con su fotografía (de ejemplo).
+2. Los datos del árbol
+Especie: escriba parte del nombre común o del científico y elíjala de la lista. Si no está, elija «Otra especie» y escriba su nombre en «Especifique la especie».
+Sitio de plantación: «Suelo» o «Macetón». Empieza en «Suelo».
+Comentarios (opcional): lo que convenga saber del sitio o del ejemplar.
+Fotografía (opcional): «Agregar fotografía» deja tomar una foto o elegirla del teléfono. El bote rojo la quita.
+Si la jornada empezó otro día, aparece también la fecha de plantación: «Hoy» la pone sola.
+3. Guardar
+Toque «Guardar». Si todo está bien, el árbol se guarda de una vez.
+Si algo falta, la app lo señala en su campo y no guarda nada. Lo más común: falta la ubicación o la especie.
+    «Revise antes de guardar», con el aviso arriba y el botón abajo.
+«Revise antes de guardar»
+Si hay algo que mirar, antes de guardar se abre la ficha del árbol con el aviso arriba. Puede ser:
+una precisión aceptable o baja;
+una especie escrita en «Otra especie»: confirme que no esté en la lista con otro nombre;
+un posible duplicado: hay otro árbol de la jornada a menos de 4 m;
+el árbol queda a más de 500 m de los demás de la jornada: quizá es de otra jornada.
+La especie, el sitio, las coordenadas y la fotografía tienen su «Editar» para corregirlos ahí mismo. Si todo está bien, toque «Guardar de todos modos»; si no, cierre la ficha con la ✕ y corrija.
+    Guardado y enviado, con su folio.
+Después de guardar
+La tarjeta de la jornada suma el árbol y dice «Guardado:» con la especie. Cuando llega al servidor, aparecen su folio, la alcaldía, la colonia y «enviado hoy a las…».
+Sin señal dice «sin señal: se enviará solo» (sección 5). Puede seguir registrando.
+«Corregir» abre el árbol para cambiar algo.
+«Ver» abre su ficha completa.
+El formulario queda limpio para el siguiente árbol. Si la app se cierra con un árbol a medio capturar, se guarda como borrador y vuelve al abrirla.
+La calle de cada árbol, y entre qué calles va, la pone el servidor al recibirlo. Se ve en su ficha y en el reporte.
+8. Corregir, sustituir o eliminar un árbol
+    Registros: cada árbol con su folio y su jornada.
+La pestaña Registros lista los árboles, de lo más reciente a lo más antiguo. El cabo ve «Mis registros»; la coordinación, «Registros de mi institución».
+Arriba se filtra: «Todos», «Hoy», «Un día» o «Un periodo».
+«Más filtros»: tipo de jornada (compartida o no), especie, programa y alcaldía. La coordinación tiene además «Quién registró».
+«Ordenar» cambia entre lo más reciente y lo más antiguo primero.
+Cada tarjeta dice la especie, la fecha, el folio y la jornada con su alcaldía y colonia. Al tocarla se abre el detalle.
+    La tuerca de un árbol.
+Las acciones de un árbol
+Toque la tuerca de la tarjeta:
+Ver detalle: todos sus datos, su mapa, su fotografía y su historial.
+Editar: abre el árbol en Nuevo registro, que dice «Editando registro». Corrija y toque «Guardar cambios» en la ficha de revisión. «Cancelar edición» lo deja como estaba.
+Sustituir: cuando el árbol se perdió y se planta otro en su lugar (abajo).
+Eliminar: para un árbol registrado por error. No pregunta: el aviso de abajo ofrece «Deshacer» unos segundos. El árbol no se borra del todo: se marca como eliminado y deja de contar.
+Lo mismo se hace desde la ficha de su jornada, en Jornadas: cada punto tiene su tuerca, que además deja moverlo a otra jornada si se registró en la equivocada.
+    «Detalle del registro».
+El detalle
+El detalle trae el punto en el mapa y cada dato del árbol: especie, programa, jornada, fecha, sitio, alcaldía, colonia, la calle que puso el servidor, cómo se obtuvo el punto, la fotografía, el folio y quién lo registró.
+Al final está su historial: quién lo registró, quién lo cambió, qué cambió y cuándo. Nadie lo puede modificar.
+    «Sustituir árbol».
+Sustituir un árbol perdido
+Si un árbol se perdió y se planta otro en su lugar, no lo elimine: sustitúyalo. Así queda constancia de la pérdida y de su motivo.
+En la tuerca del árbol perdido, toque «Sustituir».
+Elija la razón: vandalismo, impacto vehicular, robo, muerte u otro (con «Otro», escriba el motivo).
+Diga la fecha en que se planta el nuevo, si no es hoy.
+Toque «Registrar el sustituto» y registre el árbol nuevo como cualquier otro.
+El sustituto queda en la misma jornada que el perdido y se ve en el mapa en morado. Si esa jornada ya estaba cerrada, la app pregunta antes de reabrirla, y la vuelve a cerrar al guardar el sustituto.
+9. Cerrar la jornada y generar su reporte
+Al terminar de plantar, se cierra la jornada y se genera su reporte, el parte de la jornada en PDF. Son cuatro pasos, que la ficha de la jornada marca arriba: Registrar, Cerrar, Revisar y Reporte.
+    La pregunta antes de cerrar, con lo que queda pendiente.
+1. Cerrar
+Toque «Cerrar jornada» en la tarjeta de la jornada activa o en su ficha. La app pregunta y dice lo que queda pendiente, por ejemplo árboles por debajo de lo previsto o puntos por revisar. Avisa, no impide: se puede cerrar de todos modos y reabrir después.
+Si hay puntos por revisar, ofrece revisarlos primero, uno tras otro.
+Lo que se cuenta en Mi avance y en Supervisión son las jornadas cerradas. Ciérrela el mismo día, aunque falten árboles.
+    La ficha de la jornada: los pasos, la conciliación y «Generar reporte».
+2. Revisar
+En la pestaña Jornadas, toque la jornada para abrir su ficha:
+Mapa: cada árbol con su número, en el orden en que se registró.
+Conciliación: los árboles previstos contra los registrados, y el horario.
+Puntos: la lista de árboles. Cada uno dice su especie, su hora y su precisión, con «Ver» y su tuerca.
+Los puntos con aviso (posible duplicado, lejos del resto o precisión baja) se revisan en el mapa. Si están bien, se marcan como revisados uno por uno, o todos con «Marcar todos como revisados». Si no, se corrigen con su tuerca.
+«Reabrir jornada» la vuelve a abrir para registrar más árboles; «Editar jornada» corrige sus datos.
+    «Datos de cierre de la jornada».
+3. Los datos de cierre
+Con la jornada cerrada, toque «Generar reporte» en su ficha. Primero se piden los datos de cierre:
+Hora de finalización: obligatoria. «Ahora» pone la hora actual.
+Personal participante, personal de apoyo y observaciones.
+Chófer y vehículo: el vehículo se elige por su placa, de la lista; el modelo y el tipo se ponen solos.
+Lo que quede vacío no sale en el reporte. El personal, el chófer y el vehículo sólo los captura la Secretaría; en otras instituciones se piden las observaciones y la hora.
+Toque «Ver vista previa».
+    La vista previa: lo mismo que tendrá el PDF.
+4. La vista previa y el PDF
+La vista previa enseña el reporte tal como saldrá:
+los datos de la jornada y cinco cifras: árboles plantados, previstos, avance, especies y porcentaje de nativas;
+el croquis, con los árboles numerados;
+la tabla de ejemplares, con su especie, su calle y su precisión;
+los totales por especie y el personal.
+«Corregir datos» regresa a los datos de cierre. «Generar PDF» baja el reporte al teléfono, con su nombre y la fecha en el nombre del archivo.
+Al terminar, la ficha dice «Todo listo: reporte generado…». Los datos de cierre quedan guardados: si lo vuelve a generar, no hay que escribirlos otra vez.
+Los totales y porcentajes los calcula el sistema a partir de los árboles registrados: nunca se escriben a mano.
+10. Jornadas de varios días, relevos y jornadas compartidas
+Una jornada de varios días
+Una jornada puede seguir abierta los días que haga falta. Al día siguiente, en Nuevo registro, la app la ofrece y pregunta antes de guardar en una jornada que no es de hoy. Cada árbol lleva la fecha en que se plantó; «Hoy» la pone sola.
+Si tiene varias jornadas abiertas, «Cambiar jornada» pasa de una a otra.
+El relevo de cabo
+Si usted no puede seguir con una jornada abierta, su coordinación puede pasarla a otro cabo (sección 14):
+quien la recibe ve un aviso al entrar y ya puede registrar en ella;
+quien la empezó deja de registrar en ella, pero la jornada sigue a su nombre;
+cada árbol queda a nombre de quien lo capturó.
+Cuando la coordinación la devuelve, el titular lee al entrar que volvió a él.
+Cabo de apoyo en una jornada compartida
+En los eventos grandes, la coordinación abre una jornada compartida y marca a los cabos que registran en ella (sección 13).
+    El aviso al entrar.
+Abra la app con señal un momento, en el punto de reunión: así le llega la jornada. Al entrar, un aviso dice que ahora es cabo de apoyo y quién la coordina. Toque «Entendido».
+La jornada queda activa en Nuevo registro. Registre como siempre: cada árbol queda a su nombre.
+Usted ve la jornada completa, pero corrige sólo sus árboles. No cambia los datos de la jornada ni la cierra.
+    La tarjeta de un cabo de apoyo.
+La tarjeta de la jornada dice «Jornada compartida · coordina…» y cuántos árboles van en total y cuántos son suyos.
+Al acabar: «Terminar mi parte»
+Cuando termine de plantar, toque «Terminar mi parte» y confírmelo:
+lo que tenga por enviar se envía en cuanto haya señal;
+la jornada sale de su lista y ya no registra en ella;
+la coordinación cierra la jornada y genera el reporte.
+11. Mi avance y mis fotografías
+    Mi avance de la semana.
+La pestaña Mi avance dice cuánto ha plantado usted. Sólo cuentan las jornadas cerradas: una jornada abierta se suma al cerrarla.
+Arriba se elige el periodo: «Semana», «Mes», «Año», «Un periodo» o «Todo». Las flechas pasan al periodo anterior o al siguiente.
+«Más filtros»: tipo de jornada, programa y alcaldía.
+Las cifras: árboles plantados, el porcentaje de lo previsto y las jornadas cerradas.
+«Qué atender»: lo que tiene pendiente, como jornadas cerradas sin reporte.
+La gráfica por día, semana o mes, y debajo el desglose por alcaldía, calle, prioridad de la colonia, especie y programa, y cuántos de sus registros tienen GPS y fotografía.
+«Informe en PDF» baja el informe del periodo, con su nombre.
+Mis fotografías
+«Fotografías», junto a «Informe en PDF», abre las fotografías de sus árboles, con los mismos filtros y un buscador. Al tocar una se ve grande con sus datos. «Descargar todas» baja las que se ven, en un solo archivo ZIP.
+12. Lo que hace la coordinación
+La coordinación hace todo lo del cabo (secciones 6 a 11) y, además, trabaja con todos los cabos de su institución:
+ve, corrige y elimina sus registros, y las jornadas sin ningún árbol («Eliminar jornada», en la ficha);
+abre jornadas compartidas para los eventos grandes (sección 13);
+pasa una jornada abierta a otro cabo con el relevo (sección 14);
+revisa las jornadas de los cabos y genera su reporte si hace falta (sección 15);
+consulta Supervisión, con sus informes en PDF, la tabla en CSV y las fotografías (sección 16).
+Al entrar, la coordinación llega a Supervisión. Registra en Nuevo registro igual que un cabo: sus árboles quedan a su nombre.
+En el reporte de una jornada, la coordinación elige al encargado entre los cabos que registraron ese día; para un cabo, el encargado es él mismo.
+Si un cabo nuevo empieza a trabajar o alguien deja el programa, pida a la Administración global que dé de alta o desactive su cuenta.
+13. Abrir una jornada compartida
+En un evento masivo, varios cabos registran a la vez en una misma jornada, cada uno desde su teléfono. La abre la coordinación, el mismo día del evento, y queda como su titular.
+    «Varios cabos», con dos cabos marcados.
+Desde «Registrar jornada»
+Llene «Registrar jornada» como siempre (sección 6).
+En «¿Quién registra en esta jornada?», elija «Varios cabos».
+Marque a los cabos de su institución que registran con usted.
+Toque «Iniciar jornada compartida».
+Cada cabo abre el sistema con señal un momento para que le llegue la jornada. Hágalo en el punto de reunión, antes de empezar a plantar.
+    «Cabos de apoyo», para agregar o quitar cabos.
+Agregar o quitar cabos después
+En la tarjeta de la jornada activa, o en su ficha, toque «Cabos de apoyo». Marque o desmarque y toque «Guardar». Con la misma ventana se convierte en compartida una jornada que usted inició con «Sólo yo».
+Cómo funciona
+Todos registran a la vez; cada árbol queda a nombre de quien lo captura.
+Cada cabo corrige sólo sus árboles; la coordinación, todos.
+Al acabar, cada cabo toca «Terminar mi parte».
+La coordinación cierra la jornada y genera el reporte.
+    La tarjeta de la coordinación, con «Cabos de apoyo».
+Al cerrar
+Si algún cabo de apoyo no ha tocado «Terminar mi parte», al cerrar la app lo dice como un pendiente más, con cuántos árboles suyos llegaron y a qué hora el último. Avisa, no impide. Con señal, la jornada se pone al día con el servidor antes de cerrar.
+El reporte de una jornada compartida dice quién la coordina, los cabos de apoyo con los árboles de cada uno, y trae la columna «Cabo» en la tabla de ejemplares.
+Para encontrarlas después, «Más filtros» trae «Tipo de jornada» en Registros, Jornadas y Supervisión. En Jornadas, la tarjeta dice «compartida con N cabos».
+14. Pasar una jornada a otro cabo (relevo)
+    «Relevo de cabo».
+Si un cabo no puede seguir con una jornada abierta (se enfermó, lo cambiaron de sitio), otro cabo de la institución puede seguir registrando en ella.
+En Jornadas, abra la ficha de la jornada abierta.
+Toque «Relevo de cabo».
+Elija en «Cabo que sigue registrando» a quien la recibe.
+Toque «Hacer el relevo».
+La jornada sigue a nombre de su titular.
+Cada árbol queda a nombre de quien lo capture.
+El relevo queda en el historial de la jornada.
+Los dos cabos ven un aviso al entrar. Quien la recibe la tiene en su teléfono la siguiente vez que abre la app con señal.
+Para devolverla, haga otro relevo y elija al titular: aparece primero en la lista.
+15. Revisar y corregir lo de los cabos
+    Jornadas: cada tarjeta dice cómo va.
+La pestaña Jornadas lista las jornadas de la institución. Cada tarjeta dice:
+el nombre, la fecha y quién la registró;
+cuántos árboles lleva de los previstos y cuántas especies;
+si está abierta o cerrada, y a qué hora se cerró;
+la alcaldía, la colonia y su prioridad, y el programa;
+si faltaron árboles de lo previsto y si ya tiene reporte.
+«Filtros» deja buscar por fecha, por reporte generado o no, y por lo de «Más filtros»: quién registró, tipo de jornada, programa y alcaldía.
+Qué revisar
+Jornadas de días anteriores que siguen abiertas: pida al cabo que las cierre, o ciérrelas usted desde su ficha.
+Puntos por revisar: ábralos en el mapa de la ficha. Si están bien, márquelos como revisados; si no, corríjalos con la tuerca de cada punto: editar, mover a otra jornada, sustituir o eliminar.
+Jornadas cerradas sin reporte: genérelo desde su ficha (sección 9), eligiendo al encargado.
+Jornadas vacías, sin ningún árbol: elimínelas con «Eliminar jornada», en su ficha.
+Supervisión las reúne en «Qué atender» (sección 16). Un árbol se corrige igual que el propio (sección 8). Cada cambio queda en el historial del árbol con quién lo hizo.
+16. Supervisión, informes y fotografías
+    Supervisión del año, con «Qué atender».
+Supervisión dice cuánto se ha plantado en la institución. Como Mi avance, sólo cuenta las jornadas cerradas.
+El periodo: «Semana», «Mes», «Año», «Un periodo» o «Todo», con flechas para el anterior y el siguiente.
+«Más filtros»: quién registró, tipo de jornada, programa y alcaldía.
+Las cifras: árboles plantados, el porcentaje de lo previsto, cuántos cabos trabajaron y las jornadas en curso, que no se cuentan hasta cerrarse.
+«Qué atender»: jornadas de días anteriores abiertas, jornadas con puntos sin revisar y jornadas sin reporte. Cada renglón se abre para ver cuáles son.
+Los desgloses
+Debajo de la gráfica, cada desglose va plegado con su dato principal; al tocarlo se abre:
+Por quién registró: los árboles, el porcentaje de lo previsto, las jornadas, la última fecha y los pendientes de cada cabo.
+Por alcaldía, por calle (vialidad primaria o calle secundaria, y quién la atiende), por prioridad de la colonia, por especie y por programa.
+Calidad del dato: cuántos árboles se ubicaron con GPS y cuántos tienen fotografía.
+Informes y tabla
+«Informe en PDF»: el informe del periodo y los filtros elegidos, con membrete. Si el filtro es de un solo cabo, lleva su nombre.
+«Tabla en CSV»: un renglón por árbol, para abrir en Excel.
+    Fotografías (de ejemplo).
+Fotografías
+«Fotografías» reúne las fotografías de los árboles de la institución, de lo más reciente a lo más antiguo:
+el buscador encuentra por especie, jornada o colonia;
+«Más filtros»: jornada, quién registró, especie, programa y alcaldía;
+al tocar una se ve grande, con sus datos;
+«Descargar todas» baja las que se ven en un archivo ZIP.
+La fotografía es opcional: no todos los árboles la tienen.
+17. Lo que ve la dirección y qué puede descargar
+    Una jornada con su reporte: «Descargar reporte».
+La dirección (subdirecciones, direcciones de área y direcciones generales) sólo consulta: no registra ni modifica nada. En la Secretaría ve toda la Ciudad, con todas las instituciones; en otra institución, sólo la suya.
+Tiene tres pestañas:
+Supervisión, con la que entra: el avance, «Qué atender», los desgloses, el informe en PDF, la tabla en CSV y las fotografías (sección 16). En la Secretaría se filtra también por institución.
+Jornadas: cada jornada con su mapa, su conciliación y sus puntos.
+Registros: cada árbol con su detalle, su fotografía y su historial.
+Los reportes de las jornadas
+El reporte de una jornada lo genera quien la registró o su coordinación. Cuando ya está generado, la ficha de la jornada dice «Todo listo: reporte generado…» y trae «Descargar reporte». Si todavía no lo tiene, Supervisión lo cuenta en «Qué atender».
+18. Qué hacer si…
+Si…Qué hacer
+El punto sale ámbar o rojoRevise los ajustes del teléfono y despierte el GPS a cielo abierto (sección 2). Arrastre el punto hasta el árbol si hace falta.
+No hay señalSiga registrando: todo se guarda en el teléfono y se envía solo (sección 5). No borre los datos del navegador.
+La pastilla dice que hay registros por enviar y ya hay señalTóquela y use «Enviar ahora».
+Una franja dice «El servidor no aceptó…»Toque «Revisar» y decida qué hacer con cada cambio. Si no sabe, pregunte a su coordinación.
+Registró un árbol en la jornada equivocadaEn Jornadas, abra la jornada, y en la tuerca del punto, muévalo a la correcta.
+Registró un árbol dos vecesElimine uno en Registros. El aviso ofrece «Deshacer» unos segundos.
+Un árbol plantado se perdió y se plantó otroSustitúyalo, no lo elimine (sección 8).
+La especie no está en la listaElija «Otra especie» y escriba su nombre. Avise a su coordinación para que la pidan al catálogo.
+Inició una jornada por errorSi no tiene ningún árbol, ábrala en Jornadas y toque «Eliminar jornada».
+Cerró la jornada y faltaban árbolesEn su ficha, «Reabrir jornada», registre los que faltan y vuelva a cerrarla.
+No puede seguir con una jornada abiertaAvise a su coordinación para que haga el relevo (sección 14).
+No le llegó la jornada compartidaAbra la app con señal un momento. Si no aparece, pida a la coordinación que revise que usted esté marcado en «Cabos de apoyo».
+Olvidó su contraseña o se bloqueó su cuentaPida a la Administración global una contraseña temporal nueva.
+Dice que el sistema se abrió en otra pestañaToque «Usar aquí» en la pestaña que quiere usar.
+Va a cambiar de teléfonoAntes, envíe todo: la pastilla debe decir «Al día». En el teléfono nuevo, deje los ajustes de la sección 2.
+Algo no funciona o un mensaje pide avisarAvise a su coordinación con la versión del sistema, lo que aparece en la pantalla y, si es del GPS, la marca y el modelo del teléfono.
+19. Buenas prácticas en campo
+Antes de salir, revise que el teléfono tenga batería y que la app abra; ábrala con señal si hubo versión nueva.
+Al llegar, despierte el GPS a cielo abierto y declare la jornada desde el sitio.
+Registre cada árbol junto a él, en el momento en que se planta, no al final del día.
+Mire siempre el color bajo el mapa antes de guardar.
+Use el nombre de la especie de la lista; «Otra especie» sólo si de verdad no está.
+Tome la fotografía cuando ayude a reconocer el árbol o el sitio.
+Cierre la jornada el mismo día, aunque falten árboles: sólo las cerradas cuentan en el avance. Se puede reabrir.
+Genere el reporte en cuanto cierre, con los datos frescos.
+Antes de terminar el día, revise que la pastilla diga «Al día».
+No borre los datos del navegador ni use el modo privado.
+No comparta su cuenta: cada árbol queda a nombre de quien lo registra.

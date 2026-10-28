@@ -1,0 +1,39 @@
+FALLA en la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»  [renglón 278]
+ESPERA_JORNADA_S (después de iniciar_jornada) 0.02
+CON_ESPERA apoyos visible: True relevo oculto: True
+ESTADO {
+ "jid": "c8da0bf4-3ef5-43a9-ab59-22f8d44246a4",
+ "jornada": {
+  "cabo_id": "u-coord-1",
+  "estatus": "abierta",
+  "organizacion_id": "o-sedema",
+  "cabos_apoyo": []
+ },
+ "usuario": "u-coord-1",
+ "perfil": "COORDINADOR",
+ "permisos": {
+  "etiqueta": "Coordinador",
+  "alcance": "institucion",
+  "registrar": true,
+  "editar": true,
+  "eliminar": true,
+  "eliminarJornadaVacia": true,
+  "relevar": true,
+  "catalogos": false,
+  "usuarios": false,
+  "galeria": true,
+  "descripcion": "Registra, y ve, edita y elimina los registros de todos los cabos de su institución y los suyos. Elimina también las jornadas vacías, pasa una jornada abierta a otro cabo (relevo) y abre jornadas compartidas."
+ },
+ "compartir": true,
+ "relevo": true,
+ "guardada": "c8da0bf4-3ef5-43a9-ab59-22f8d44246a4",
+ "vista": "jornadas",
+ "activa": "c8da0bf4-3ef5-43a9-ab59-22f8d44246a4",
+ "errores": "",
+ "panel": false,
+ "apoyosOculto": false,
+ "relevoOculto": true,
+ "dialogos": []
+}
+
+

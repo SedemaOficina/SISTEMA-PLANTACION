@@ -1,0 +1,48 @@
+{
+ "externas": 153,
+ "dominios": [
+  "server.arcgisonline.com"
+ ],
+ "csp_eventos": 0,
+ "csp_consola": 0,
+ "errores": 0,
+ "pasos_con_error": [
+  [
+   "DIRECTIVO",
+   "informe PDF",
+   "ERROR: Page.click: Timeout 30000ms exceeded."
+  ],
+  [
+   "DIRECTIVO",
+   "tabla CSV",
+   "ERROR: Page.click: Timeout 30000ms exceeded."
+  ]
+ ],
+ "inyectado": {
+  "ADMIN": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 0
+  },
+  "DIRECTIVO": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 0
+  },
+  "COORDINADOR": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 0
+  },
+  "CABO": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 0
+  },
+  "CABO_APOYO": {
+   "img": 0,
+   "corrio": 0,
+   "texto": 0
+  }
+ }
+}

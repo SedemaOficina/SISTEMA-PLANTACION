@@ -1,0 +1,43 @@
+{
+ "con_puntos": {
+  "vigentes": [
+   "u-demo-c3",
+   "u-demo-c5"
+  ],
+  "puntos": [
+   "Rocío Hernández Demo no ha terminado su parte: 3 árboles recibidos, el último a las 08:35.",
+   "Yolanda Cruz Demo no ha terminado su parte: 3 árboles recibidos, el último a las 08:47.",
+   "51 árboles por debajo de lo previsto (9 de 60)."
+  ],
+  "nota": "Se puede cerrar de todos modos. Si después llegan árboles de un cabo de apoyo, se quedan en su teléfono hasta que se reabra la jornada.",
+  "otro": null
+ },
+ "con_un_punto_lejos": {
+  "vigentes": [
+   "u-demo-c3",
+   "u-demo-c5"
+  ],
+  "puntos": [
+   "Rocío Hernández Demo no ha terminado su parte: 4 árboles recibidos, el último a las 08:35.",
+   "Yolanda Cruz Demo no ha terminado su parte: 3 árboles recibidos, el último a las 08:47.",
+   "1 punto por revisar.",
+   "50 árboles por debajo de lo previsto (10 de 60)."
+  ],
+  "nota": "Puede revisarlo ahora o cerrar de todos modos y revisarlo después.",
+  "otro": "Revisar el punto"
+ },
+ "sin_puntos": {
+  "vigentes": [
+   "u-demo-c3",
+   "u-demo-c5"
+  ],
+  "puntos": [
+   "Rocío Hernández Demo no ha terminado su parte: 4 árboles recibidos, el último a las 08:35.",
+   "Yolanda Cruz Demo no ha terminado su parte: 3 árboles recibidos, el último a las 08:47.",
+   "50 árboles por debajo de lo previsto (10 de 60)."
+  ],
+  "nota": "Se puede cerrar de todos modos. Si después llegan árboles de un cabo de apoyo, se quedan en su teléfono hasta que se reabra la jornada.",
+  "otro": null
+ },
+ "errores": []
+}

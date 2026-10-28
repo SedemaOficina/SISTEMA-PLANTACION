@@ -1,0 +1,4 @@
+  8  Datos de demostración                                           116 s  DETENIDO: [renglón 2902]        - waiting 500ms
+ 54  ctx71: Nuevo registro compacto y tarjeta de jornada con avance   31 s  0 fallas de 8
+
+tramos: 2 · comprobaciones: 8 · fallas: 0 · tramos detenidos: 1 (8) · 2 min

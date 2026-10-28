@@ -1,0 +1,35 @@
+{
+ "sw": [
+  false,
+  false
+ ],
+ "coord_al_entrar": [],
+ "x": [],
+ "jornada": "4bf510c7-0dbd-401c-b990-7fed3392f261",
+ "cabo2_al_entrar": [
+  "Jornada compartida\n\nAhora es cabo de apoyo en las jornadas compartidas «Cierre con pendiente r3 1», que coordina Coordinación Revisión Tres y «Evento real r3 1», que coordina Coordinación Revisión Tres. Ya puede registrar en ellas.\n\nCómo funciona:\n\nRegistran varios cabos a la vez; cada árbol queda a nombre de quien lo captura.\nUsted corrige sólo sus árboles.\nAl acabar, toque «Terminar mi parte»: se envía lo suyo y la Coordinación lo ve.\nLa Coordinación cierra la jornada y genera el reporte.\nEntendido"
+ ],
+ "arbol": "7ade9ab4-a4f3-485e-828d-7bee985643f3",
+ "cola_sin_senal": 1,
+ "aviso_al_volver": "El servidor no aceptó 1 cambio. No tiene permiso para registrar en esta jornada. Revíselo con «Revisar», arriba.",
+ "revisar": "Cambios que el servidor no aceptó\n\nSiguen guardados en este teléfono. Elija qué hacer con cada uno.\n\nFresno · nuevo, sin folio\n\nAlta del árbol, en la jornada «Cierre con pendiente r3 1»\n\nPor qué: No tiene permiso para registrar en esta jornada.\n\nEliminar este registro",
+ "revisar_botones": [
+  "Cerrar [btn btn-icono-solo btn-texto dialogo-cerrar]",
+  "Eliminar este registro [btn btn-peligro-linea]"
+ ],
+ "srv_arbol_antes_de_reabrir": "{\"arbol\":null,\"jornada\":null,\"fotos\":0}",
+ "coord_reabrir_dialogo": [],
+ "srv_jornada_tras_reabrir": "{\"arbol\":null,\"jornada\":{\"estatus\":\"abierta\",\"reporte\":false,\"nombre\":\"Cierre con pendiente r3 1\"},\"fotos\":0}",
+ "cabo2_tras_reabrir_dialogos": [],
+ "cabo2_tras_reabrir": {
+  "aviso": "",
+  "cola": 1,
+  "rechazadas": 1
+ },
+ "revisar_tras_reabrir_botones": [
+  "Cerrar [btn btn-icono-solo btn-texto dialogo-cerrar]",
+  "Eliminar este registro [btn btn-peligro-linea]"
+ ],
+ "srv_arbol_final": "{\"arbol\":null,\"jornada\":null,\"fotos\":0}",
+ "errores": []
+}

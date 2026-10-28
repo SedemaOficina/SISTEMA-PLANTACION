@@ -432,6 +432,41 @@ with sync_playwright() as p:
     mirar(not a_la_vista, 'y a la vista quedan a lo más %d; el resto va plegado en «Más filtros»' % TOPE_A_LA_VISTA, ', '.join(a_la_vista))
     b.close()
 
+# --- La copia para el SIA sale igual de un clon con LF que de uno de Windows con CRLF, y un error no deja nada ---
+import shutil, subprocess, sys, tempfile
+_tmp = tempfile.mkdtemp(prefix='srp-auditoria-prod-')
+def _raiz(nombre, crlf):
+    """Lo que lee herramientas/preparar_produccion.py, en una carpeta aparte; con crlf, sus textos con fin de renglón de Windows."""
+    r = os.path.join(_tmp, nombre)
+    os.makedirs(os.path.join(r, 'herramientas'))
+    shutil.copy2(os.path.join(APP, 'herramientas', 'preparar_produccion.py'), os.path.join(r, 'herramientas'))
+    for a in ['index.html', 'sw.js', 'manifest.webmanifest', 'VERSION']: shutil.copy2(os.path.join(APP, a), r)
+    for c in ['css', 'js', 'vendor', 'assets']:
+        shutil.copytree(os.path.join(APP, c), os.path.join(r, c), ignore=shutil.ignore_patterns('calles', '__pycache__'))
+    if crlf:
+        for a in [os.path.join(r, 'index.html'), os.path.join(r, 'js', 'config.js')]:
+            t = open(a, 'rb').read().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
+            open(a, 'wb').write(t)
+    return r
+def _armar(raiz, destino):
+    return subprocess.run([sys.executable, os.path.join(raiz, 'herramientas', 'preparar_produccion.py'), destino],
+                          capture_output=True, text=True, encoding='utf-8', env=dict(os.environ, PYTHONUTF8='1'))
+def _lista(r):
+    return {os.path.relpath(os.path.join(d, f), r): open(os.path.join(d, f), 'rb').read().replace(b'\r\n', b'\n') for d, _, fs in os.walk(r) for f in fs}
+try:
+    _lf, _crlf = _raiz('lf', False), _raiz('crlf', True)
+    _a, _b = _armar(_lf, os.path.join(_tmp, 'copia-lf')), _armar(_crlf, os.path.join(_tmp, 'copia-crlf'))
+    _iguales = _a.returncode == 0 and _b.returncode == 0 and _lista(os.path.join(_tmp, 'copia-lf')) == _lista(os.path.join(_tmp, 'copia-crlf'))
+    mirar(_iguales, 'la copia para el SIA sale igual de un clon con LF que de uno de Windows con CRLF', (_a.stderr + _b.stderr).strip()[-300:])
+    # Sin la marca de prueba en index.html, la herramienta se detiene y el destino no se crea
+    _p = os.path.join(_crlf, 'index.html')
+    open(_p, 'w', encoding='utf-8', newline='').write(open(_p, encoding='utf-8', newline='').read().replace('Sólo en la versión de prueba', 'Otro texto'))
+    _c = _armar(_crlf, os.path.join(_tmp, 'copia-error'))
+    mirar(_c.returncode != 0 and not os.path.exists(os.path.join(_tmp, 'copia-error')) and 'No se creó' in _c.stderr,
+          'si la copia para el SIA no se puede armar, lo dice y no deja una copia a medias en el destino', _c.stderr.strip()[-300:])
+finally:
+    shutil.rmtree(_tmp, ignore_errors=True)
+
 malos = [h for h in hallazgos if not h[0]]
 for ok_, desc, det in hallazgos:
     print(('OK    ' if ok_ else 'FALLA ') + desc + (('  -> ' + det) if (det and not ok_) else ''))

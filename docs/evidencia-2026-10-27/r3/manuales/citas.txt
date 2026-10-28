@@ -1,0 +1,31 @@
+===== manual-personal.html
+manual-personal.html:134  «Agregar a la pantalla principal»  NO ESTÁ
+manual-personal.html:134  «Instalar app»  NO ESTÁ
+manual-personal.html:135  «Agregar a pantalla de inicio»  NO ESTÁ
+manual-personal.html:138  «Permitir»  SÓLO SIN MAYÚSCULAS
+manual-personal.html:138  «Precisa»  SÓLO SIN MAYÚSCULAS
+manual-personal.html:138  «Aproximada»  SÓLO SIN MAYÚSCULAS
+manual-personal.html:146  «Usar ubicación»  NO ESTÁ
+manual-personal.html:147  «Mejorar la Precisión de la ubicación»  NO ESTÁ
+manual-personal.html:148  «Permitir solo con la app en uso»  NO ESTÁ
+manual-personal.html:148  «Usar la ubicación precisa»  NO ESTÁ
+manual-personal.html:159  «Sin restricciones»  NO ESTÁ
+manual-personal.html:159  «Pausar la actividad de la aplicación si no se usa»  NO ESTÁ
+manual-personal.html:160  «Gestionar automáticamente»  NO ESTÁ
+manual-personal.html:161  «Permitir actividad en segundo plano»  NO ESTÁ
+manual-personal.html:162  «Permitir uso en segundo plano»  NO ESTÁ
+manual-personal.html:164  «batería»  NO ESTÁ
+manual-personal.html:170  «Al usar la app»  NO ESTÁ
+manual-personal.html:170  «Ubicación precisa»  NO ESTÁ
+manual-personal.html:202  «±25 m»  NO ESTÁ
+manual-personal.html:215  «Correo o contraseña incorrectos»  NO ESTÁ
+manual-personal.html:310  «Tiene N registros sin enviar desde…»  NO ESTÁ
+manual-personal.html:327  «Camellón de Amsterdam»  NO ESTÁ
+manual-personal.html:419  «enviado hoy a las…»  NO ESTÁ
+manual-personal.html:656  «compartida con N cabos»  NO ESTÁ
+===== manual-administracion.html
+manual-administracion.html:112  «Correo o contraseña incorrectos»  NO ESTÁ
+manual-administracion.html:114  «Hubo demasiados intentos fallidos desde esta conexión»  NO ESTÁ
+manual-administracion.html:309  «Agregar institución»  NO ESTÁ
+manual-administracion.html:414  «Cargar N árboles»  NO ESTÁ
+manual-administracion.html:414  «Subiendo tanda N de M…»  NO ESTÁ

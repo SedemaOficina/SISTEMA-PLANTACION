@@ -1,0 +1,34 @@
+{
+ "dialogos_antes": [
+  [
+   "s6-informe-compartidas",
+   []
+  ],
+  [
+   "s6-tabla-compartidas",
+   []
+  ],
+  [
+   "s6-mi-avance-compartidas-cabo",
+   [
+    "Jornada compartida\n\nAhora es cabo de apoyo en la jornada compartida «Plaza cívica · El Mirador», que coordina Estela Ramírez Demo. Ya puede registrar en ella.\n\nCómo funciona:\n\nRegistran varios cabos a"
+   ]
+  ]
+ ],
+ "pdf_dir": {
+  "sugerido": "Informe_todo_Compartidas.pdf",
+  "ruta": "C:\\sia-rev\\tmp\\aud1027\\r3\\evidencia\\pdf\\s6-informe-compartidas.pdf"
+ },
+ "csv_dir": {
+  "sugerido": "Arboles_todo_Compartidas.csv",
+  "ruta": "C:\\sia-rev\\tmp\\aud1027\\r3\\evidencia\\pdf\\s6-tabla-compartidas.csv"
+ },
+ "cabo_vista": "supervision",
+ "cabo_tiene_filtro": true,
+ "cabo_cifras": "Mi avance\n\nSólo cuentan las jornadas cerradas.\n\nFiltrar\nQuitar filtros\nJornadas compartidas\nSemana\nMes\nAño\nUn periodo\nTodo\n\nTodo el registro\n\nMás filtros: compartidas\n109\nárboles plantados\n21.8 por jornada\n100 %\nde lo previsto\n488 de 486 previstos en las jornadas\n5\njornadas cerradas\n1 en curso\nQué atender\n1 jornada cerrada no tiene reporte\nInforme en PDF\nFotografías\nÁrboles plantados por mes\n35\n27\n20\n21\n6\nJUL 25\nAGO 25\nSEP 25\nOCT 25\nNOV 25\nDIC 25\nENE\nFEB\nMAR\nABR\nMAY\nJUN\nJUL\nAGO\nÁrboles plantados\nPeriodo\tÁrboles\tJornadas\nJUL 25\t35\t1\nAGO 25\t0\t0\nSEP 25\t27\t1\nOCT 25\t20\t1\nNOV 25\t0\t0\nDIC 25\t0\t0\nENE\t0\t0\nFEB\t0\t0\nMAR\t0\t0\nABR\t0\t0\nMAY\t0\t0\nJUN\t21\t1\nJUL\t0\t0\nAGO\t6\t1\nPor alcaldía\n3 alcaldías · 8 colonias · Tlalpan 43 %\n Leaflet | Alcaldías: SIA con base en INEGI\n\nMás intenso, más árboles. Toque una alcaldía para ver su cifra.\n\nAlcaldía\tÁrboles\t% del total\tJornadas\tColonias\nTlalpan\n\t47\t43 %\t3\t5\nCoyoacán\n",
+ "pdf_cabo": {
+  "sugerido": "Informe_todo_Compartidas_Rocio_Hernandez_Demo.pdf",
+  "ruta": "C:\\sia-rev\\tmp\\aud1027\\r3\\evidencia\\pdf\\s6-mi-avance-compartidas-cabo.pdf"
+ },
+ "errores": []
+}

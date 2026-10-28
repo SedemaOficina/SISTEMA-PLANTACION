@@ -1,0 +1,13 @@
+pruebas\prueba.py:2300:99: '...' % ... has 1 placeholder(s) but 2 substitution(s)
+pruebas\prueba.py:4382:8: '...' % ... has 1 placeholder(s) but 3 substitution(s)
+pruebas\prueba.py:5034:8: '...' % ... has 1 placeholder(s) but 2 substitution(s)
+pruebas\prueba.py:5042:67: '...' % ... has 1 placeholder(s) but 3 substitution(s)
+pruebas\prueba.py:5252:8: '...' % ... has 1 placeholder(s) but 2 substitution(s)
+pruebas\prueba.py:5552:80: '...' % ... has 1 placeholder(s) but 2 substitution(s)
+pruebas\prueba.py:6642:8: '...' % ... has 1 placeholder(s) but 2 substitution(s)
+pruebas\prueba.py:6666:62: '...' % ... has 1 placeholder(s) but 3 substitution(s)
+pruebas\prueba.py:7600:8: '...' % ... has 1 placeholder(s) but 2 substitution(s)
+pruebas\prueba_conexion.py:866:13: local variable 'j8' is assigned to but never used
+pruebas\prueba_conexion.py:1072:16: '...' % ... has 1 placeholder(s) but 4 substitution(s)
+pruebas\prueba_conexion.py:1353:64: '...' % ... has 1 placeholder(s) but 2 substitution(s)
+pruebas\prueba_conexion.py:1380:16: '...' % ... has 1 placeholder(s) but 2 substitution(s)

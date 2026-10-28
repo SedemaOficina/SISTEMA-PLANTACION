@@ -19,7 +19,9 @@
                                                                 sus jornadas, árboles y fotografías, sus lotes de carga, sus parámetros,
                                                                 los valores de catálogo que dieron de alta y sus registros
 
-   «preparar» presta a la cuenta local el rol srp_api, con el que corre el servicio; «quitar» lo devuelve. */
+   «preparar» presta a la cuenta local el rol srp_api, con el que corre el servicio, si no lo tiene ya. «quitar» no lo
+   devuelve: otro servicio de prueba puede estar corriendo con él en ese momento. Sin herencia (INHERIT FALSE), la
+   cuenta local no gana sus permisos salvo cuando cambia de rol a propósito. */
 import { conectar } from '../servidor/bd.js';
 import { derivar } from '../servidor/dist/independiente.js';
 
@@ -31,7 +33,9 @@ const c = await conectar();
 let salida = { ok: true };
 try {
   if (orden === 'preparar') {
-    await c.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
+    if (!(await c.query("SELECT pg_has_role(current_user, 'srp_api', 'SET') AS si")).rows[0].si) {
+      await c.query('GRANT srp_api TO CURRENT_USER WITH INHERIT FALSE, SET TRUE');
+    }
     await c.query('BEGIN');
     await c.query(`INSERT INTO srp.areas VALUES ('a-sia', 'SIA', 'Sistema de Información Ambiental', true, NULL, now(), NULL, NULL) ON CONFLICT DO NOTHING`);
     for (const u of d.cuentas) {
@@ -102,7 +106,6 @@ try {
     for (const t of ['bitacora', 'bitacora_acceso']) await c.query(`ALTER TABLE srp.${t} ENABLE TRIGGER bitacora_inmutable`);
     await c.query('DELETE FROM srp.usuarios WHERE id = ANY($1::uuid[])', [d.ids]);
     await c.query('COMMIT');
-    await c.query('REVOKE srp_api FROM CURRENT_USER');
   } else {
     throw new Error('Orden desconocida: ' + orden);
   }

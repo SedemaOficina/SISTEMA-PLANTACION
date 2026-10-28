@@ -1,0 +1,4 @@
+{"ok":true,"cuentas":4,"arboles":1}
+cuentas r4 que quedan: 0
+entradas r4 que quedan: 0
+jornadas R4 que quedan: 0

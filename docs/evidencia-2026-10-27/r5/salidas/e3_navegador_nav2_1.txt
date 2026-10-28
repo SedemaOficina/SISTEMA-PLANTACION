@@ -1,0 +1,10 @@
+C1 nombre con marcado, fórmula, SQL, emoji y escritura de derecha a izquierda · cabo de apoyo · aviso: Jornada compartida
+
+Ahora es cabo de apoyo en las jornadas compartidas «=HYPERLINK("x") <img src=x onerror="window.__r5=1"> ';DROP TABLE j;-- 🌳 ‮أشجار 1153246», que coordina R5 coord, «r5 B7 iniciar doble c2 151951», que coordina R5 coord, «r5 B5 sesión vencida c2», que coordina R5 coord, «r5 B3 respuesta perdida c2», que coordina R5 coord, «r5 B2 quitar c2», que coordina R5 coord, «r5 B1 cierre 
+C1 tras el aviso, «Cambiar de jornada» y la ficha: ¿se ejecutó? {"xss": false, "imgs": 0, "scripts": 0} · errores: []
+C1 Coordinación · «Cabos de apoyo» dice: Marque a los cabos de su institución que registran en «=HYPERLINK("x") <img src=x onerror="window.__r5=1"> ';DROP TABLE j;-- 🌳 ‮أشجار 1153246». Con ellos, la jornada pasa a ser compartida. · ¿se ejecutó? {"xss": false, "imgs": 0} · errores: []
+C1 CSV del informe, renglón: "X","","'=HYPERLINK(""x"") <img src=x onerror=""window.__r5=1""> ';DROP TABLE j;-- 🌳 ‮أشجار 1153246","Sí","","","","","","","","","","'=1+1","'@SUMA(A1)","","'-2+3","","","-99.06","","","","","","","",""
+C2 catálogos JSON con listas dañadas → {"dentro": false, "error": "No se pudo entrar\n\nNo se pudo entrar (listas[t].forEach is not a function). Intente de nuevo; si se repite, recargue la página.", "aviso": "", "especies": 0} · errores de página: []
+C2 catálogos JSON cortado → {"dentro": false, "error": "Falta corregir 1 dato\nNo se pudieron bajar los catálogos: falta conexión con el servidor. Intente de nuevo.", "aviso": "", "especies": 0} · errores de página: []
+C2 catálogos vacío → {"dentro": true, "error": null, "aviso": "", "especies": 0} · errores de página: []
+C3 reloj +1 día · franja del reloj: La hora de este teléfono está mal: va 24 horas adelantada. Corríjala en los ajustes del teléfono: las fechas de los registros se toman de ella. · campo «Fecha de plantación» visible: true · árbol true · rechazos: ["registro.crear:DATOS_INVALIDOS [[\"fecha_plantacion\",\"La fecha de plantación no puede ser posterior a hoy.\"]]"] · errores: []

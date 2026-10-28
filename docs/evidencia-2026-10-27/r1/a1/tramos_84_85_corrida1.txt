@@ -1,0 +1,5 @@
+ 84  ctx101: la jornada compartida (la abre la Coordinación; sus ca   79 s  DETENIDO: [renglón 7706]        - waiting 500ms
+       FALLA en la jornada que abrió la Coordinación, «Cabos de apoyo» ocupa el lugar de «Relevo de cabo»  [renglón 7705]
+ 85  ctx102: abrir la jornada compartida desde el formulario y la f   97 s  DETENIDO: [renglón 108]     - waiting 500ms
+
+tramos: 2 · comprobaciones: 0 · fallas: 1 · tramos detenidos: 2 (84, 85) · 3 min

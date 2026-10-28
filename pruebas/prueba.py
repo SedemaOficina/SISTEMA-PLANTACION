@@ -99,18 +99,40 @@ def fecha_correcta(pg):
     if pg.is_visible('#dlg-confirmar') and pg.inner_text('#dlg-confirmar-titulo') == '¿La fecha es correcta?':
         pg.click('#btn-confirmar-si'); pg.wait_for_timeout(500)
 
+def aceptar_avisos(pagina, ms=20000):
+    """Espera a que terminen los avisos de entrada (<html data-avisos="listos">) y acepta con «Entendido» los de relevo y
+    de jornada compartida que salgan en el camino."""
+    for _ in range(4):
+        pagina.wait_for_function("""() => document.documentElement.dataset.avisos === 'listos' || (document.getElementById('dlg-confirmar').open
+          && ['Jornada compartida', 'Relevo de cabo'].includes(document.getElementById('dlg-confirmar-titulo').textContent))""", timeout=ms)
+        if not pagina.evaluate("document.getElementById('dlg-confirmar').open"): return
+        pagina.click('#btn-confirmar-si'); pagina.wait_for_timeout(300)
+
+def esperar_avisos(pagina, ms=20000):
+    """Espera a que la página termine de revisar los avisos de entrada: o ya hay uno a la vista, o no hubo ninguno."""
+    pagina.wait_for_function("() => document.documentElement.dataset.avisos === 'listos' || document.getElementById('dlg-confirmar').open", timeout=ms)
+
 def iniciar_jornada(pg, nombre, fecha=None, comentarios='', programa='p-refor'):
     """Declara una jornada desde Nuevo registro. Si ya hay una activa, abre otra con «Cambiar de jornada»."""
     if not pg.is_visible('#vista-registrar'): pg.evaluate("SRP.app.mostrarVista('registrar')")
     # Con muchos datos Nuevo registro tarda en prepararse: se espera a que esté listo, no un tiempo fijo
     pg.wait_for_function("() => !document.getElementById('panel-iniciar-jornada').hidden || !document.getElementById('franja-jornada').hidden", timeout=20000)
+    # Con otra activa, «Cambiar de jornada» e «Iniciar otra jornada». La franja puede estar repintándose: se vuelve a tocar
     if pg.is_hidden('#panel-iniciar-jornada'):
-        pg.click('#btn-jornada-cambiar'); pg.wait_for_timeout(200); pg.click('#btn-cambiar-nueva'); pg.wait_for_timeout(300)
+        a_la_vista = "() => [...document.querySelectorAll('#ini-nombre, #btn-cambiar-nueva')].some(e => e.offsetParent !== null)"
+        for _ in range(10):
+            if pg.evaluate(a_la_vista): break
+            try: pg.click('#btn-jornada-cambiar', timeout=3000); pg.wait_for_function(a_la_vista, timeout=3000)
+            except Exception: pass
+        if pg.is_visible('#btn-cambiar-nueva'): pg.click('#btn-cambiar-nueva')
     pg.fill('#ini-nombre', nombre); pg.fill('#ini-fecha', fecha or HOY)
     pg.select_option('#ini-programa', programa)   # el programa es de la jornada
     pg.fill('#ini-meta', '10')                      # y la meta de árboles también
     if comentarios: pg.fill('#ini-comentarios', comentarios)
-    pg.click('#btn-iniciar-jornada'); fecha_correcta(pg); pg.wait_for_timeout(500)
+    pg.click('#btn-iniciar-jornada'); fecha_correcta(pg)
+    # Con muchos datos, la jornada nueva tarda en quedar activa: se espera a que lo esté (si el formulario la rechaza, no llega)
+    try: pg.wait_for_function("n => SRP.activa.jornada && SRP.activa.jornada.nombre === n", arg=nombre, timeout=20000)
+    except Exception: pass
     return pg.evaluate("SRP.activa.jornada && SRP.activa.jornada.id")
 
 def reporte_de(pg, nombre=None):
@@ -2890,11 +2912,9 @@ with sync_playwright() as p:
         if not pg21.is_visible('#sel-usuario-prueba'):
             if pg21.is_visible('#aviso .aviso-cerrar'): pg21.click('#aviso .aviso-cerrar'); pg21.wait_for_timeout(200)
             pg21.evaluate("SRP.app.menuCuenta(false)"); pg21.click('#btn-cuenta'); pg21.click('#btn-cambiar-perfil'); pg21.wait_for_timeout(200)
-        entrar_como(pg21, uid); pg21.wait_for_timeout(900)
+        entrar_como(pg21, uid)
         # Quien hoy es cabo de apoyo o recibió un relevo en la demostración lee su aviso al entrar
-        for _ in range(3):
-            if pg21.evaluate("document.getElementById('dlg-confirmar').open && ['Jornada compartida', 'Relevo de cabo'].includes(document.getElementById('dlg-confirmar-titulo').textContent)"):
-                pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(400)
+        aceptar_avisos(pg21)
     def estado21(): return pg21.inner_text('#demo-estado')
     def abrir_prueba21():
         # Un aviso flotante puede aparecer en cualquier momento y tapar el botón de la cuenta
@@ -2986,12 +3006,12 @@ with sync_playwright() as p:
     pg21.click('#btn-confirmar-si'); pg21.wait_for_timeout(300)
     esperar(pg21,"!document.getElementById('btn-demo-quitar').hasAttribute('aria-busy') && SRP.app.vista !== 'supervision'",20000)
     ok(pg21.is_visible('#vista-acceso') and not pg21.is_visible('#caja-demo'),'quien estaba dentro con una cuenta de demostración que se quitó vuelve al acceso')
-    esperar(pg21, "(async () => !(await SRP.almacen.todos('plantaciones')).some(x => SRP.demo.es(x.id)) && !(await SRP.almacen.todos('bitacora')).some(x => SRP.demo.es(x.id) || SRP.demo.es(x.entidad_id)))()", 20000)
+    esperar(pg21, "(async () => !(await SRP.almacen.todos('plantaciones')).some(x => SRP.demo.es(x.id)) && !(await SRP.almacen.todos('bitacora')).some(x => SRP.demo.es(x.id) || SRP.demo.es(x.entidad_id)) && !Object.keys(SRP.envio.leer().recibidos).some(id => SRP.demo.es(id)))()", 20000)
     q21=pg21.evaluate("""async () => { const j=await SRP.almacen.todos('jornadas'), a=await SRP.almacen.todos('plantaciones'), u=await SRP.almacen.todos('usuarios'), bi=await SRP.almacen.todos('bitacora');
       return { j: j.filter(x=>SRP.demo.es(x.id)).map(x=>x.id), a: a.filter(x=>SRP.demo.es(x.id)).length, propio: !!a.find(x=>x.id==='propio-a1'), propia: !!j.find(x=>x.id==='propia-j1'),
         u: u.filter(x=>SRP.demo.es(x.id)).map(x=>x.id).sort(), bit: bi.filter(x=>SRP.demo.es(x.id) || SRP.demo.es(x.entidad_id)).length,
         rec: Object.keys(SRP.envio.leer().recibidos).filter(id=>SRP.demo.es(id)).length, sel: [...document.querySelectorAll('#sel-usuario-prueba option')].map(o=>o.value).filter(v=>SRP.demo.es(v)).sort() } }""")
-    ok(q21['a']==0 and q21['bit']==0 and q21['rec']==0 and q21['propio'] and q21['propia'],'se quitan los árboles, la bitácora y los envíos de demostración; la jornada y el árbol propios siguen')
+    ok(q21['a']==0 and q21['bit']==0 and q21['rec']==0 and q21['propio'] and q21['propia'],'se quitan los árboles, la bitácora y los envíos de demostración; la jornada y el árbol propios siguen: %s' % {k: q21[k] for k in ('a', 'bit', 'rec', 'propio', 'propia')})
     ok(q21['j']==[jc21] and q21['u']==['u-demo-c6'] and q21['sel']==[],
        'se conserva la jornada de demostración donde se registró un árbol propio, con quien registra en ella (las cuentas ya no guardan coordinación): %s, %s' % (q21['j'], q21['u']))
     entrar21('u-admin-1'); abrir_prueba21()
@@ -3336,7 +3356,10 @@ with sync_playwright() as p:
     pg27.evaluate("SRP.registros.aplicarAtajo('todos')"); pg27.wait_for_timeout(400)
     ok(rm27==['true',True,True] and ra27[0]=='true' and ra27[1] and 'año' not in ra27[2],'en Registros, «Este mes» y «Este año» de «Un periodo» filtran el periodo en curso; «Más filtros» no lleva año ni mes: %s · %s' % (rm27, ra27))
     pg27.evaluate("SRP.app.mostrarVista('jornadas')"); pg27.wait_for_timeout(700)
-    pg27.evaluate("document.querySelector('#jornada-periodo [data-rapido=mes]').click()"); pg27.wait_for_timeout(500)
+    # Bajo carga la vista tarda en tomar el atajo (va plegado en el teléfono): si no quedó marcado, se toca otra vez
+    for _ in range(3):
+        pg27.evaluate("document.querySelector('#jornada-periodo [data-rapido=mes]').click()")
+        if esperar(pg27, "document.querySelector('#jornada-periodo [data-rapido=mes]').getAttribute('aria-pressed') === 'true'", 5000): break
     jm27=pg27.evaluate("(() => { const h = SRP.util.fechaHoy().slice(0, 7); return [document.querySelector('#jornada-periodo [data-rapido=mes]').getAttribute('aria-pressed'), SRP.jornadas.lista.every(j => j.fecha.startsWith(h)), document.getElementById('caja-jornada-anio') === null]; })()")
     pg27.evaluate("document.querySelector('#jornada-periodo [data-rapido=anio]').click()"); pg27.wait_for_timeout(500)
     esperar(pg27, "document.querySelector('#jornada-periodo [data-rapido=anio]').getAttribute('aria-pressed') === 'true'", 5000)   # bajo carga, la lista tarda en repintarse
@@ -3344,7 +3367,7 @@ with sync_playwright() as p:
     pg27.evaluate("SRP.jornadas.aplicarAtajo('todas')"); pg27.wait_for_timeout(500)
     ok(jm27==['true',True,True] and ja27[0]=='true' and ja27[1] and 'año' not in ja27[2],'en Jornadas, igual: %s · %s' % (jm27, ja27))
     # La tuerca es sólo su icono: sin círculo ni contorno, con su área de toque
-    pg27.locator('#lista-jornadas .jornada .jornada-boton').first.click(); pg27.wait_for_timeout(900)
+    pg27.locator('#lista-jornadas .jornada .jornada-boton').first.click(); pg27.wait_for_selector('#jornada-lista .btn-tuerca')
     tu27=pg27.evaluate("(() => { const b = document.querySelector('#jornada-lista .btn-tuerca'); const c = getComputedStyle(b); const r = b.getBoundingClientRect(); return [c.borderRadius, c.backgroundColor, c.borderTopColor, Math.round(r.width), Math.round(r.height)]; })()")
     ok(tu27[0]!='50%' and tu27[1]=='rgba(0, 0, 0, 0)' and tu27[2]=='rgba(0, 0, 0, 0)' and tu27[3]>=48 and tu27[4]>=48,'la tuerca es sólo su icono, sin círculo ni contorno, y se toca igual de fácil: %s' % tu27)
     pg27.evaluate("SRP.demo.quitar()")
@@ -3482,7 +3505,7 @@ with sync_playwright() as p:
     pg32.goto(BASE); pg32.wait_for_timeout(1200)
     pg32.select_option('#sel-usuario-prueba','u-admin-1'); pg32.click('#btn-entrar-prueba'); pg32.wait_for_timeout(900)
     pg32.evaluate("SRP.demo.cargar()"); pg32.wait_for_timeout(800)
-    pg32.evaluate("SRP.app.mostrarVista('jornadas')"); pg32.wait_for_timeout(800)
+    pg32.evaluate("SRP.app.mostrarVista('jornadas')"); pg32.wait_for_selector('#lista-jornadas .jornada .jornada-boton')
     pg32.evaluate("(() => { const l = [...document.querySelectorAll('#lista-jornadas .jornada')].find(x => { const c = x.querySelector('.jornada-cifra b'); return x.querySelectorAll('.jornada-mini circle').length >= 8; }); (l || document.querySelector('#lista-jornadas .jornada')).querySelector('.jornada-boton').click(); })()")
     pg32.wait_for_timeout(1200)
     esperar(pg32, "!!document.getElementById('jornada-mapa').offsetParent", 6000)   # la ficha tarda con los datos de demostración recién cargados
@@ -4877,8 +4900,9 @@ with sync_playwright() as p:
     pg56.evaluate("SRP.app.mostrarVista('cambios')"); pg56.wait_for_timeout(500)
     ok(pg56.evaluate("document.querySelector('#cmb-sobre option').textContent")=='Todo','en el Registro de cambios la primera opción de «Sobre» es «Todo»')
     # Coordinación de alcaldía: Supervisión ofrece sólo lo suyo
-    pg56.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-coord-alc'])"); pg56.reload(); pg56.wait_for_timeout(1800)
-    pg56.evaluate("SRP.app.mostrarVista('registros')"); pg56.wait_for_timeout(1500)
+    pg56.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-coord-alc'])"); pg56.reload(); pg56.wait_for_selector('html[data-listo]'); esperar_avisos(pg56)
+    pg56.evaluate("SRP.app.mostrarVista('registros')")
+    pg56.wait_for_function("() => document.querySelectorAll('#filtro-alcaldia option').length > 1 && document.querySelectorAll('#filtro-programa option').length > 1", timeout=20000)
     ra56=pg56.evaluate("[document.querySelectorAll('#filtro-alcaldia option').length, document.querySelectorAll('#filtro-programa option').length]")
     pg56.evaluate("SRP.app.mostrarVista('supervision')"); pg56.wait_for_timeout(2500)
     abrir_sup(pg56)
@@ -4976,7 +5000,7 @@ with sync_playwright() as p:
     pg58.goto(BASE); pg58.wait_for_timeout(1300)
     pg58.select_option('#sel-usuario-prueba','u-admin-1'); pg58.click('#btn-entrar-prueba'); pg58.wait_for_timeout(700)
     pg58.evaluate("async () => { await SRP.demo.cargar(); }"); pg58.wait_for_timeout(500)
-    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_timeout(1500)
+    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_selector('html[data-listo]'); esperar_avisos(pg58)
     pg58.evaluate("async () => { for (const j of await SRP.activa.abiertas()) await SRP.activa.cambiarEstatus(j, 'cerrada'); SRP.activa.jornada = null; }"); pg58.wait_for_timeout(300)
     def arbol58(busq='ahuehu', esp='ESP-0070'):
         pg58.click('#btn-ubicacion'); pg58.wait_for_timeout(700)
@@ -5034,7 +5058,8 @@ with sync_playwright() as p:
        'la ficha de la jornada dice sus días y los puntos de otro día llevan su fecha: %s' % [sub58, [d[:12] for d in det58]])
     # Editar la fecha de la jornada: la toman los árboles del día de inicio; los de otros días conservan la suya
     pg58.click('#btn-jornada-editar'); pg58.wait_for_timeout(300)
-    pg58.fill('#ej-fecha', HOY); pg58.dispatch_event('#ej-fecha','change'); pg58.click('#btn-ej-guardar'); pg58.wait_for_timeout(600)
+    pg58.fill('#ej-fecha', HOY); pg58.dispatch_event('#ej-fecha','change'); pg58.click('#btn-ej-guardar')
+    pg58.wait_for_function("() => !document.getElementById('dlg-editar-jornada').open || !!document.getElementById('ej-errores').textContent.trim()", timeout=20000)
     ej58=pg58.inner_text('#ej-errores') if pg58.is_visible('#ej-errores') else ''
     ok(pg58.is_visible('#dlg-editar-jornada') and 'no puede empezar después de ese día' in ej58 and TXT(D(1)) in ej58,
        'la jornada no puede empezar después de un árbol plantado otro día: %s' % ej58.replace(chr(10),' | '))
@@ -5060,8 +5085,10 @@ with sync_playwright() as p:
     pg58.click('#sustituir-motivos .chip[data-motivo=ROBO]'); pg58.fill('#sustituir-fecha', D(5)); pg58.click('#btn-sustituir-seguir'); pg58.wait_for_timeout(200)
     es58=pg58.inner_text('#sustituir-error')
     ok('anterior a la plantación del árbol perdido (' + TXT(D(4)) + ')' in es58,'la sustitución no puede ser de antes de que se plantara el perdido: %s' % es58)
-    pg58.fill('#sustituir-fecha', D(2)); pg58.click('#btn-sustituir-seguir'); pg58.wait_for_timeout(1200)
-    if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(900)   # la jornada estaba cerrada: se pregunta antes de reabrirla
+    pg58.fill('#sustituir-fecha', D(2)); pg58.click('#btn-sustituir-seguir')
+    pg58.wait_for_function("() => document.getElementById('dlg-confirmar').open || !!SRP.formulario.estado.sustitucion", timeout=20000)
+    if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si')   # la jornada estaba cerrada: se pregunta antes de reabrirla
+    pg58.wait_for_function("() => !!SRP.formulario.estado.sustitucion && !!document.getElementById('campo-fecha').value", timeout=20000)
     f58=pg58.evaluate("[document.getElementById('campo-fecha').value, !document.getElementById('caja-fecha-arbol').hidden, document.getElementById('edicion-aviso').textContent]")
     ok(f58[0]==D(2) and f58[1] and 'plantado el ' + TXT(D(2)) in f58[2],'el formulario del sustituto llega con esa fecha, a la vista: %s' % f58)
     pg58.click('#especies-recientes .chip-misma'); pg58.wait_for_timeout(150)
@@ -5128,7 +5155,7 @@ with sync_playwright() as p:
     dv58=pg58.evaluate("async (id) => { const j = await SRP.almacen.uno('jornadas', id); return [j.relevo_id, j.relevos.length]; }", jr)
     ok(t1[0]=='u-cabo-1' and 'titular' in t1[1] and dv58==[None, 2],'la coordinación puede devolverla al titular, que aparece primero: %s %s' % (t1, dv58))
     # Mientras sigue abierta, el titular lee al entrar que volvió a él
-    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_timeout(1800)
+    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_selector('html[data-listo]'); esperar_avisos(pg58)
     av58c=[pg58.is_visible('#dlg-confirmar'), pg58.inner_text('#dlg-confirmar-titulo') if pg58.is_visible('#dlg-confirmar') else '', pg58.inner_text('#dlg-confirmar-texto') if pg58.is_visible('#dlg-confirmar') else '', pg58.is_hidden('#btn-confirmar-no')]
     ok(av58c[0] and av58c[1]=='Relevo de cabo' and 'volvió a usted' in av58c[2] and av58c[3],'cuando la coordinación se la devuelve, el titular lee que volvió a él: %s' % av58c[2])
     if pg58.is_visible('#dlg-confirmar'): pg58.click('#btn-confirmar-si'); pg58.wait_for_timeout(300)
@@ -5142,7 +5169,7 @@ with sync_playwright() as p:
     ok(sv58[1]==1 and sv58[2]==1 and sv58[3],'Supervisión cuenta a cada cabo sus árboles y el filtro «Quién registró» encuentra la jornada del relevo: %s' % sv58)
     rep58=pg58.evaluate("async (id) => { const j = await SRP.almacen.uno('jornadas', id); const regs = await SRP.activa.registrosDe(j); return SRP.reportes.modelo(regs, j, j.fecha, j).identificacion.find(x => x[0] === 'Relevo de cabo'); }", jr)
     ok(rep58 is not None and 'desde el ' + HOY_TXT in rep58[1],'el reporte de la jornada dice el relevo: %s' % rep58)
-    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_timeout(1800)
+    pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg58.reload(); pg58.wait_for_selector('html[data-listo]'); esperar_avisos(pg58)
     ok(not pg58.is_visible('#dlg-confirmar'), 'de una jornada ya cerrada no se avisa el relevo')
     pg58.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg58.reload(); pg58.wait_for_timeout(1300)
     ok(not pg58.evaluate("SRP.permisos.puede('jornada.relevo', { cabo_id: 'u-cabo-1', estatus: 'abierta' })"),'la Administración global no hace relevos: lo decide la coordinación')
@@ -7712,7 +7739,9 @@ with sync_playwright() as p:
        'las instrucciones de la jornada compartida, a la vista, empiezan por abrirla el mismo día: %s' % v101['instrucciones'][:90])
     pg101.click('#apoyos-cabos .chip[data-id="u-cabo-1"]'); pg101.click('#apoyos-cabos .chip[data-id="u-demo-c4"]')
     ok(pg101.inner_text('#btn-apoyos-guardar') == 'Guardar: 2 cabos de apoyo', 'el botón dice cuántos cabos de apoyo quedan')
-    pg101.click('#btn-apoyos-guardar'); pg101.wait_for_timeout(1200)
+    pg101.click('#btn-apoyos-guardar')
+    # La ficha se repinta con la jornada al día: se espera a que diga que es compartida
+    pg101.wait_for_function("() => document.getElementById('jornada-sub').innerText.includes('compartida')", timeout=20000)
     f101 = pg101.evaluate("""async id => { const j = await SRP.almacen.uno('jornadas', id); return { apoyos: j.cabos_apoyo.map(a => [a.cabo_id, a.por_id, a.fin]),
       sub: document.getElementById('jornada-sub').innerText, bit: (await SRP.almacen.todos('bitacora')).filter(b => b.entidad_id === id && b.accion === 'APOYO').map(b => b.detalle) }; }""", jid101)
     ok(f101['apoyos'] == [['u-cabo-1', 'u-coord-1', None], ['u-demo-c4', 'u-coord-1', None]] and 'compartida' in f101['sub'] and '(Coordinación)' in f101['sub']
@@ -7761,7 +7790,7 @@ with sync_playwright() as p:
     ok(q101 == ['institucion', True, False], 'la Coordinación corrige los árboles de cualquier cabo de su institución, no los de otra: %s' % q101)
     # Usuarios ya no asigna coordinadores
     como101('u-admin-1')
-    pg101.evaluate("SRP.app.mostrarVista('usuarios')"); pg101.wait_for_timeout(1500)
+    pg101.evaluate("SRP.app.mostrarVista('usuarios')"); pg101.wait_for_selector('#tabla-usuarios .c-resumen', timeout=20000)
     u101 = pg101.evaluate("""() => { SRP.usuarios.abrirFormulario(SRP.ref.usuarioPorId['u-coord-1']);
       const r = [!document.getElementById('caja-usr-coordinador'), [...document.querySelectorAll('#tabla-usuarios thead th')].map(t => t.textContent.replace(/[↑↓↕]/g, '').trim()).includes('Coordinadores'),
         document.getElementById('usr-perfil-ayuda').textContent, document.querySelector('#tabla-usuarios .c-resumen').textContent];
@@ -7781,7 +7810,8 @@ with sync_playwright() as p:
     pg102.evaluate("async () => { await SRP.demo.cargar(); }")
     def como102(uid):
         pg102.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", uid); pg102.reload(); pg102.wait_for_selector('html[data-listo]')
-        pg102.wait_for_function("id => SRP.sesion && SRP.sesion.usuario && SRP.sesion.usuario.id === id", arg=uid); pg102.wait_for_timeout(1200)
+        pg102.wait_for_function("id => SRP.sesion && SRP.sesion.usuario && SRP.sesion.usuario.id === id", arg=uid)
+        aceptar_avisos(pg102)
         pg102.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
     def formulario102():
         pg102.evaluate("SRP.app.mostrarVista('registrar')"); pg102.wait_for_function("() => !document.getElementById('panel-iniciar-jornada').hidden || !document.getElementById('franja-jornada').hidden", timeout=20000)
@@ -7805,6 +7835,7 @@ with sync_playwright() as p:
        'trae unos 20 relevos; hoy quedan abiertas la compartida de Estela (Rocío y Yolanda) y el relevo de Julián a Marisol; ninguna cuenta guarda coordinadores: %s' % {k: d102[k] for k in ('rel', 'abierta', 'relevoHoy', 'conCoord')})
     # El cabo no ve «¿Quién registra en esta jornada?»; la Coordinación sí, con «Sólo yo»
     como102('u-cabo-1'); formulario102()
+    ok(pg102.evaluate("document.documentElement.dataset.avisos") == 'listos', 'al terminar los avisos de entrada, la página lo marca («listos») para que las pruebas no esperen un tiempo fijo')
     sinPregunta102 = pg102.is_hidden('#ini-caja-quien')
     como102('u-coord-1'); formulario102()
     ok(sinPregunta102 and pg102.is_visible('#ini-caja-quien') and pg102.is_hidden('#ini-caja-apoyos') and pg102.get_attribute('#ini-quien .chip[data-quien="solo"]', 'aria-pressed') == 'true',
@@ -7818,7 +7849,7 @@ with sync_playwright() as p:
     pg102.click('#btn-iniciar-jornada'); pg102.wait_for_timeout(600)
     ok(pg102.is_visible('#ini-apoyos-error') and 'Marque a los cabos que registran con usted' in pg102.inner_text('#ini-apoyos-error'), 'con «Varios cabos» y ninguno marcado, pide marcarlos o elegir «Sólo yo»')
     pg102.click('#ini-apoyos .chip[data-id="u-cabo-1"]'); pg102.click('#ini-apoyos .chip[data-id="u-demo-c4"]')
-    pg102.reload(); pg102.wait_for_selector('html[data-listo]'); pg102.wait_for_timeout(1200)
+    pg102.reload(); pg102.wait_for_selector('html[data-listo]'); aceptar_avisos(pg102)
     pg102.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())"); formulario102()
     ok(pg102.is_visible('#ini-caja-apoyos') and [pg102.get_attribute('#ini-apoyos .chip[data-id="%s"]' % x, 'aria-pressed') for x in ('u-cabo-1', 'u-demo-c4', 'u-demo-c1')] == ['true', 'true', 'false'],
        'una recarga a medio llenar no pierde «Varios cabos» ni los cabos marcados')

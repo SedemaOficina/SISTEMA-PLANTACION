@@ -1,11 +1,13 @@
 # SRP — Sistema de Registro de Plantaciones (SEDEMA)
 
+[![Pruebas](https://github.com/SedemaOficina/SISTEMA-PLANTACION/actions/workflows/pruebas.yml/badge.svg)](https://github.com/SedemaOficina/SISTEMA-PLANTACION/actions/workflows/pruebas.yml)
+
 El formulario funciona entero en el dispositivo. Con datos de prueba no habla con ningún servidor.
 Con datos reales (`ES_FICTICIO: false`) entra con las cuentas del servicio del SRP (`servidor/`), que
 instala el SIA. La conexión está completa desde la versión 1 (`docs/FASE2-Y-TRASPASO.md`): entrar, bajar
 catálogos, cuentas y parámetros, ver lo ya enviado, que llega del servidor, y enviar lo que se captura.
 
-La versión que corre se lee al pie de cada pantalla.
+La versión que corre se lee en la franja fija de arriba de cada pantalla.
 
 ## Cómo se usa
 
@@ -308,7 +310,12 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.3.1»).
+(hoy, «Versión 1.4.3»).
+
+**Las pruebas de GitHub, en verde.** Cada subida corre la prueba completa en GitHub (`.github/workflows/pruebas.yml`;
+el indicador de arriba dice cómo salió la última). Antes de cerrar un bloque se revisa que la corrida del commit
+anterior haya salido en verde, y la verificación de la bitácora dice su número y su resultado. Una corrida en rojo
+se resuelve antes de seguir: no se acumula.
 
 Si aun así alguien cae en una mezcla, el sistema lo detecta al abrir y explica cómo forzar la
 recarga, en vez de quedarse en blanco.

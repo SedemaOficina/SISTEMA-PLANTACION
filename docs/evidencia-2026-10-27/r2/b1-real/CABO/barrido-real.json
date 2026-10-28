@@ -1,0 +1,3558 @@
+{
+ "modo": "real",
+ "base": "http://127.0.0.1:8122/",
+ "inicio": "2026-10-27 15:00",
+ "corridas": [
+  {
+   "perfil": "CABO",
+   "tamano": "tel-360",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: span.aviso-texto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: button.aviso-cerrar"
+       ],
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: span.aviso-texto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: button.aviso-cerrar"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: span.aviso-texto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: button.aviso-cerrar"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 18
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tel-390",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "ventanas": {
+    "dlg-prueba": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-prueba."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-completa": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       2,
+       "#btn-completa-cerrar",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: span#dlg-completa-icono.completa-icono"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-resumen": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: h2#dlg-resumen-titulo."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div#revision-mapa.revision-mapa"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: button#btn-resumen-guardar.btn"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-cambiar-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-editar-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: input#ej-nombre."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: label."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: input#ej-ubicacion."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: select#ej-programa."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: span.opcional"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-mover-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-sustituir": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: fieldset.campo"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-relevo": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: select#relevo-quien."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-relevo."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-apoyos": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       1,
+       "#btn-apoyos-guardar",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: p.instrucciones-titulo"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: li."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-foto": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-detalle": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div#detalle-mapa.revision-mapa"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-detalle."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-catalogo": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "cat-forma",
+        "cat-forma",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-paleta",
+        "cat-paleta",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-fruto",
+        "cat-fruto",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-tipos-org",
+        "cat-tipos-org",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: input#cat-nombre."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: label."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: label."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: form#form-catalogo."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p#cat-modelo-ayuda.nota"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: input#cat-cientifico."
+       ],
+       [
+        "input",
+        "cat-forma",
+        "cat-forma",
+        "lo tapa: label#etq-cat-paleta."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-parametro": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: form#form-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-parametro."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-cierre": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: h2#dlg-cierre-titulo."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: p.nota"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: select#cie-encargado."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: label."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div#caja-cie-personal.campo"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: textarea#cie-observaciones."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-previa": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: div#previa-hoja.previa-hoja"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-senal": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: ol.lista-ayuda"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: li."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: li."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: li."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: li."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-rechazos": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: h2#dlg-rechazos-titulo."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-rechazos."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-confirmar": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       1,
+       "#btn-confirmar-si",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-turno": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: p#dlg-turno-texto."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-usuario": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: select#usr-tipo-org."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: label#etq-usr-organizacion."
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: label#etq-usr-organizacion."
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: label#etq-usr-organizacion."
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: label#etq-usr-organizacion."
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: p#usr-organizacion-ayuda.nota"
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: input#usr-nombre-completo."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: p#usr-correo-ayuda.nota"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-clave-temporal": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor. Abrir la guía de qué",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Revision Dos Cabo Uno, Cabo. Abrir menú",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Nuevo registro",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Mi avance",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "btn-filtros",
+        "Filtros",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Todos",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "chip-hoy",
+        "Hoy, 27-OCT-26",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un día",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Un periodo",
+        "lo tapa: button.btn"
+       ],
+       [
+        "summary",
+        "",
+        "Más filtros: tipo de jornada, especie, programa y alcaldía",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "select",
+        "registros-orden-lista",
+        "Lo más reciente primeroLo más antiguo primero",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Registrar árbol",
+        "lo tapa: div.dialogo-pie"
+       ]
+      ],
+      "cortados": []
+     }
+    }
+   },
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 18
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tel-390",
+   "pasada": "clics",
+   "vistas": {
+    "supervision": {
+     "botones": [
+      [
+       "Semana",
+       "",
+       "ok",
+       {
+        "cambios": 91,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Mes",
+       "",
+       "ok",
+       {
+        "cambios": 91,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Año",
+       "",
+       "ok",
+       {
+        "cambios": 77,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 92,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todo",
+       "",
+       "ok",
+       {
+        "cambios": 80,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Periodo anterior",
+       "sup-anterior",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Fotografías",
+       "btn-sup-fotos",
+       "ya no está"
+      ]
+     ]
+    },
+    "registrar": {
+     "botones": [
+      [
+       "Ver detalle",
+       "btn-franja-detalle",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Editar jornada",
+       "btn-franja-editar",
+       "ok",
+       {
+        "cambios": 83,
+        "vista": null,
+        "dialogos": [
+         "dlg-editar-jornada"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cambiar jornada",
+       "btn-jornada-cambiar",
+       "ok",
+       {
+        "cambios": 74,
+        "vista": null,
+        "dialogos": [
+         "dlg-cambiar-jornada"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cerrar jornada",
+       "btn-jornada-cerrar",
+       "no se presiona"
+      ],
+      [
+       "Registrar ubicación del punto",
+       "btn-ubicacion",
+       "ok",
+       {
+        "cambios": 345,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capturar coordenadas a mano",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Zoom in",
+       "",
+       "ok",
+       {
+        "cambios": 82,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Zoom out",
+       "",
+       "ok",
+       {
+        "cambios": 260,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capas del mapa: mapa base y colonias de la jornada",
+       "",
+       "ok",
+       {
+        "cambios": 220,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Suelo",
+       "",
+       "ok",
+       {
+        "cambios": 77,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Macetón",
+       "",
+       "ok",
+       {
+        "cambios": 64,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Guardar",
+       "btn-revisar",
+       "no se presiona"
+      ]
+     ]
+    },
+    "registros": {
+     "botones": [
+      [
+       "Filtros",
+       "btn-filtros",
+       "ok",
+       {
+        "cambios": 62,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "chip-hoy",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, especie, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Registrar árbol",
+       "",
+       "ya no está"
+      ]
+     ]
+    },
+    "jornadas": {
+     "botones": [
+      [
+       "Filtros",
+       "jornada-btn-filtros",
+       "ok",
+       {
+        "cambios": 62,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Revisar la jornada Barrido de pantallas del 27-OCT-2026, abi",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "galeria": {
+     "botones": [
+      [
+       "Mi avance",
+       "btn-galeria-volver",
+       "ok",
+       {
+        "cambios": 259,
+        "vista": "supervision",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 117,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "galeria-chip-hoy",
+       "ok",
+       {
+        "cambios": 217,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 162,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 113,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros: jornada, quién registró, especie, programa y al",
+       "",
+       "ok",
+       {
+        "cambios": 120,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Registrar árbol",
+       "",
+       "ok",
+       {
+        "cambios": 139,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    }
+   },
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 48
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tel-430",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 18
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "horizontal",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 24
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "tableta",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 36
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "escritorio",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 36
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "escritorio",
+   "pasada": "clics",
+   "vistas": {
+    "supervision": {
+     "botones": [
+      [
+       "Semana",
+       "",
+       "ok",
+       {
+        "cambios": 91,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Mes",
+       "",
+       "ok",
+       {
+        "cambios": 91,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Año",
+       "",
+       "ok",
+       {
+        "cambios": 91,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 120,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todo",
+       "",
+       "ok",
+       {
+        "cambios": 80,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Periodo anterior",
+       "sup-anterior",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Fotografías",
+       "btn-sup-fotos",
+       "ya no está"
+      ]
+     ]
+    },
+    "registrar": {
+     "botones": [
+      [
+       "Editar jornada",
+       "btn-franja-editar",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [
+         "dlg-editar-jornada"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cambiar jornada",
+       "btn-jornada-cambiar",
+       "ok",
+       {
+        "cambios": 74,
+        "vista": null,
+        "dialogos": [
+         "dlg-cambiar-jornada"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Cerrar jornada",
+       "btn-jornada-cerrar",
+       "no se presiona"
+      ],
+      [
+       "Registrar ubicación del punto",
+       "btn-ubicacion",
+       "ok",
+       {
+        "cambios": 469,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capturar coordenadas a mano",
+       "",
+       "ok",
+       {
+        "cambios": 62,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Zoom in",
+       "",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Zoom out",
+       "",
+       "ok",
+       {
+        "cambios": 348,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capas del mapa: mapa base y colonias de la jornada",
+       "",
+       "ok",
+       {
+        "cambios": 339,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Suelo",
+       "",
+       "ok",
+       {
+        "cambios": 78,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Macetón",
+       "",
+       "ok",
+       {
+        "cambios": 78,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Guardar",
+       "btn-revisar",
+       "no se presiona"
+      ]
+     ]
+    },
+    "registros": {
+     "botones": [
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 81,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "chip-hoy",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 83,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, especie, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 60,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Registrar árbol",
+       "",
+       "ok",
+       {
+        "cambios": 114,
+        "vista": "registrar",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "jornadas": {
+     "botones": [
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 82,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "jornada-chip-hoy",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros: tipo de jornada, programa y alcaldía",
+       "",
+       "ok",
+       {
+        "cambios": 85,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Revisar la jornada Barrido de pantallas del 27-OCT-2026, abi",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "galeria": {
+     "botones": [
+      [
+       "Mi avance",
+       "btn-galeria-volver",
+       "ok",
+       {
+        "cambios": 116,
+        "vista": "supervision",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 89,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "galeria-chip-hoy",
+       "ok",
+       {
+        "cambios": 119,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 91,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 85,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros: jornada, quién registró, especie, programa y al",
+       "",
+       "ok",
+       {
+        "cambios": 92,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Registrar árbol",
+       "",
+       "ok",
+       {
+        "cambios": 83,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    }
+   },
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 96
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "CABO",
+   "tamano": "zoom-200",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registrar": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "1×1"
+       ],
+       [
+        "input",
+        "foto-archivo",
+        "foto-archivo",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "input",
+        "campo-sitio",
+        "suelo",
+        "lo tapa: label."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "jornada": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 24
+    },
+    "csp": []
+   }
+  }
+ ],
+ "fin": "2026-10-27 15:10"
+}

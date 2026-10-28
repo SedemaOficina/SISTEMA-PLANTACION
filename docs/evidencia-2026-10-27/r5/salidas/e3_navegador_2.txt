@@ -1,0 +1,24 @@
+== Corrida 2 · 2026-10-27 15:16:18 · ['B1', 'B2', 'B3', 'B5', 'B6', 'B7']
+B1 cierre · jornada activa en el teléfono del cabo: true · árboles sin señal en la cola: 2 · al volver la señal: ["registro.crear:SIN_PERMISO", "registro.crear:SIN_PERMISO"]
+B1 cierre · «Revisar» dice: [{"que": "Alta del árbol, en la jornada «r5 B1 cierre c2»", "porque": "Por qué: No tiene permiso para registrar en esta jornada.", "botones": ["Eliminar este registro"]}, {"que": "Alta del árbol, en la jornada «r5 B1 cierre c2»", "porque": "Por qué: No tiene permiso para registrar en esta jornada.", "botones": ["Eliminar este registro"]}]
+B1 cierre · después de que la Coordinación lo deshace, enviar otra vez y recargar: rechazados ["registro.crear:SIN_PERMISO", "registro.crear:SIN_PERMISO"] · árboles del cabo en el servidor: 0 · estado: {"estatus": "abierta", "apoyos": [["a5a5a5a5-0000-4000-8000-000000000003", null]], "arboles": []}
+B1 cierre · errores de página: []
+B2 quitar · jornada activa en el teléfono del cabo: true · árboles sin señal en la cola: 2 · al volver la señal: ["registro.crear:SIN_PERMISO", "registro.crear:SIN_PERMISO"]
+B2 quitar · «Revisar» dice: [{"que": "Alta del árbol, en la jornada «r5 B2 quitar c2»", "porque": "Por qué: No tiene permiso para registrar en esta jornada.", "botones": ["Eliminar este registro"]}, {"que": "Alta del árbol, en la jornada «r5 B2 quitar c2»", "porque": "Por qué: No tiene permiso para registrar en esta jornada.", "botones": ["Eliminar este registro"]}]
+B2 quitar · después de que la Coordinación lo deshace, enviar otra vez y recargar: rechazados ["registro.crear:SIN_PERMISO", "registro.crear:SIN_PERMISO"] · árboles del cabo en el servidor: 0 · estado: {"estatus": "abierta", "apoyos": [["a5a5a5a5-0000-4000-8000-000000000003", null]], "arboles": []}
+B2 quitar · errores de página: []
+B3 compartir aplicado sin respuesta: [["a5a5a5a5-0000-4000-8000-000000000003", null]] · cabo1 termina: recibido [["a5a5a5a5-0000-4000-8000-000000000003", "terminado"]] · vuelve la señal y el teléfono reenvía: [["a5a5a5a5-0000-4000-8000-000000000003", null]] · intentos de envío cortados: 1 · cola de la Coordinación: []
+B3 errores de página: []
+B5 con la sesión vencida: {"acceso": true, "cola": ["jornada.compartir"], "aviso": "No se pudo enviar: Su sesión venció. Vuelva a escribir su contraseña; lo capturado se conserva."} · ventanas abiertas: [] · servidor antes de volver a entrar: [["a5a5a5a5-0000-4000-8000-000000000003", null]] · después: [["a5a5a5a5-0000-4000-8000-000000000003", null], ["a5a5a5a5-0000-4000-8000-000000000004", null]] · cola: []
+B5 errores de página: []
+B6 502 → {"aviso": "Se perdió la señal durante el envío. El registro sigue guardado en el teléfono; se enviarán cuando vuelva.", "cola": ["jornada.compartir:salió"], "pastilla": "Con conexión · 1 por enviar"}
+B6 409 → {"aviso": "No se pudo enviar: Conflicto de prueba.", "cola": ["jornada.compartir:salió"], "pastilla": "Con conexión · 1 por enviar"}
+B6 200 portal → {"aviso": "Se perdió la señal durante el envío. El registro sigue guardado en el teléfono; se enviarán cuando vuelva.", "cola": ["jornada.compartir:salió"], "pastilla": "Con conexión · 1 por enviar"}
+B6 200 sin resultados → {"aviso": "No se pudo enviar: El servidor respondió algo que no se entiende.", "cola": ["jornada.compartir:salió"], "pastilla": "Con conexión · 1 por enviar"}
+B6 200 resultados vacíos → {"aviso": "El servidor no aceptó 1 cambio. El servidor no respondió por esta operación. Revíselo con «Revisar», arriba.", "cola": ["jornada.compartir:SIN_RESPUESTA"], "pastilla": "Con conexión · 1 por enviar"}
+B6 con el servicio de vuelta: [] · cola: ["jornada.compartir:SIN_RESPUESTA"] · errores de página: []
+B7 bitácora de la jornada tras doble toque en «Guardar»: ["CREADO: Jornada «r5 B7 doble toque c2» del 27-OCT-2026", "APOYO: Agrega: R5 cabo1", "APOYO: Agrega: R5 cabo2"]
+B7 doble toque en «Guardar»: servidor [["a5a5a5a5-0000-4000-8000-000000000003", null], ["a5a5a5a5-0000-4000-8000-000000000004", null]] · jornadas con ese nombre tras doble toque en «Iniciar jornada compartida»: 1 · cola: [] · errores: []
+B7 jornada activa del cabo: r5 B7 doble toque c2 · botón: Terminar mi parte
+B7 doble toque en «Terminar mi parte»: ventanas ["dlg-confirmar"] · servidor [["a5a5a5a5-0000-4000-8000-000000000003", "terminado"], ["a5a5a5a5-0000-4000-8000-000000000004", null]] · errores: []
+B7 bitácora tras «Terminar mi parte» con doble toque: ["APOYO: Terminó su parte: 0 árboles"]

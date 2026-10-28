@@ -1,0 +1,5 @@
+1) ficha abierta; árboles de la ficha con calle: 0
+2) enviados; en el almacén, con calle: 4 · en la ficha abierta: 0
+3) reporte desde la ficha abierta antes del envío: columnas ['N.º', 'Especie', 'Precisión'] · primer renglón ['1', 'Ahuehuete (Taxodium mucronatum)', '±6 m']
+4) reporte tras volver a abrir la ficha: columnas ['N.º', 'Especie', 'Calle', 'Precisión'] · renglones [['1', 'Ahuehuete (Taxodium mucronatum)', 'Sin calle a menos de 40 m', '±6 m'], ['2', 'Aile (Alnus acuminata)', 'Sin calle a menos de 40 m', '±6 m'], ['3', 'Ahuehuete (Taxodium mucronatum)', 'Sin calle a menos de 40 m', '±6 m'], ['4', 'Ahuehuete (Taxodium mucronatum)', 'Sin calle a menos de 40 m', '±6 m'], ['5', 'Aile (Alnus acuminata)', 'Calle San Ildefonso, entre Calle del Carmen y Calle República de Argentina', '±45 m'], ['Ahuehuete (Taxodium mucronatum)', 'Nativa', '3', '60 %'], ['Aile (Alnus acuminata)', 'Nativa', '2', '40 %']]
+errores de página: []

@@ -1,0 +1,8 @@
+SET
+nombre | estatus | apoyos | fines | arboles | del_cabo | calles
+=HIPERVINCULO("x") Jornada ñandú r1 153918 | abierta | 2 |  | 3 | 2 | Calle Xicalango / secundaria / Alcaldía Iztacalco; Calle Rinconada San Francisco / secundaria / Alcaldía Iztacalco; Cerrada 2 de San Francisco / secundaria / Alcaldía Iztacalco
+=HIPERVINCULO("x") Jornada ñandú r1 154105 | cerrada | 2 | terminado | 3 | 2 | Calle Xicalango / secundaria / Alcaldía Iztacalco; Calle Rinconada San Francisco / secundaria / Alcaldía Iztacalco; Cerrada 2 de San Francisco / secundaria / Alcaldía Iztacalco
+(2 filas)
+arboles | jornadas
+2 | 1
+(1 fila)

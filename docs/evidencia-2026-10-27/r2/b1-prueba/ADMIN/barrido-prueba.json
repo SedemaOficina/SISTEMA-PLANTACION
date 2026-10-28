@@ -1,0 +1,4685 @@
+{
+ "modo": "prueba",
+ "base": "http://127.0.0.1:8132/",
+ "inicio": "2026-10-27 15:00",
+ "corridas": [
+  {
+   "perfil": "ADMIN",
+   "tamano": "tel-360",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "configuracion": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "catalogos": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "",
+        "Clave",
+        "lo tapa: tr."
+       ],
+       [
+        "button",
+        "",
+        "Estado",
+        "lo tapa: tr."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "usuarios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "parametros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "cambios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "carga": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "revision-especies": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "acerca": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "tel-390",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "configuracion": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "catalogos": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "",
+        "Clave",
+        "lo tapa: tr."
+       ],
+       [
+        "button",
+        "",
+        "Estado",
+        "lo tapa: tr."
+       ]
+      ],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "usuarios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "parametros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "cambios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "carga": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "revision-especies": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "acerca": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div#aviso.aviso"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: div#aviso.aviso"
+       ]
+      ],
+      "cortados": []
+     },
+     "axe": []
+    }
+   },
+   "acceso_axe": null,
+   "ventanas": {
+    "dlg-prueba": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-prueba."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "",
+        "Cerrar aviso",
+        "lo tapa: dialog#dlg-prueba."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-completa": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       2,
+       "#btn-completa-cerrar",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ],
+       [
+        "button",
+        "",
+        "Cerrar aviso",
+        "lo tapa: dialog#dlg-completa.dlg-completa"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-resumen": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-resumen."
+       ],
+       [
+        "button",
+        "",
+        "Cerrar aviso",
+        "lo tapa: dialog#dlg-resumen."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-cambiar-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-cambiar-jornada."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-editar-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-titulo"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-editar-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: input#ej-nombre."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-mover-jornada": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-mover-jornada."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-sustituir": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-sustituir.dlg-sustituir"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-relevo": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-relevo."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-relevo."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-apoyos": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       1,
+       "#btn-apoyos-guardar",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-apoyos."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-apoyos."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-foto": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-foto.dlg-foto"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-detalle": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-detalle."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-detalle."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-catalogo": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [
+       [
+        "input",
+        "cat-forma",
+        "cat-forma",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-paleta",
+        "cat-paleta",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-fruto",
+        "cat-fruto",
+        "1×1"
+       ],
+       [
+        "input",
+        "cat-tipos-org",
+        "cat-tipos-org",
+        "1×1"
+       ]
+      ],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: button#btn-cat-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: input#cat-nombre."
+       ],
+       [
+        "input",
+        "cat-forma",
+        "cat-forma",
+        "lo tapa: label#etq-cat-paleta."
+       ],
+       [
+        "input",
+        "cat-paleta",
+        "cat-paleta",
+        "lo tapa: p#cat-paleta-ayuda.nota"
+       ],
+       [
+        "input",
+        "cat-fruto",
+        "cat-fruto",
+        "lo tapa: p#cat-fruto-ayuda.nota"
+       ],
+       [
+        "input",
+        "cat-tipos-org",
+        "cat-tipos-org",
+        "lo tapa: p#cat-tipos-org-ayuda.nota"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-parametro": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-parametro."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-parametro."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-cierre": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: button#btn-cierre-generar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: p.nota"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-previa": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-previa.dialogo-previa"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-senal": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-senal."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: div.dialogo-cabecera"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-rechazos": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-rechazos."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-rechazos."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-confirmar": {
+     "axe": [
+      [
+       "button-name",
+       "critical",
+       1,
+       "#btn-confirmar-si",
+       "Buttons must have discernible text"
+      ]
+     ],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-confirmar.dlg-confirmar"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-turno": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-turno.dlg-confirmar"
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-usuario": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: div.dialogo-cabecera"
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: button#btn-usr-guardar.btn"
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: select#usr-tipo-org."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "dlg-clave-temporal": {
+     "axe": [],
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "conexion",
+        "Con conexión, todo enviado al servidor simulado. Abrir la gu",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "btn-cuenta",
+        "Cuenta: Administración SIA Ejemplo, Administración global. A",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Supervisión",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Jornadas",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Registros",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ],
+       [
+        "button",
+        "",
+        "Configuración",
+        "lo tapa: dialog#dlg-clave-temporal."
+       ]
+      ],
+      "cortados": []
+     }
+    }
+   },
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "tel-390",
+   "pasada": "clics",
+   "vistas": {
+    "supervision": {
+     "botones": [
+      [
+       "Semana",
+       "",
+       "ok",
+       {
+        "cambios": 246,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Mes",
+       "",
+       "ok",
+       {
+        "cambios": 36,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Año",
+       "",
+       "ok",
+       {
+        "cambios": 78,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 93,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todo",
+       "",
+       "ok",
+       {
+        "cambios": 137,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Periodo anterior",
+       "sup-anterior",
+       "ok",
+       {
+        "cambios": 66,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros: quién registró, tipo de jornada, programa, alca",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Fotografías",
+       "btn-sup-fotos",
+       "ok",
+       {
+        "cambios": 74,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "registros": {
+     "botones": [
+      [
+       "Filtros",
+       "btn-filtros",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Hoy",
+       "chip-hoy",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 113,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ]
+     ]
+    },
+    "jornadas": {
+     "botones": [
+      [
+       "Filtros",
+       "jornada-btn-filtros",
+       "ok",
+       {
+        "cambios": 179,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "galeria": {
+     "botones": [
+      [
+       "Supervisión",
+       "btn-galeria-volver",
+       "ok",
+       {
+        "cambios": 72,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Quitar filtros",
+       "galeria-quitar",
+       "ok",
+       {
+        "cambios": 87,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 184,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy",
+       "galeria-chip-hoy",
+       "ok",
+       {
+        "cambios": 138,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros",
+       "",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "configuracion": {
+     "botones": [
+      [
+       "UsuariosDar de alta, editar y desactivar cuentas de todas la",
+       "",
+       "ok",
+       {
+        "cambios": 121,
+        "vista": "usuarios",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "CatálogosProgramas y quién los usa, instituciones, áreas, es",
+       "",
+       "ok",
+       {
+        "cambios": 113,
+        "vista": "catalogos",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "ParámetrosDistancias y valores con que el sistema revisa pun",
+       "",
+       "ok",
+       {
+        "cambios": 78,
+        "vista": "parametros",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Registro de cambiosQuién dio de alta, editó o desactivó cuen",
+       "",
+       "ok",
+       {
+        "cambios": 82,
+        "vista": "cambios",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Carga masivaSubir de una vez, desde Excel, los árboles plant",
+       "",
+       "ok",
+       {
+        "cambios": 82,
+        "vista": "carga",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acerca del sistemaVersión, base de datos, capas geográficas ",
+       "",
+       "ok",
+       {
+        "cambios": 80,
+        "vista": "acerca",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "catalogos": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Programas",
+       "",
+       "ok",
+       {
+        "cambios": 136,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Áreas",
+       "",
+       "ok",
+       {
+        "cambios": 78,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Especies",
+       "",
+       "ok",
+       {
+        "cambios": 172,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Vehículos",
+       "",
+       "ok",
+       {
+        "cambios": 152,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Instituciones",
+       "",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Solicitantes",
+       "",
+       "ok",
+       {
+        "cambios": 128,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Agregar programa",
+       "btn-cat-agregar",
+       "ok",
+       {
+        "cambios": 143,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Clave",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Estado",
+       "",
+       "ok",
+       {
+        "cambios": 129,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Centro Histórico",
+       "",
+       "ok",
+       {
+        "cambios": 143,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Compensaciones",
+       "",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Palmeras",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Reforestación Urbana",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Solicitud especial",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Territorios de Paz",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Utopías",
+       "",
+       "ok",
+       {
+        "cambios": 144,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ]
+     ]
+    },
+    "usuarios": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Dar de alta",
+       "btn-usr-agregar",
+       "ok",
+       {
+        "cambios": 92,
+        "vista": null,
+        "dialogos": [
+         "dlg-usuario"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Activos",
+       "",
+       "ok",
+       {
+        "cambios": 107,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Inactivos",
+       "",
+       "ok",
+       {
+        "cambios": 94,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 141,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Correo",
+       "",
+       "ok",
+       {
+        "cambios": 116,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Área",
+       "",
+       "ok",
+       {
+        "cambios": 181,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Perfil de captura",
+       "",
+       "ok",
+       {
+        "cambios": 312,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Registros",
+       "",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Administración SIA Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Andrea Solís Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Arturo Méndez Demo",
+       "",
+       "ok",
+       {
+        "cambios": 159,
+        "vista": null,
+        "dialogos": [
+         "dlg-usuario"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Acciones de Carmen Ibarra Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Ernesto Luna Demo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Estela Ramírez Demo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Fulana de Tal Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Gerardo Paredes Demo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Héctor Salinas Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Julián Ortega Demo",
+       "",
+       "ok",
+       {
+        "cambios": 77,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 1",
+       "",
+       "ok",
+       {
+        "cambios": 105,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 2",
+       "",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 3, la última",
+       "",
+       "ok",
+       {
+        "cambios": 138,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página siguiente",
+       "",
+       "ok",
+       {
+        "cambios": 92,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "parametros": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 83,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "cambios": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 101,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "carga": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 125,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Descargar plantilla",
+       "btn-carga-plantilla",
+       "ok",
+       {
+        "descarga": "Plantilla_carga_masiva_SRP.xlsx",
+        "cambios": 62,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "revision-especies": {
+     "botones": [
+      [
+       "Catálogos › Especies",
+       "btn-rev-volver",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": "catalogos",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "acerca": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    }
+   },
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "tel-430",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "configuracion": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "catalogos": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [
+       [
+        "button",
+        "",
+        "Clave",
+        "lo tapa: tr."
+       ],
+       [
+        "button",
+        "",
+        "Estado",
+        "lo tapa: tr."
+       ]
+      ],
+      "cortados": []
+     }
+    },
+    "usuarios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "parametros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "cambios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "carga": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "revision-especies": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "acerca": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "horizontal",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "configuracion": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "catalogos": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "usuarios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "parametros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "cambios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "carga": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "revision-especies": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "acerca": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "tableta",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "configuracion": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "catalogos": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "usuarios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "parametros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "cambios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "carga": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "revision-especies": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "acerca": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "escritorio",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "configuracion": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "catalogos": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "usuarios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "parametros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "cambios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "carga": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "revision-especies": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    },
+    "acerca": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     },
+     "axe": []
+    }
+   },
+   "acceso_axe": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "escritorio",
+   "pasada": "clics",
+   "vistas": {
+    "supervision": {
+     "botones": [
+      [
+       "Semana",
+       "",
+       "ok",
+       {
+        "cambios": 78,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Mes",
+       "",
+       "ok",
+       {
+        "cambios": 431,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Año",
+       "",
+       "ok",
+       {
+        "cambios": 50,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 89,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todo",
+       "",
+       "ok",
+       {
+        "cambios": 61,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Periodo anterior",
+       "sup-anterior",
+       "ok",
+       {
+        "cambios": 79,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Más filtros: quién registró, tipo de jornada, programa, alca",
+       "",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Fotografías",
+       "btn-sup-fotos",
+       "ok",
+       {
+        "cambios": 82,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "registros": {
+     "botones": [
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 85,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy",
+       "chip-hoy",
+       "ok",
+       {
+        "cambios": 125,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 196,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros",
+       "",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "jornadas": {
+     "botones": [
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "jornada-chip-hoy",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 120,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros",
+       "",
+       "ok",
+       {
+        "cambios": 107,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "galeria": {
+     "botones": [
+      [
+       "Supervisión",
+       "btn-galeria-volver",
+       "ok",
+       {
+        "cambios": 127,
+        "vista": "supervision",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todas",
+       "",
+       "ok",
+       {
+        "cambios": 126,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Hoy, 27-OCT-26",
+       "galeria-chip-hoy",
+       "ok",
+       {
+        "cambios": 118,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un día",
+       "",
+       "ok",
+       {
+        "cambios": 131,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Un periodo",
+       "",
+       "ok",
+       {
+        "cambios": 111,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Más filtros: jornada, quién registró, especie, programa, alc",
+       "",
+       "ok",
+       {
+        "cambios": 114,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Descargar todas",
+       "btn-galeria-zip",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Liquidámbar, 26-OCT-2026, Glorieta · Cafetales Ii, Tomás Día",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Liquidámbar, 22-OCT-2026, Deportivo · Obrera Ii, Julián Orte",
+       "",
+       "ok",
+       {
+        "cambios": 127,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Sauce, 22-OCT-2026, Deportivo · Obrera Ii, Julián Ortega Dem",
+       "",
+       "ok",
+       {
+        "cambios": 127,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Aile, 22-OCT-2026, Andador · Obrera Iii, Fulana de Tal Ejemp",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Capulín, 21-OCT-2026, Unidad habitacional · Gama Gavilan, Er",
+       "",
+       "ok",
+       {
+        "cambios": 86,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Encino Quiebra Hacha, 21-OCT-2026, Camellón · Los Morales, H",
+       "",
+       "ok",
+       {
+        "descarga": "Fotografias_SRP.zip",
+        "cambios": 71,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Palo loco, 17-OCT-2026, Biblioteca · Magdalena Mixhuca, Rocí",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Capulín, 16-OCT-2026, Unidad habitacional · San Salvador Cua",
+       "",
+       "ok",
+       {
+        "cambios": 105,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Jacaranda, 15-OCT-2026, Centro de salud · Morales Seccion Al",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Palo loco, 08-OCT-2026, Centro de salud · Puerto Las Cruces,",
+       "",
+       "ok",
+       {
+        "cambios": 125,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Codo de fraile, 07-OCT-2026, Deportivo · Unidad Popular Tepe",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Ahuehuete, 07-OCT-2026, Plaza cívica · Moctezuma 2a Seccion ",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Tepozán, 05-OCT-2026, Mercado · Aviacion Civil, Rocío Hernán",
+       "",
+       "ok",
+       {
+        "cambios": 105,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Aile, 02-OCT-2026, Jardín · Tlaxpana, Nadia Flores Demo",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Liquidámbar, 02-OCT-2026, Jardín · Tlaxpana, Nadia Flores De",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Aile, 02-OCT-2026, Mercado · Arenal Puerta Tepepan, Lucía Mé",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Tejocote, 01-OCT-2026, Parque vecinal · San Miguel Teotongo ",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Fresno, 30-SEP-2026, Escuela primaria · Vallejo Ii, Silvia R",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Aile, 28-SEP-2026, Deportivo · Angel Zimbron, Óscar Rivas Ej",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Mezquite, 28-SEP-2026, Deportivo · Angel Zimbron, Óscar Riva",
+       "",
+       "ok",
+       {
+        "cambios": 124,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Jacaranda, 25-SEP-2026, Glorieta · Ampliacion Miguel Hidalgo",
+       "",
+       "ok",
+       {
+        "cambios": 104,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Fresno, 25-SEP-2026, Centro de salud · Santa Cecilia I, Lucí",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Palo loco, 24-SEP-2026, Plaza cívica · Cuilotepec Ii, Olivia",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Fresno, 24-SEP-2026, Plaza cívica · Plenitud, Yolanda Cruz D",
+       "",
+       "ok",
+       {
+        "cambios": 138,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Capulín, 23-SEP-2026, Camellón · Roma Norte I, Perengano Góm",
+       "",
+       "ok",
+       {
+        "cambios": 90,
+        "vista": null,
+        "dialogos": [
+         "dlg-foto"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Página 1",
+       "",
+       "ok",
+       {
+        "cambios": 139,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Página 2",
+       "",
+       "ok",
+       {
+        "cambios": 124,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Página 3",
+       "",
+       "ya no está"
+      ],
+      [
+       "Página 4",
+       "",
+       "ok",
+       {
+        "cambios": 139,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Página 5",
+       "",
+       "ok",
+       {
+        "cambios": 125,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Página 37, la última",
+       "",
+       "ok",
+       {
+        "cambios": 138,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Página siguiente",
+       "",
+       "ok",
+       {
+        "cambios": 112,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "configuracion": {
+     "botones": [
+      [
+       "UsuariosDar de alta, editar y desactivar cuentas de todas la",
+       "",
+       "ok",
+       {
+        "cambios": 121,
+        "vista": "usuarios",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "CatálogosProgramas y quién los usa, instituciones, áreas, es",
+       "",
+       "ok",
+       {
+        "cambios": 127,
+        "vista": "catalogos",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "ParámetrosDistancias y valores con que el sistema revisa pun",
+       "",
+       "ok",
+       {
+        "cambios": 92,
+        "vista": "parametros",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Registro de cambiosQuién dio de alta, editó o desactivó cuen",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": "cambios",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Carga masivaSubir de una vez, desde Excel, los árboles plant",
+       "",
+       "ok",
+       {
+        "cambios": 80,
+        "vista": "carga",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acerca del sistemaVersión, base de datos, capas geográficas ",
+       "",
+       "ok",
+       {
+        "cambios": 92,
+        "vista": "acerca",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "catalogos": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Programas",
+       "",
+       "ok",
+       {
+        "cambios": 150,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Áreas",
+       "",
+       "ok",
+       {
+        "cambios": 131,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Especies",
+       "",
+       "ok",
+       {
+        "cambios": 119,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Vehículos",
+       "",
+       "ok",
+       {
+        "cambios": 79,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Instituciones",
+       "",
+       "ok",
+       {
+        "cambios": 191,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Solicitantes",
+       "",
+       "ok",
+       {
+        "cambios": 142,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Agregar programa",
+       "btn-cat-agregar",
+       "ok",
+       {
+        "cambios": 143,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Nombre",
+       "",
+       "ok",
+       {
+        "cambios": 130,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Clave",
+       "",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Quién lo usa",
+       "",
+       "ok",
+       {
+        "cambios": 107,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Estado",
+       "",
+       "ok",
+       {
+        "cambios": 107,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Uso",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Centro Histórico",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [
+         "dlg-catalogo"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Acciones de Compensaciones",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Palmeras",
+       "",
+       "ok",
+       {
+        "cambios": 354,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Reforestación Urbana",
+       "",
+       "ok",
+       {
+        "cambios": 150,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Solicitud especial",
+       "",
+       "ok",
+       {
+        "cambios": 150,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Territorios de Paz",
+       "",
+       "ok",
+       {
+        "cambios": 136,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Utopías",
+       "",
+       "ok",
+       {
+        "cambios": 150,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "usuarios": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Dar de alta",
+       "btn-usr-agregar",
+       "ok",
+       {
+        "cambios": 92,
+        "vista": null,
+        "dialogos": [
+         "dlg-usuario"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Activos",
+       "",
+       "ok",
+       {
+        "cambios": 172,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Inactivos",
+       "",
+       "ok",
+       {
+        "cambios": 160,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Todos",
+       "",
+       "ok",
+       {
+        "cambios": 108,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Nombre",
+       "",
+       "ok",
+       {
+        "cambios": 147,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Correo",
+       "",
+       "ok",
+       {
+        "cambios": 101,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Institución",
+       "",
+       "ok",
+       {
+        "cambios": 166,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Área",
+       "",
+       "ok",
+       {
+        "cambios": 147,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Cargo",
+       "",
+       "ok",
+       {
+        "cambios": 147,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Perfil de captura",
+       "",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Estado",
+       "",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Registros",
+       "",
+       "ok",
+       {
+        "cambios": 133,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Administración SIA Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Andrea Solís Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Arturo Méndez Demo",
+       "",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Carmen Ibarra Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 95,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Ernesto Luna Demo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Estela Ramírez Demo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Fulana de Tal Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Gerardo Paredes Demo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Héctor Salinas Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 77,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Julián Ortega Demo",
+       "",
+       "ok",
+       {
+        "cambios": 76,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Lucía Méndez Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 79,
+        "vista": null,
+        "dialogos": [
+         "dlg-usuario"
+        ],
+        "foco": true,
+        "axe_dialogo": "axe no se puede inyectar con la CSP real"
+       },
+       []
+      ],
+      [
+       "Acciones de Mariana Vega Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 98,
+        "vista": null,
+        "dialogos": [],
+        "foco": false
+       },
+       []
+      ],
+      [
+       "Acciones de Marisol Pérez Demo",
+       "",
+       "ok",
+       {
+        "cambios": 176,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Mengano Paz Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Nadia Flores Demo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Olivia Reyes Demo",
+       "",
+       "ok",
+       {
+        "cambios": 109,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Omar Fuentes Demo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Óscar Rivas Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 77,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Paula Sánchez Demo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Perengano Gómez Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Ramiro Torres Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Rocío Hernández Demo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Sergio Navarro Ejemplo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Silvia Rangel Demo",
+       "",
+       "ok",
+       {
+        "cambios": 110,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Acciones de Tomás Díaz Demo",
+       "",
+       "ok",
+       {
+        "cambios": 96,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 1",
+       "",
+       "ok",
+       {
+        "cambios": 138,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página 2, la última",
+       "",
+       "ok",
+       {
+        "cambios": 106,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Página siguiente",
+       "",
+       "ya no está"
+      ]
+     ]
+    },
+    "parametros": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 83,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "cambios": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "carga": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 97,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ],
+      [
+       "Descargar plantilla",
+       "btn-carga-plantilla",
+       "ok",
+       {
+        "descarga": "Plantilla_carga_masiva_SRP.xlsx",
+        "cambios": 34,
+        "vista": null,
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "revision-especies": {
+     "botones": [
+      [
+       "Catálogos › Especies",
+       "btn-rev-volver",
+       "ok",
+       {
+        "cambios": 152,
+        "vista": "catalogos",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    },
+    "acerca": {
+     "botones": [
+      [
+       "Configuración",
+       "",
+       "ok",
+       {
+        "cambios": 84,
+        "vista": "configuracion",
+        "dialogos": [],
+        "foco": true
+       },
+       []
+      ]
+     ]
+    }
+   },
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  },
+  {
+   "perfil": "ADMIN",
+   "tamano": "zoom-200",
+   "pasada": "medicion",
+   "vistas": {
+    "supervision": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "registros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "jornadas": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "galeria": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "configuracion": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "catalogos": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "usuarios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "parametros": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "cambios": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "carga": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "revision-especies": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    },
+    "acerca": {
+     "estatico": {
+      "desborde": null,
+      "chicos": [],
+      "tapados": [],
+      "cortados": []
+     }
+    }
+   },
+   "acceso_axe": null,
+   "eventos": {
+    "consola": [],
+    "pagina": [],
+    "fallidos": [],
+    "externos": {
+     "server.arcgisonline.com": 3
+    },
+    "csp": []
+   }
+  }
+ ],
+ "fin": "2026-10-27 15:22"
+}

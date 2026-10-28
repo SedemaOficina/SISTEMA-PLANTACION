@@ -1,0 +1,277 @@
+{
+ "modo": "real",
+ "base": "http://127.0.0.1:8124/srp/",
+ "sw": false,
+ "inicio": "2026-10-27 15:30:23",
+ "perfiles": {
+  "ADMIN": {
+   "externos": {
+    "server.arcgisonline.com": 3
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [
+    "404 http://127.0.0.1:8124/api/srp/fotos/5685190c-48fe-5f26-a32f-3f854c079a40",
+    "404 http://127.0.0.1:8124/api/srp/fotos/ed1ef4b0-7936-5414-a473-af91e8ac96cf",
+    "404 http://127.0.0.1:8124/api/srp/fotos/43a2c7d4-032e-5126-a1c8-a421af8ae69f",
+    "404 http://127.0.0.1:8124/api/srp/fotos/5dbe13e0-db88-5cbd-8c2e-8ccf5557c87e",
+    "404 http://127.0.0.1:8124/api/srp/fotos/0048287d-3ff2-5abf-908c-6af138641420",
+    "404 http://127.0.0.1:8124/api/srp/fotos/bb7e2f66-88ea-5096-a9d7-a1428a120d9e",
+    "404 http://127.0.0.1:8124/api/srp/fotos/f4c1a0dc-927f-51f8-b28d-b3b6144d67d7",
+    "404 http://127.0.0.1:8124/api/srp/fotos/1ddb67cc-9f75-5d7d-8224-6793201492a5",
+    "404 http://127.0.0.1:8124/api/srp/fotos/47847b6b-810c-5f11-9bf1-1aed3f67cf0a",
+    "404 http://127.0.0.1:8124/api/srp/fotos/93d3119d-61ea-554f-b364-78578e87a2c4",
+    "404 http://127.0.0.1:8124/api/srp/fotos/c15d0c0b-ed15-5d82-9fd0-1497310ec4f5",
+    "404 http://127.0.0.1:8124/api/srp/fotos/e254a181-0f42-58ed-ac0f-c99d350adc44",
+    "404 http://127.0.0.1:8124/api/srp/fotos/2f884767-35da-56f5-ba4e-41eafd628238",
+    "404 http://127.0.0.1:8124/api/srp/fotos/f09d780a-4994-5191-b234-21fc41e7b70b",
+    "404 http://127.0.0.1:8124/api/srp/fotos/f0f41fb4-4d8c-52d4-8ce8-e3089f8d6309",
+    "404 http://127.0.0.1:8124/api/srp/fotos/4bb7c058-ec0b-59a6-8c6c-a422d6624d7b",
+    "404 http://127.0.0.1:8124/api/srp/fotos/678f6716-4c03-5647-bb2a-31a703669199",
+    "404 http://127.0.0.1:8124/api/srp/fotos/a0e8a998-f763-52f9-9da8-3673e5ca8748",
+    "404 http://127.0.0.1:8124/api/srp/fotos/7b3d4280-3f22-5ae9-a27b-2c3a9ff0f8c8",
+    "404 http://127.0.0.1:8124/api/srp/fotos/b50cd198-d8e9-59ba-8f8f-1a3cd285993b",
+    "404 http://127.0.0.1:8124/api/srp/fotos/be80121c-9749-564c-afe9-c73f57f43da5",
+    "404 http://127.0.0.1:8124/api/srp/fotos/1198af12-3e6f-5e40-bacf-df50de4411f8",
+    "404 http://127.0.0.1:8124/api/srp/fotos/7813febc-dbac-54d0-ae45-f985a0dadabb",
+    "404 http://127.0.0.1:8124/api/srp/fotos/daf43a95-4f1c-525c-b662-7cf2b8ec0a2a",
+    "404 http://127.0.0.1:8124/api/srp/fotos/90725617-4709-5408-b982-223b71d47228"
+   ],
+   "peticiones_origen": 115,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "no es de su perfil",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "abre",
+    "vista:catalogos": "abre",
+    "vista:usuarios": "abre",
+    "vista:parametros": "abre",
+    "vista:cambios": "abre",
+    "vista:duplicados": "abre",
+    "vista:carga": "abre",
+    "vista:revision-especies": "abre",
+    "vista:acerca": "abre",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 1 opciones",
+     "filtro-compartida: 1 opciones",
+     "jornada-compartida: 3 opciones"
+    ],
+    "jornada con texto inyectado: ficha": "abre",
+    "… inyectado en la ficha": {
+     "img": 0,
+     "corrio": 0,
+     "texto": 1
+    },
+    "jornada con texto inyectado: lista": "ok",
+    "registros (con el árbol inyectado)": "ok",
+    "supervisión": "ok",
+    "informe PDF": "Informe_semanal_2026-10-26_al_2026-11-01.pdf",
+    "tabla CSV": "Arboles_semanal_2026-10-26_al_2026-11-01.csv"
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 2
+   }
+  },
+  "DIRECTIVO": {
+   "externos": {
+    "server.arcgisonline.com": 75
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [],
+   "peticiones_origen": 82,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "no es de su perfil",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "no es de su perfil",
+    "vista:catalogos": "no es de su perfil",
+    "vista:usuarios": "no es de su perfil",
+    "vista:parametros": "no es de su perfil",
+    "vista:cambios": "no es de su perfil",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "no es de su perfil",
+    "vista:revision-especies": "no es de su perfil",
+    "vista:acerca": "no es de su perfil",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 1 opciones",
+     "filtro-compartida: 3 opciones",
+     "jornada-compartida: 1 opciones"
+    ],
+    "jornada con texto inyectado: ficha": "abre",
+    "… inyectado en la ficha": {
+     "img": 0,
+     "corrio": 0,
+     "texto": 4
+    },
+    "jornada con texto inyectado: lista": "ok",
+    "registros (con el árbol inyectado)": "ok",
+    "supervisión": "ok",
+    "informe PDF": "Informe_semanal_2026-10-26_al_2026-11-01.pdf",
+    "tabla CSV": "Arboles_semanal_2026-10-26_al_2026-11-01.csv"
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 4
+   }
+  },
+  "COORDINADOR": {
+   "externos": {
+    "server.arcgisonline.com": 72
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [
+    "404 http://127.0.0.1:8124/api/srp/fotos/1198af12-3e6f-5e40-bacf-df50de4411f8",
+    "404 http://127.0.0.1:8124/api/srp/fotos/0048287d-3ff2-5abf-908c-6af138641420",
+    "404 http://127.0.0.1:8124/api/srp/fotos/f4c1a0dc-927f-51f8-b28d-b3b6144d67d7",
+    "404 http://127.0.0.1:8124/api/srp/fotos/7b3d4280-3f22-5ae9-a27b-2c3a9ff0f8c8",
+    "404 http://127.0.0.1:8124/api/srp/fotos/e91e9414-9c9e-582f-ab56-0c90a7c5e017",
+    "404 http://127.0.0.1:8124/api/srp/fotos/ec8a8791-d43b-5493-8ee0-e99545ad021b",
+    "404 http://127.0.0.1:8124/api/srp/fotos/49e6ddb7-c551-52ae-89e3-a527543faef6",
+    "404 http://127.0.0.1:8124/api/srp/fotos/3137c763-6dfe-5d03-a8be-e9e2ac86a68e",
+    "404 http://127.0.0.1:8124/api/srp/fotos/c47e19c2-ae3f-5639-b433-fd473c401a60",
+    "404 http://127.0.0.1:8124/api/srp/fotos/6bebd4e1-0f18-5e40-aa92-577ad17748c5",
+    "404 http://127.0.0.1:8124/api/srp/fotos/d04cffee-449c-50bc-b26e-d1d54d9b44bc",
+    "404 http://127.0.0.1:8124/api/srp/fotos/2e989594-7282-57c2-9d64-b4aefa3b32c9",
+    "404 http://127.0.0.1:8124/api/srp/fotos/28c3854f-a296-520d-ac8e-f9dcc298d860",
+    "404 http://127.0.0.1:8124/api/srp/fotos/dbe1aa72-9c1e-5704-baa5-506b998c0ed8",
+    "404 http://127.0.0.1:8124/api/srp/fotos/03d15901-be1c-5072-98fc-14311c669a82",
+    "404 http://127.0.0.1:8124/api/srp/fotos/806dd712-c13a-50b2-a87a-142b92b15156",
+    "404 http://127.0.0.1:8124/api/srp/fotos/76f0b054-f6dd-5311-8984-f490cd0ae0b3",
+    "404 http://127.0.0.1:8124/api/srp/fotos/8a8bea95-989a-59af-a1ed-6c13e031f213",
+    "404 http://127.0.0.1:8124/api/srp/fotos/e836dfcd-ca04-5f28-966d-401f8d4124f9",
+    "404 http://127.0.0.1:8124/api/srp/fotos/efeb7e9b-0cb0-588c-a60d-7e8260870019",
+    "404 http://127.0.0.1:8124/api/srp/fotos/c15d0c0b-ed15-5d82-9fd0-1497310ec4f5",
+    "404 http://127.0.0.1:8124/api/srp/fotos/b50cd198-d8e9-59ba-8f8f-1a3cd285993b",
+    "404 http://127.0.0.1:8124/api/srp/fotos/8850774c-53bc-5e14-920b-0e3dac668e43",
+    "404 http://127.0.0.1:8124/api/srp/fotos/18fe14d4-81a7-5895-8263-102cf82b8734",
+    "404 http://127.0.0.1:8124/api/srp/fotos/545e2eeb-83f4-521e-bcd4-c7b6dff7178e"
+   ],
+   "peticiones_origen": 98,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "abre",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "no es de su perfil",
+    "vista:catalogos": "no es de su perfil",
+    "vista:usuarios": "no es de su perfil",
+    "vista:parametros": "no es de su perfil",
+    "vista:cambios": "no es de su perfil",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "no es de su perfil",
+    "vista:revision-especies": "no es de su perfil",
+    "vista:acerca": "no es de su perfil",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 3 opciones",
+     "filtro-compartida: 3 opciones",
+     "jornada-compartida: 3 opciones"
+    ],
+    "jornada con texto inyectado: ficha": "abre",
+    "… inyectado en la ficha": {
+     "img": 0,
+     "corrio": 0,
+     "texto": 1
+    },
+    "jornada con texto inyectado: lista": "ok",
+    "registros (con el árbol inyectado)": "ok",
+    "supervisión": "ok"
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 1
+   }
+  },
+  "CABO": {
+   "externos": {
+    "server.arcgisonline.com": 144
+   },
+   "csp_consola": [],
+   "errores": [],
+   "fallidos": [],
+   "peticiones_origen": 70,
+   "pasos": {
+    "vista:supervision": "abre",
+    "vista:registrar": "abre",
+    "vista:registros": "abre",
+    "vista:jornadas": "abre",
+    "vista:galeria": "abre",
+    "vista:configuracion": "no es de su perfil",
+    "vista:catalogos": "no es de su perfil",
+    "vista:usuarios": "no es de su perfil",
+    "vista:parametros": "no es de su perfil",
+    "vista:cambios": "no es de su perfil",
+    "vista:duplicados": "no es de su perfil",
+    "vista:carga": "no es de su perfil",
+    "vista:revision-especies": "no es de su perfil",
+    "vista:acerca": "no es de su perfil",
+    "tipo de jornada (3 filtros)": [
+     "sup-compartida: 2 opciones",
+     "filtro-compartida: 2 opciones",
+     "jornada-compartida: 2 opciones"
+    ],
+    "jornada con texto inyectado: ficha": "abre",
+    "… inyectado en la ficha": {
+     "img": 0,
+     "corrio": 0,
+     "texto": 7
+    },
+    "jornada con texto inyectado: lista": "ok",
+    "registros (con el árbol inyectado)": "ok",
+    "supervisión": "ok"
+   },
+   "csp_eventos": [],
+   "inyectado_final": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 7
+   }
+  }
+ },
+ "fin": "2026-10-27 15:33:06",
+ "totales": {
+  "externas": 294,
+  "dominios": [
+   "server.arcgisonline.com"
+  ],
+  "csp_eventos": 0,
+  "csp_consola": 0,
+  "errores": 0,
+  "pasos_con_error": [],
+  "inyectado": {
+   "ADMIN": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 2
+   },
+   "DIRECTIVO": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 4
+   },
+   "COORDINADOR": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 1
+   },
+   "CABO": {
+    "img": 0,
+    "corrio": 0,
+    "texto": 7
+   }
+  }
+ }
+}
