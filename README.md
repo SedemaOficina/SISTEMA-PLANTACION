@@ -313,7 +313,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.4.7»).
+(hoy, «Versión 1.4.8»).
 
 **Las pruebas de GitHub, en verde.** Cada subida corre la prueba completa en GitHub (`.github/workflows/pruebas.yml`;
 el indicador de arriba dice cómo salió la última). Antes de cerrar un bloque se revisa que la corrida del commit
@@ -507,12 +507,17 @@ informe y de Supervisión, y cuatro columnas del CSV. La jornada no lleva calle.
 - **Fuente:** `calles-cdmx-1.0.0.zip` (sha256 `64ac222da6721e2f2f6e9be322ebc1a98b359db50e27f4307f370348df36a973`),
   su `datos/calles_cdmx.gpkg` (sha256 `9ecc12364a88d5a0ccf1af183af4e459d9af663c08a4be31a09f52d77cae400f`),
   del proyecto calles-cdmx. Se regenera con `python herramientas/generar_calles.py [ruta del gpkg]`.
-- **Cita obligatoria**, en el pie de «Por red vial» y en `assets/calles/indice.json`: elaborado por SEDEMA
-  con información del INEGI (Marco Geoestadístico, Encuesta Intercensal 2025; Red Nacional de Caminos 2025,
-  con SICT e IMT) y de SEMOVI (Vialidades primarias de la Ciudad de México, Portal de Datos Abiertos, CC BY
-  4.0, y el ACUERDO/CCV/016/3ORD/SEPTIEMBRE/2024). Licencias: Términos de Libre Uso de la Información del
-  INEGI y CC BY 4.0. SEDEMA unió, partió y clasificó los tramos y homologó sus nombres; esas
-  transformaciones no son del INEGI ni de SEMOVI.
+- **Cita obligatoria**, completa, en el pie de «Por calle» de Supervisión y de «Por red vial» del informe: la de
+  `assets/calles/indice.json`, copiada en `SRP.calles.CITA` porque la versión del SIA no lleva el índice
+  (`pruebas/auditoria.py` comprueba que sean iguales). Elaborado por SEDEMA con información del INEGI (Marco
+  Geoestadístico, Encuesta Intercensal 2025; Red Nacional de Caminos 2025, de INEGI, SICT e IMT) y de SEMOVI
+  (Vialidades primarias de la Ciudad de México, Portal de Datos Abiertos de la Ciudad de México, CC BY 4.0), y el
+  ACUERDO/CCV/016/3ORD/SEPTIEMBRE/2024 de la Comisión de Clasificación de Vialidades. Licencias: Términos de Libre
+  Uso de la Información del INEGI y CC BY 4.0. SEDEMA unió, partió y clasificó los tramos y homologó sus nombres;
+  esas transformaciones no son del INEGI ni de SEMOVI, ni están respaldadas por ellos.
+- **Las cifras por calle.** Una calle con tramos en dos redes va en las dos listas, cada una con sus árboles: cada
+  lista suma lo que dice su red. El «% del total» de cada calle va con un decimal, redondeado por sí solo, y lo que
+  no llega dice «menos de 0.1 %».
 
 ## La jornada compartida
 

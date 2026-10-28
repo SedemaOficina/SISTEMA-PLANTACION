@@ -1725,3 +1725,19 @@ Verificación: `npm test` 117 de 117; `prueba_conexion.py` 126 de 126; `auditori
 | P-3, P-4, P-21, P-22 (de la primera parte) | Hecho | La confirmación de quitar, la nota de la ficha y «Mover» del cabo de apoyo | `prueba.py` (ctx103) |
 
 Verificación: `npm test` 117 de 117; `prueba_conexion.py` 132 de 132; `auditoria.py` 150 y 0 hallazgos; la prueba completa, 1,545 de 1,548 (el Excel y dos comprobaciones de la prueba, corregidas y repetidas 3 de 3). Con esto el bloque 2 queda cerrado.
+
+### Bloque 3 · Cifras e informes (bloque 263 del proyecto, versión 1.4.8)
+
+Antes y después medidos con la misma sonda en la versión 1.4.7 y en la nueva, con la demostración (21,874 árboles ese
+día), como Dirección, «Todo».
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| B2-01 | Corregido | Una calle con 84 árboles decía «1 %» (es 0.4 %); las 3,790 calles, distintas de su porcentaje. Ahora con un decimal, redondeado por sí solo, y «menos de 0.1 %» (P-23 B); 0 distintas, en pantalla y en el PDF | `prueba.py` (ctx104) |
+| B2-02 · decisión 4 a | Corregido | Con «Compartidas», «0 de 20 cabos trabajaron» y 17 cabos con árboles «sin jornadas». Ahora «17 de 20» y ninguno; Mi avance dice «árboles suyos» y «sus jornadas, con todos los que registraron» (P-24) | `prueba.py` (ctx104) |
+| B2-03 · decisión 5 a | Corregido | Cada lista contra su renglón: primarias 1,851 contra 1,846; secundarias 16,113 contra 15,998; carreteras 10 contra 130. Ahora iguales, y la calle de dos redes va en las dos (P-16) | `prueba.py` (ctx104, con datos sintéticos y con la demostración) |
+| D3-01 | Corregido | El pie de «Por calle» y del informe lleva la cita completa del índice de la capa (P-15). El CSV, sin renglón de cita: lo decidió Liber (D344) | `auditoria.py` y `prueba.py` (ctx104, pantalla y PDF) |
+| C3-02 | Corregido | En el reporte de una compartida, cada nombre en un renglón (P-25) | Revisado a la vista en el PDF; sin prueba automática |
+| R-1 A | Hecho | Con 21 árboles, «20 %» y «4 %» y la columna en 92 %; ahora 19.0 % y 4.8 %, con la nota del redondeo. La comprobación que fallaba según la fecha ya no depende de ella | `prueba.py` (ctx104 y el reporte por secciones) |
+
+Verificación: la prueba completa, 1,562 de 1,563 (sólo el Excel conocido); ctx104, 15 de 15; `prueba_conexion.py` 132 de 132; `auditoria.py` 151 y 0 hallazgos; el recuento independiente de lo guardado, 0 diferencias en «Todo», «Compartidas» y «No compartidas»; el PDF revisado a la vista. Con esto el bloque 3 queda cerrado.

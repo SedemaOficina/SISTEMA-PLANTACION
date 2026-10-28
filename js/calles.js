@@ -95,13 +95,15 @@ SRP.calles = {
     return lista.length ? lista[0] + (lista.length === 2 ? ' y ' + lista[1] : lista.length > 2 ? ' y ' + (lista.length - 1) + ' más' : '') : '—';
   },
 
+  /* La cita que piden las condiciones de uso de la capa, completa y tal como la trae su índice: las fuentes con su
+     licencia y lo que hizo SEDEMA. La versión del SIA no lleva el índice, por eso va aquí */
+  CITA: 'Elaborado por SEDEMA con información de: INEGI, Marco Geoestadístico. Encuesta Intercensal 2025; INEGI, Red Nacional de Caminos 2025 (INEGI, SICT, IMT); SEMOVI, Vialidades primarias de la Ciudad de México (Portal de Datos Abiertos de la Ciudad de México, CC BY 4.0), y ACUERDO/CCV/016/3ORD/SEPTIEMBRE/2024 de la Comisión de Clasificación de Vialidades. SEDEMA unió, partió y clasificó los tramos, y homologó sus nombres; esas transformaciones no son del INEGI ni de SEMOVI, ni están respaldadas por ellos.',
+
   // De dónde sale la calle, para el pie del informe y de Supervisión
   nota(versiones) {
     const v = (versiones || []).filter(Boolean);
     return 'La calle la pone el sistema con la capa de calles de la Ciudad de México' + (v.length ? ' (versión ' + v.join(', ') + ')' : '') +
-      ': el tramo más cercano al árbol, a ' + this.RADIO_M + ' m o menos, con su red vial y quién lo atiende. Elaborada por SEDEMA con información del INEGI ' +
-      '(Marco Geoestadístico, Encuesta Intercensal 2025; Red Nacional de Caminos 2025) y de SEMOVI (Vialidades primarias, CC BY 4.0, y el acuerdo de ' +
-      'clasificación de vialidades de 2024).';
+      ': el tramo más cercano al árbol, a ' + this.RADIO_M + ' m o menos, con su red vial y quién lo atiende. ' + this.CITA;
   },
 
   /* ---------- SERVIDOR SIMULADO: sólo con datos de prueba ---------- */

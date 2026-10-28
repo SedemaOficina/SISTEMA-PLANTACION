@@ -438,6 +438,8 @@ SRP.reportes = {
           variosDias ? [SRP.util.formatearFecha(r.fecha_plantacion)] : [], conComentario ? [this.textoComentario(r)] : [], compartida ? [SRP.ref.nombreUsuario(r.cabo_id)] : [])),
         precision: 2 + (conSitio ? 1 : 0) + (conCalle ? 1 : 0),
         calle: conCalle ? 2 + (conSitio ? 1 : 0) : null,
+        // En una compartida, la última columna dice quién lo registró
+        cabo: compartida ? 3 + (conSitio ? 1 : 0) + (conCalle ? 1 : 0) + (variosDias ? 1 : 0) + (conComentario ? 1 : 0) : null,
         niveles: registros.map(r => this.nivelPrecision(r)),
         especies: registros.map(r => { const e = SRP.ref.especieDe(r); return [e.comun, e.cientifico || '']; })
       },
@@ -446,8 +448,9 @@ SRP.reportes = {
       totales,
       total: n,
       graficas: { distribucion },
+      // Cada porcentaje, el más cercano al real con un decimal; si la columna no da 100 justo, se dice por qué
       notaTotales: 'El conteo se calcula a partir de los registros del sistema; no se captura a mano.' +
-        (totales.reduce((x, t) => x + t.pct, 0) === 100 ? '' : ' Los porcentajes están redondeados: especies con la misma cantidad llevan el mismo porcentaje.'),
+        (Math.round(totales.reduce((x, t) => x + t.pct, 0) * 10) === 1000 ? '' : ' Cada porcentaje está redondeado a un decimal; la suma puede diferir de 100 en unas décimas.'),
       /* CALIDAD DE LA UBICACIÓN. Con la fotografía opcional, la coordenada es la prueba: quien lea el
          reporte merece saber de qué clase de coordenada se trata. */
       gps: 'Ubicados con GPS del teléfono: ' + conGps + ' de ' + n + ' (' + pct(conGps, n) + ' %).',
@@ -515,7 +518,7 @@ SRP.reportes = {
         : ej.cabecera[k] === 'Comentario' ? '<td class="previa-comentario">' + esc(c) + '</td>' : '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' +
       nota(m.notaPrecision));
     h += apartado('Totales por especie', '<div class="previa-tabla-caja"><table class="previa-tabla"><thead><tr><th>Especie</th><th>Distribución</th><th class="cifra">Ejemplares</th><th class="cifra">% del total</th></tr></thead><tbody>' +
-      m.totales.map(t => '<tr><td>' + esc(t.comun) + (t.cientifico ? ' (<i>' + esc(t.cientifico) + '</i>)' : '') + '</td><td>' + esc(t.distribucion || '—') + '</td><td class="cifra">' + t.n + '</td><td class="cifra">' + t.pct + ' %</td></tr>').join('') +
+      m.totales.map(t => '<tr><td>' + esc(t.comun) + (t.cientifico ? ' (<i>' + esc(t.cientifico) + '</i>)' : '') + '</td><td>' + esc(t.distribucion || '—') + '</td><td class="cifra">' + t.n + '</td><td class="cifra">' + esc(t.pctTexto) + '</td></tr>').join('') +
       '</tbody><tfoot><tr><td>Total</td><td></td><td class="cifra">' + m.total + '</td><td class="cifra">100 %</td></tr></tfoot></table></div>' + nota(m.notaTotales) + this.htmlDistribucion(m));
     // Personal y vehículo al final: así el croquis cabe en la primera página, como en las demás instituciones
     if (m.personal.length) h += apartado('Personal', datos(m.personal));
@@ -549,15 +552,16 @@ SRP.reportes = {
       t.n += 1; m.set(clave, t);
     });
     const lista = [...m.values()].sort((a, b) => b.n - a.n || a.comun.localeCompare(b.comun, 'es'));
-    // El porcentaje del total, entero, y que sumen 100
-    this.porcentajes(lista.map(t => t.n), registros.length).forEach((p, i) => { lista[i].pct = p; });
+    // El porcentaje del total con un decimal, cada uno por sí solo: especies con la misma cantidad, mismo porcentaje
+    lista.forEach(t => { t.pct = SRP.indicadores.pct1(t.n, registros.length) || 0; t.pctTexto = SRP.indicadores.textoPct1(t.n, registros.length); });
     return lista;
   },
 
   /* Porcentajes enteros por el método del resto mayor: redondeados uno por uno, 69 + 13 + 19 daban
      101 % en el mismo papel que dice «Total 100 %». Cantidades iguales llevan siempre el mismo
      porcentaje: el punto que sobra se reparte a un grupo de iguales completo o a ninguno;
-     si no alcanza para el grupo, la suma queda uno o dos puntos abajo y el reporte lo advierte. */
+     si no alcanza para el grupo, la suma queda uno o dos puntos abajo. Lo usan la barra de la distribución
+     y las tablas de Supervisión que reparten el total. */
   porcentajes(ns, total) {
     if (!total) return ns.map(() => 0);
     const exactos = ns.map(n => n * 100 / total), base = exactos.map(Math.floor);
@@ -822,19 +826,21 @@ SRP.reportes = {
     // La especie guarda su ancho: un comentario con una palabra muy larga (un enlace) se parte, no la aplasta
     tabla({ head: [m.ejemplares.cabecera.map((c, k) => k === 0 ? { content: c, styles: { halign: 'right' } } : c)], body: m.ejemplares.filas,
       // La 2 es la precisión o, con la columna «Sitio», el sitio; la precisión, donde quede, del mismo ancho
+      // En una compartida, «Cabo» lleva el ancho de un nombre completo en un renglón y la calle cede un poco
       columnStyles: Object.assign({ 0: { cellWidth: 11, halign: 'right' }, 1: { minCellWidth: 45 }, 2: { cellWidth: 20 }, [m.ejemplares.precision]: { cellWidth: 20 } },
-        m.ejemplares.calle != null ? { [m.ejemplares.calle]: { cellWidth: 'auto', minCellWidth: 62 } } : {}),
+        m.ejemplares.calle != null ? { [m.ejemplares.calle]: { cellWidth: 'auto', minCellWidth: m.ejemplares.cabo != null ? 48 : 62 } } : {},
+        m.ejemplares.cabo != null ? { [m.ejemplares.cabo]: { cellWidth: 34 } } : {}),
       didParseCell: d => { if (d.section === 'body' && d.column.index === m.ejemplares.precision && colorNivel[m.ejemplares.niveles[d.row.index]]) { d.cell.styles.textColor = colorNivel[m.ejemplares.niveles[d.row.index]]; d.cell.styles.fontStyle = 'bold'; } } });
     letra('italic', 7.5, C.gris); { const l = doc.splitTextToSize(m.notaPrecision, util); salto(l.length * 3.4 + 2); doc.text(l, M, y); y += l.length * 3.4 + 4; }
 
     // Totales por especie, con su distribución y el porcentaje del total: calculados
     seccion('Totales por especie', 20);
     tabla({ head: [['Especie', 'Distribución', { content: 'Ejemplares', styles: { halign: 'right' } }, { content: '% del total', styles: { halign: 'right' } }]],
-      body: m.totales.map(t => [t.comun + (t.cientifico ? ' (' + t.cientifico + ')' : ''), t.distribucion || '—', String(t.n), t.pct + ' %']),
+      body: m.totales.map(t => [t.comun + (t.cientifico ? ' (' + t.cientifico + ')' : ''), t.distribucion || '—', String(t.n), t.pctTexto]),
       // Las cifras del total se alinean como las de arriba: el pie no hereda columnStyles
       foot: [['Total', '', { content: String(m.total), styles: { halign: 'right' } }, { content: '100 %', styles: { halign: 'right' } }]],
       columnStyles: { 1: { cellWidth: 34 }, 2: { halign: 'right', cellWidth: 22 }, 3: { halign: 'right', cellWidth: 22 } } });
-    letra('italic', 7.5, C.gris); doc.text(m.notaTotales, M, y); y += 6;
+    letra('italic', 7.5, C.gris); { const l = doc.splitTextToSize(m.notaTotales, util); salto(l.length * 3.4 + 2); doc.text(l, M, y); y += l.length * 3.4 + 2.6; }
 
     /* La distribución de las especies, bajo los totales y sin sección propia (la columna «Distribución» ya
        la dice por especie): una barra dibujada con trazos, que pesa casi nada y se lee igual en gris */

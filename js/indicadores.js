@@ -105,6 +105,10 @@ SRP.indicadores = {
   esNativa(distribucion) { return /^(nativa|end[eé]mica)/i.test(distribucion || ''); },
   mediana(v) { if (!v.length) return null; const s = v.slice().sort((a, b) => a - b), k = s.length >> 1; return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2; },
   pct(a, b) { return b ? Math.round(a * 100 / b) : null; },
+  /* Con un decimal, para las listas que son una parte chica del total (las calles): redondeado uno por uno, sin
+     repartir sobrantes, y lo que no llega a 0.1 % lo dice */
+  pct1(a, b) { return b ? Math.round(a * 1000 / b) / 10 : null; },
+  textoPct1(a, b) { const p = this.pct1(a, b); return p == null ? '—' : (a > 0 && p === 0 ? 'menos de 0.1' : p.toFixed(1)) + ' %'; },
 
   /* El modelo de todo lo que se ve y se imprime. `filtros`: { alcaldia, programa, cabo, compartida, organizacion },
      cada uno vacío para «todos». Con alcaldía, cuentan los árboles de esa alcaldía y las jornadas que
@@ -169,9 +173,11 @@ SRP.indicadores = {
     porAlcaldia.forEach(e => { const cols = new Set(arboles.filter(a => (a.r.alcaldia || 'Sin alcaldía') === e.clave && a.r.colonia).map(a => a.r.colonia)); e.colonias = cols.size; });
     const porColonia = cuenta(arboles.filter(a => a.r.colonia), a => a.r.colonia + '|' + (a.r.alcaldia || ''), a => ({ colonia: a.r.colonia, alcaldia: a.r.alcaldia || '' }));
     /* Por calle: una misma calle es su llave dentro de la alcaldía del árbol (un tramo del límite puede ser de la
-       alcaldía vecina); sus cuadras se juntan en tramos. Por red vial, con quién atiende cada una */
+       alcaldía vecina) y de la red de su tramo: la calle con tramos en dos redes va en las dos listas, cada una con
+       sus árboles, y cada lista suma lo que dice su red. Sus cuadras se juntan en tramos. Por red vial, con quién
+       atiende cada una */
     const conCalle = arboles.filter(a => a.r.calle_estado === 'ok');
-    const llaveCalle = a => (a.r.calle_llave || '') + '|' + (a.r.alcaldia || '');
+    const llaveCalle = a => (a.r.calle_llave || '') + '|' + (a.r.alcaldia || '') + '|' + (a.r.vialidad_red || '');
     const porCalle = cuenta(conCalle, llaveCalle, a => ({ calle: a.r.calle_llave ? a.r.calle : 'Calles sin nombre', alcaldia: a.r.alcaldia || '', red: a.r.vialidad_red, colonias: new Set(), regs: [] }));
     const deCalle = new Map(porCalle.map(e => [e.clave, e]));
     conCalle.forEach(a => { const e = deCalle.get(llaveCalle(a)); if (a.r.colonia) e.colonias.add(a.r.colonia); e.regs.push(a.r); });
@@ -229,12 +235,14 @@ SRP.indicadores = {
       const jm = js.filter(j => SRP.jornadas.previstosDe(j) !== null);
       const m = jm.reduce((s, j) => s + SRP.jornadas.previstosDe(j), 0);
       const am = jm.reduce((s, j) => s + j.registros.filter(esDeAlcaldia).length, 0);
+      /* Sus jornadas son aquellas donde capturó al menos un árbol, como titular, relevo o cabo de apoyo; lo previsto y
+         los pendientes, de las que tiene a su cargo */
+      const suyos = arboles.filter(a => a.r.cabo_id === id), donde = new Set(suyos.map(a => a.j));
       return {
         cabo_id: id, nombre: SRP.ref.nombreUsuario(id),
-        // Las jornadas son del titular; los árboles, de quien los capturó
-        jornadas: js.length, arboles: arboles.filter(a => a.r.cabo_id === id).length,
+        jornadas: donde.size, arboles: suyos.length,
         meta: m, avance: this.pct(am, m), enCurso: enCurso.filter(j => j.cabo_id === id).length,
-        ultima: js.map(j => j.fecha).sort().pop() || null,
+        ultima: js.concat([...donde]).map(j => j.fecha).sort().pop() || null,
         abiertasViejas: abiertasViejas.filter(j => j.cabo_id === id).length,
         sinRevisar: js.reduce((s, j) => s + pendientes(j), 0),
         sinReporte: js.filter(faltaReporte).length,
@@ -261,8 +269,12 @@ SRP.indicadores = {
         arboles: n, jornadas: cerradas.length, enCurso: enCurso.length, meta, arbolesConMeta,
         avance: this.pct(arbolesConMeta, meta),
         promedio: cerradas.length ? Math.round(n * 10 / cerradas.length) / 10 : null,
-        // «X de Y cabos trabajaron»: sólo cabos; lo que registra quien coordina cuenta en los árboles, no aquí
-        cabosActivos: new Set(cerradas.map(j => j.cabo_id).filter(id => cabosOrg.includes(id))).size, cabosAsignados: cabosOrg.length,
+        /* «X de Y cabos trabajaron»: los cabos que registraron árboles en lo filtrado, sean titulares, relevo o de
+           apoyo; lo que registra quien coordina cuenta en los árboles, no aquí */
+        cabosActivos: new Set(arboles.map(a => a.r.cabo_id).filter(id => cabosOrg.includes(id))).size, cabosAsignados: cabosOrg.length,
+        /* Con un cabo elegido (o en «Mi avance»), lo previsto es de sus jornadas, con todos los que registraron en
+           ellas: se dice cuando hay árboles de otros */
+        conOtros: !!(datos.soloDe || filtros.cabo) && conMeta.some(j => j.registros.some(r => esDeAlcaldia(r) && r.cabo_id !== (datos.soloDe || filtros.cabo))),
         instituciones: porOrganizacion.length,
         especies: porEspecie.length, nativas, nativasPct: this.pct(nativas, n),
         alcaldias: porAlcaldia.filter(e => e.clave !== 'Sin alcaldía').length, colonias: porColonia.length

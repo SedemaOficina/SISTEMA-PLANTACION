@@ -6980,3 +6980,52 @@ muestras aprobadas (D342). Con ella el bloque 2 queda completo.
 
 **Siguiente paso.** El bloque 3, las cifras: el «% del total» por calle con un decimal (P-23 B), los cabos que
 trabajaron, las calles en dos redes, la cita de la capa y los porcentajes del reporte (R-1 A).
+
+## Bloque 263 — Las cifras de Supervisión y de los informes (28-10-2026)
+
+**Versión 1.4.8.** El bloque 3 del plan de corrección de la auditoría del 27-10-2026, con las decisiones 4 a y 5 a
+(D339) y las muestras aprobadas (D342): P-15, P-16, P-23 B, P-24, P-25 y R-1 A. Lo que se decidió al programarlo va en
+D344.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| El «% del total» de cada calle (B2-01, P-23 B) | Inflado: con la demostración, una calle con 84 de 21,874 árboles decía «1 %», igual que una con 3; las 3,790 calles, distintas de su porcentaje real | Con un decimal, redondeado por sí solo: «0.4 %»; lo que no llega, «menos de 0.1 %». La tabla de las redes, igual |
+| «Cabos que trabajaron» con «Compartidas» (B2-02, decisión 4 a, P-24) | «0 de 20»: contaba a los titulares, y en una compartida la titular es la Coordinación. 17 cabos con árboles salían «sin jornadas» | «17 de 20»: los cabos que registraron árboles. Las jornadas de cada cabo son aquellas donde registró, como titular, relevo o apoyo |
+| Mi avance del cabo de apoyo (B2-02, P-24) | Mezclaba sus árboles con los de toda la jornada sin decirlo | «árboles suyos» y «sus jornadas, con todos los que registraron: 488 de 486 previstos». Igual en el informe PDF |
+| Una calle con tramos en dos redes (B2-03, decisión 5 a, P-16) | Iba entera a la red de su primer árbol: las listas no sumaban su renglón (carreteras, 10 contra 130) | Va en las dos listas, cada una con sus árboles; cada lista suma lo que dice su red |
+| La cita de la capa de calles (D3-01, P-15) | Abreviada, sin «(INEGI, SICT, IMT)», el Portal de Datos Abiertos ni lo que hizo SEDEMA | La del índice de la capa, completa, en Supervisión y en el informe |
+| La columna «Cabo» del reporte de una compartida (C3-02, P-25) | Cada nombre se partía en dos o tres renglones | Un nombre por renglón: «Cabo» más ancha y «Calle» un poco menos |
+| Los porcentajes del reporte de jornada (R-1 A) | Enteros que no sumaban 100: con 21 árboles, «4 %» cada especie de 1 y la columna en 92 % | Con un decimal: 19.0 % y 4.8 %; si la columna no da 100 justo, la nota «Cada porcentaje está redondeado a un decimal; la suma puede diferir de 100 en unas décimas». Es la comprobación que, según la fecha, dejaba a GitHub en rojo |
+
+**Qué cambió.**
+- `js/indicadores.js`: la llave de la calle lleva su red; «cabos que trabajaron» y las jornadas de cada cabo, por sus
+  árboles; la marca de cuando lo previsto incluye árboles de otros; y el porcentaje con un decimal (`pct1`,
+  `textoPct1`).
+- `js/supervision.js` y `js/informes.js`: las calles y las redes con un decimal; los textos de Mi avance y del informe.
+- `js/calles.js`: `CITA`, la del índice de la capa, en el pie.
+- `js/reportes.js`: los totales por especie con un decimal y su nota, partida en renglones en el PDF; la columna
+  «Cabo».
+- Pruebas: `pruebas/prueba.py`, sección ctx104 nueva (15 comprobaciones) y la de los totales del reporte;
+  `pruebas/auditoria.py`, la cita igual a la del índice.
+- `VERSION`, marcas de `index.html`, etapa de `js/config.js`, README (la cita y las cifras por calle),
+  `docs/MEJORAS.md`, `docs/DECISIONES.md` (D344) y el seguimiento del informe.
+
+**Verificación.**
+- `pruebas/por_tramos.py` (la prueba completa, ahora de 87 tramos): 1,562 de 1,563, 47 min. La única falla es la
+  conocida del Excel de `originales/`. El tramo nuevo (ctx104), 15 de 15.
+- Antes y después: las pruebas nuevas, corridas contra la 1.4.7, se detienen porque usan funciones que no existían.
+  Una sonda aparte midió lo mismo en las dos versiones con la demostración (21,874 árboles ese día): la calle con 84
+  árboles, «1 %» antes y «0.4 %» ahora; carreteras, su lista 10 contra 130 antes e iguales ahora; con «Compartidas»,
+  «0 de 20» antes y «17 de 20» ahora; la cita completa, no antes y sí ahora; el reporte de 21 árboles, 92 % antes y
+  100.4 % con la nota ahora.
+- En lugar del recálculo en SQL de la auditoría (`r1/b2/`, que necesita su entorno en modo real), un recuento
+  independiente de lo guardado: árboles por red y por calle, y cabos con árboles, en «Todo», «Compartidas» y «No
+  compartidas». 0 diferencias con Supervisión en 3,813, 163 y 3,705 calles; cabos 20, 17 y 20.
+- El PDF, revisado a la vista: la columna «Cabo» y los totales por especie. Ahí se vio que la nota del redondeo, más
+  larga, se salía del margen; ya va partida en renglones.
+- `pruebas/prueba_conexion.py`: 132 de 132.
+- `pruebas/auditoria.py`: 151 comprobaciones (una nueva: la cita), 0 hallazgos.
+- `npm test` no se corrió: el servidor no cambió.
+- GitHub: la corrida del bloque 262 (40679948558), en verde.
+
+**Siguiente paso.** El bloque 5, la pantalla y los textos (P-8 a P-14, P-18, P-19 y P-26), en dos partes.

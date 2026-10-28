@@ -201,9 +201,11 @@ SRP.supervision = {
         (cabo ? 'Cuando cierre una jornada, aquí verá cuántos árboles plantó.' : 'Cuando se cierren jornadas, aquí se verá cuánto se plantó.') + curso, []) + '</div>' + this.htmlAtender(m);
     }
     // «Previstos»: lo que se dijo al iniciar cada jornada; no es la meta del programa
-    const previsto = cifra(c.avance == null ? '—' : c.avance + ' %', 'de lo previsto', c.meta ? num(c.arbolesConMeta) + ' de ' + num(c.meta) + ' previstos en las jornadas' : 'sin cantidad prevista');
+    // Con los árboles de otros cabos en sus jornadas, lo previsto lo dice: es de la jornada, no sólo suyo
+    const previsto = cifra(c.avance == null ? '—' : c.avance + ' %', 'de lo previsto', !c.meta ? 'sin cantidad prevista'
+      : c.conOtros ? 'sus jornadas, con todos los que registraron: ' + num(c.arbolesConMeta) + ' de ' + num(c.meta) + ' previstos' : num(c.arbolesConMeta) + ' de ' + num(c.meta) + ' previstos en las jornadas');
     let h = '<div class="sup-cifras" data-cifras="' + (cabo ? 3 : 4) + '">' + (cabo
-      ? cifra(num(c.arboles), c.arboles === 1 ? 'árbol plantado' : 'árboles plantados', c.promedio == null ? '' : String(c.promedio) + ' por jornada') + previsto +
+      ? cifra(num(c.arboles), c.conOtros ? (c.arboles === 1 ? 'árbol suyo' : 'árboles suyos') : c.arboles === 1 ? 'árbol plantado' : 'árboles plantados', c.promedio == null ? '' : String(c.promedio) + ' por jornada') + previsto +
         cifra(num(c.jornadas), c.jornadas === 1 ? 'jornada cerrada' : 'jornadas cerradas', c.enCurso ? num(c.enCurso) + ' en curso' : '')
       : cifra(num(c.arboles), c.arboles === 1 ? 'árbol plantado' : 'árboles plantados', 'en ' + plural(c.jornadas, 'jornada cerrada', 'jornadas cerradas')) + previsto +
         cifra(num(c.cabosActivos) + ' de ' + num(c.cabosAsignados), 'cabos trabajaron', c.promedio == null ? '' : String(c.promedio) + ' árboles por jornada') +
@@ -251,15 +253,18 @@ SRP.supervision = {
     if (k.porCalle.length || k.lejos) {
       const K = SRP.calles;
       const bajo = x => [x.tramos.slice(0, 2).join('; ') + (x.tramos.length > 2 ? '; y ' + (x.tramos.length - 2) + ' más' : ''), m.filtros.alcaldia ? K.colonias(x.colonias) : x.alcaldia].filter(Boolean);
+      /* Cada calle es una parte chica del total: su porcentaje va con un decimal, redondeado por sí solo, y la red
+         con el mismo redondeo; así se distingue la calle con 84 árboles de la que tiene 3 */
+      const P1 = (n, total) => SRP.indicadores.textoPct1(n, total);
       const lista = r => {
-        const cs = this.conPct(k.porCalle.filter(x => x.red === r.red), c.arboles);
+        const cs = k.porCalle.filter(x => x.red === r.red);
         return '<p class="sup-subtitulo">' + esc(K.TITULO[r.red] + ' · ' + K.quienes(r.atiende)) + '</p>' +
           this.tabla(['Calle', 'Árboles', '% del total', 'Jornadas'], cs.map(x => [{ html: esc(x.calle) + bajo(x).map(t => '<small class="sup-tramos">' + esc(t) + '</small>').join('') + barra(x.arboles, cs[0].arboles) },
-            num(x.arboles), x.pct + ' %', num(x.jornadas)]), [1, 2, 3], 'calles-' + r.red.split(' ')[0]);
+            num(x.arboles), P1(x.arboles, c.arboles), num(x.jornadas)]), [1, 2, 3], 'calles-' + r.red.split(' ')[0]);
       };
-      const filas = k.porRed.map(x => [K.TITULO[x.red], K.quienes(x.atiende), num(x.calles), num(x.arboles), (P(x.arboles, c.arboles) || 0) + ' %'])
-        .concat(k.lejos ? [['Sin calle cercana', '—', '—', num(k.lejos), (P(k.lejos, c.arboles) || 0) + ' %']] : [],
-          k.porAsignar ? [['Calle por asignar', '—', '—', num(k.porAsignar), (P(k.porAsignar, c.arboles) || 0) + ' %']] : []);
+      const filas = k.porRed.map(x => [K.TITULO[x.red], K.quienes(x.atiende), num(x.calles), num(x.arboles), P1(x.arboles, c.arboles)])
+        .concat(k.lejos ? [['Sin calle cercana', '—', '—', num(k.lejos), P1(k.lejos, c.arboles)]] : [],
+          k.porAsignar ? [['Calle por asignar', '—', '—', num(k.porAsignar), P1(k.porAsignar, c.arboles)]] : []);
       h += seccion('calles', 'sup-t-calles', 'Por calle', k.porRed.map(x => plural(x.arboles, 'árbol', 'árboles') + ' en ' + K.TITULO[x.red].toLowerCase()).join(' · ') || plural(k.lejos, 'árbol', 'árboles') + ' sin calle cercana',
         this.tabla(['Red vial', 'Quién la atiende', 'Calles', 'Árboles', '% del total'], filas, [2, 3, 4]) + k.porRed.map(lista).join('') + '<p class="nota">' + esc(K.nota(k.versiones)) + '</p>');
     }
@@ -365,7 +370,9 @@ SRP.supervision = {
       '</tbody></table></div>' + (clave ? this.botonMas(clave, filas.length) : '');
   },
 
-  // % del total de lo elegido, con el mismo redondeo del reporte: cantidades iguales, mismo %
+  /* % del total, entero, para las listas que reparten todo el total (alcaldías, especies, programas): suman 100 y
+     cantidades iguales llevan el mismo %. Una lista que es sólo una parte del total, como las calles de una red, no
+     lo usa: el sobrante se repartiría entre muy pocas */
   conPct(lista, total) {
     const p = SRP.reportes.porcentajes(lista.map(x => x.arboles), total);
     return lista.map((x, i) => Object.assign({}, x, { pct: p[i] }));

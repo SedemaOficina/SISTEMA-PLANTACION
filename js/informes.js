@@ -116,10 +116,10 @@ SRP.informes = {
     const c = m.cifras, q = m.calidad;
     titulo('Resumen');
     tabla(['Indicador', 'Valor'], [
-      ['Árboles plantados (jornadas cerradas)', num(c.arboles)],
+      [cabo && c.conOtros ? 'Árboles que registró (jornadas cerradas)' : 'Árboles plantados (jornadas cerradas)', num(c.arboles)],
       ['Jornadas cerradas', num(c.jornadas)],
       ['Jornadas en curso (no se cuentan hasta cerrarse)', num(c.enCurso)],
-      ['Avance contra lo previsto en las jornadas', c.avance == null ? 'Sin cantidad prevista' : c.avance + ' % (' + num(c.arbolesConMeta) + ' de ' + num(c.meta) + ')'],
+      [c.conOtros ? 'Avance contra lo previsto en sus jornadas, con todos los que registraron' : 'Avance contra lo previsto en las jornadas', c.avance == null ? 'Sin cantidad prevista' : c.avance + ' % (' + num(c.arbolesConMeta) + ' de ' + num(c.meta) + ')'],
       cabo ? null : ['Cabos que trabajaron', num(c.cabosActivos) + ' de ' + num(c.cabosAsignados)],
       ['Árboles por jornada', c.promedio == null ? '—' : String(c.promedio)],
       q.sustitutos ? ['Sustitutos plantados (incluidos arriba)', num(q.sustitutos) + ': ' + q.sustitutosMotivo.map(([t, n]) => t + ' ' + num(n)).join(', ')] : null,
@@ -160,19 +160,20 @@ SRP.informes = {
     }
     const k = m.calles;
     if (k.porCalle.length || k.lejos) {
-      const P = SRP.indicadores.pct, K = SRP.calles;
+      // Las calles, como en Supervisión: con un decimal, cada una redondeada por sí sola
+      const K = SRP.calles, P1 = n => SRP.indicadores.textoPct1(n, c.arboles);
       titulo('Por red vial');
-      tabla(['Red vial', 'Quién la atiende', 'Calles', 'Árboles', '% del total'], k.porRed.map(x => [K.TITULO[x.red], K.quienes(x.atiende), num(x.calles), num(x.arboles), pc(P(x.arboles, c.arboles), x.arboles)])
-        .concat(k.lejos ? [['Sin calle cercana', '—', '—', num(k.lejos), pc(P(k.lejos, c.arboles), k.lejos)]] : [],
-          k.porAsignar ? [['Calle por asignar', '—', '—', num(k.porAsignar), pc(P(k.porAsignar, c.arboles), k.porAsignar)]] : []), { derecha: [2, 3, 4] });
+      tabla(['Red vial', 'Quién la atiende', 'Calles', 'Árboles', '% del total'], k.porRed.map(x => [K.TITULO[x.red], K.quienes(x.atiende), num(x.calles), num(x.arboles), P1(x.arboles)])
+        .concat(k.lejos ? [['Sin calle cercana', '—', '—', num(k.lejos), P1(k.lejos)]] : [],
+          k.porAsignar ? [['Calle por asignar', '—', '—', num(k.porAsignar), P1(k.porAsignar)]] : []), { derecha: [2, 3, 4] });
       const tramos = x => x.tramos.length ? x.tramos.slice(0, 3).join('; ') + (x.tramos.length > 3 ? '; y ' + (x.tramos.length - 3) + ' más' : '') : '—';
       k.porRed.forEach(r => {
-        const todas = SRP.supervision.conPct(k.porCalle.filter(x => x.red === r.red), c.arboles);
+        const todas = k.porCalle.filter(x => x.red === r.red);
         const LIM = 15, resto = todas.slice(LIM), nResto = resto.reduce((s, x) => s + x.arboles, 0);
         titulo(K.TITULO[r.red] + ' · ' + K.quienes(r.atiende));
         tabla(['Calle', 'Entre calles', m.filtros.alcaldia ? 'Colonia' : 'Alcaldía', 'Árboles', '% del total', 'Jornadas'],
-          todas.slice(0, LIM).map(x => [x.calle, tramos(x), m.filtros.alcaldia ? K.colonias(x.colonias) : x.alcaldia, num(x.arboles), pc(x.pct, x.arboles), num(x.jornadas)])
-            .concat(resto.length ? [['Otras ' + num(resto.length) + ' calles', '', '', num(nResto), pc(P(nResto, c.arboles), nResto), '']] : []),
+          todas.slice(0, LIM).map(x => [x.calle, tramos(x), m.filtros.alcaldia ? K.colonias(x.colonias) : x.alcaldia, num(x.arboles), P1(x.arboles), num(x.jornadas)])
+            .concat(resto.length ? [['Otras ' + num(resto.length) + ' calles', '', '', num(nResto), P1(nResto), '']] : []),
           { derecha: [3, 4, 5], columnas: { 0: { cellWidth: 40 }, 1: { cellWidth: 56 } } });
       });
       nota(K.nota(k.versiones) + ' En el PDF van las 15 calles con más árboles de cada red; la lista completa, en la tabla para Excel.');

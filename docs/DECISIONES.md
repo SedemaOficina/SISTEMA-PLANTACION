@@ -4628,3 +4628,21 @@
   · El teléfono guarda la jornada donde registra sin ser titular (cabo de apoyo vigente o cabo del relevo) mientras está
     abierta, y la suelta al cerrarse, al dejar de registrar en ella o al cerrar sesión. Es la excepción a D301 que
     decidió Liber (2 a).
+
+- **D344. Cómo se programaron las cifras del bloque 3 (bloque 263).**
+  28-10-2026. Con las decisiones 4 a y 5 a y las muestras aprobadas (D342):
+  · **Los porcentajes con un decimal**, redondeados uno por uno, son los de las listas que son una parte chica del total:
+    las calles de cada red y, para que se lean igual, la tabla de las redes. Las tablas que reparten todo el total
+    (institución, alcaldía, colonia, especie, programa) siguen en enteros que suman 100. En el reporte de jornada, los
+    totales por especie van con un decimal (R-1 A); la barra de la distribución sigue en enteros que suman 100.
+  · **«Cabos que trabajaron»** son los cabos con árboles en lo filtrado. Las «Jornadas» de cada cabo son aquellas donde
+    registró al menos un árbol; «De lo previsto» y los pendientes siguen siendo de las jornadas a su cargo, que son las
+    que tiene que revisar. Un cabo cuya jornada cerrada no tiene árboles suyos ya no cuenta como «trabajó».
+  · **Mi avance** dice «árboles suyos» y «sus jornadas, con todos los que registraron» sólo cuando en sus jornadas hay
+    árboles de otros (compartida o relevo); lo mismo en Supervisión con un cabo elegido y en el informe PDF.
+  · **La cita de la capa** es la del índice del paquete de calles, palabra por palabra (la muestra aprobada la resumía).
+    Va copiada en `SRP.calles.CITA` porque la versión del SIA no lleva el índice, y `pruebas/auditoria.py` comprueba que
+    sean iguales.
+  · **El CSV, sin la cita.** El informe proponía agregarla como un renglón más. Liber decidió no hacerlo, con lo
+    recomendado: el CSV tiene un renglón por árbol para abrirlo en Excel o procesarlo, y un renglón de texto al final
+    estorba; la cita va completa en Supervisión y en el informe PDF.

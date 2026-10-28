@@ -3194,7 +3194,8 @@ with sync_playwright() as p:
     pg24.fill('#cie-hora','13:40'); pg24.click('#btn-cierre-generar'); pg24.wait_for_timeout(800)
     m24=pg24.evaluate("""(() => { const v = SRP.reportes.vistaPrevia; const m = SRP.reportes.modelo(v.registros, v.cierre, v.fecha, v.jornada);
       return { cabo: m.cabo, cifras: m.cifras.map(c => c.texto), ident: m.identificacion.map(x => x[0]), personal: m.personal.map(x => x[0]), vehiculo: m.vehiculo.map(x => x[0]),
-        dia: m.identificacion.find(x => x[0] === 'Día de la jornada')[1], sumaPct: m.totales.reduce((s, t) => s + t.n, 0) === m.total && (m.totales.reduce((s, t) => s + t.pct, 0) === 100 || (m.totales.reduce((s, t) => s + t.pct, 0) >= 97 && m.notaTotales.includes('redondeados'))),
+        dia: m.identificacion.find(x => x[0] === 'Día de la jornada')[1], sumaPct: m.totales.reduce((s, t) => s + t.n, 0) === m.total && m.totales.every(t => t.pctTexto === SRP.indicadores.textoPct1(t.n, m.total)) &&
+          (Math.round(m.totales.reduce((s, t) => s + t.pct, 0) * 10) === 1000 || (Math.abs(m.totales.reduce((s, t) => s + t.pct, 0) - 100) < 1 && m.notaTotales.includes('redondeado a un decimal'))),
         sumaDist: m.graficas.distribucion.reduce((s, d) => s + d.pct, 0), dist: m.graficas.distribucion.map(d => d.clave),
         h3: [...document.querySelectorAll('#previa-hoja .previa-apartado h3')].map(h => h.textContent) }; })()""")
     ok(m24['cabo'] and m24['cifras']==['árboles plantados','previstos en la jornada','de lo previsto','especies','nativas o endémicas'],'arriba, el nombre del cabo y cinco cifras: plantados, previstos, avance, especies y nativas o endémicas')
@@ -3208,7 +3209,7 @@ with sync_playwright() as p:
     tot24=pg24.eval_on_selector_all('#previa-hoja .previa-apartado:nth-of-type(3) thead th','l=>l.map(x=>x.textContent)')
     pie24=pg24.eval_on_selector_all('#previa-hoja .previa-apartado:nth-of-type(3) tfoot td','l=>l.map(x=>x.textContent)')
     ok(tot24==['Especie','Distribución','Ejemplares','% del total'] and pie24[-1]=='100 %' and m24['sumaPct'] and 97<=m24['sumaDist']<=100,
-       'los totales por especie traen su distribución y el porcentaje del total; suman 100 o el reporte advierte el redondeo')
+       'los totales por especie traen su distribución y el porcentaje del total con un decimal; suman 100 o el reporte advierte el redondeo')
     gr24=pg24.evaluate("({ barras: document.querySelectorAll('#previa-hoja .previa-barra-fila').length, apilada: document.querySelectorAll('#previa-hoja .previa-apilada rect').length, meta: !!document.querySelector('#previa-hoja .previa-meta'), titulos: [...document.querySelectorAll('#previa-hoja .previa-grafica .previa-subtitulo')].map(e => e.textContent), leyenda: document.querySelector('#previa-hoja .previa-leyenda').textContent })")
     ok(gr24['barras']==0 and gr24['apilada']==len(m24['dist']) and not gr24['meta'] and gr24['titulos']==[] and 'Nativa:' in gr24['leyenda'] and 'Ejemplares por especie' not in pg24.inner_text('#previa-hoja'),'una sola gráfica, la distribución de las especies: el conteo por especie lo da la tabla de totales y el avance, la franja de cifras: %s' % gr24)
     ok(pg24.evaluate("getComputedStyle(document.querySelector('#previa-hoja .previa-dato b')).fontWeight")=='700','cada dato dice su nombre en negritas')
@@ -7983,6 +7984,110 @@ with sync_playwright() as p:
     ok('Es de una jornada compartida: sólo la Coordinación lo pasa a otra jornada.' in pg103.evaluate("() => document.getElementById('aviso').textContent"), 'el cabo de apoyo no mueve un árbol de la compartida: %s' % pg103.evaluate("() => document.getElementById('aviso').textContent"))
     ok(not err103, 'sin errores en consola: %s' % err103[:2])
     ctx103.close()
+
+    # ---------- ctx104: las cifras de Supervisión y de los informes: el % de cada calle, las calles en dos redes, los cabos que trabajaron, la cita de la capa y los porcentajes del reporte ----------
+    from pypdf import PdfReader as _Pdf104
+    ctx104 = b.new_context(viewport={'width': 1280, 'height': 900}, accept_downloads=True, timezone_id='America/Mexico_City')
+    pg104 = ctx104.new_page(); err104 = []
+    pg104.on('pageerror', lambda e: err104.append(str(e))); pg104.on('console', lambda m: m.type == 'error' and 'net::' not in m.text and 'Failed to load' not in m.text and err104.append(m.text))
+    pg104.goto(BASE); pg104.wait_for_selector('html[data-listo]')
+    entrar_como(pg104, 'u-admin-1'); pg104.wait_for_function("() => SRP.sesion && SRP.sesion.usuario")
+    # El cálculo, con datos sintéticos: una calle con tramos en dos redes, una compartida y un cabo que sólo fue de apoyo
+    u104 = pg104.evaluate("""() => { const I = SRP.indicadores, F = '2026-09-22';
+      const arbol = (id, j, cabo, red, extra) => Object.assign({ id, jornada_id: j, cabo_id: cabo, lat: 19.48, lng: -99.18, alcaldia: 'Azcapotzalco', colonia: 'CENTRO', especie_id: 'ESP-0002',
+        programa_id: 'p-refor', punto_origen: 'gps', gps_precision_m: 6, fecha_plantacion: F, fecha_registro: F + 'T10:00:00Z', calle_estado: 'ok', calle_llave: 'EJE 4 NORTE', calle: 'Eje 4 Norte',
+        vialidad_red: red, calle_atiende: red === 'primaria' ? 'Gobierno de CDMX' : 'Alcaldía Azcapotzalco', calle_version: '1.0.0' }, extra || {});
+      const jor = (id, cabo, meta, regs) => ({ id, clave: id, fecha: F, cabo_id: cabo, estatus: 'cerrada', nombre: 'J ' + id, registros: regs,
+        dato: { id, fecha: F, cabo_id: cabo, estatus: 'cerrada', programa_id: 'p-refor', arboles_previstos: meta, puntos_revisados: [] } });
+      const datos = { cabos: ['u-cabo-1', 'u-cabo-9', 'u-cabo-7'], eliminados: [], ediciones: [], jornadas: [
+        // La compartida: la titular es la Coordinación; registran ella y dos cabos de apoyo
+        jor('C1', 'u-coord-1', 10, [arbol('a1', 'C1', 'u-cabo-1', 'primaria'), arbol('a2', 'C1', 'u-cabo-1', 'primaria'), arbol('a3', 'C1', 'u-cabo-1', 'primaria'),
+          arbol('a4', 'C1', 'u-cabo-9', 'secundaria'), arbol('a5', 'C1', 'u-cabo-9', 'secundaria'), arbol('a6', 'C1', 'u-coord-1', 'secundaria', { calle_llave: 'CALLE 5', calle: 'Calle 5' })]),
+        jor('J2', 'u-cabo-9', 2, [arbol('b1', 'J2', 'u-cabo-9', null, { calle_estado: 'lejos', calle_llave: null, calle: null })]),
+        // Una jornada cerrada sin árboles: su titular no registró nada
+        jor('J3', 'u-cabo-7', 5, [])] };
+      const p = I.periodo('rango', F, F), m = I.calcular(datos, p, {}, F), solo = I.calcular(Object.assign({}, datos, { soloDe: 'u-cabo-1', jornadas: [datos.jornadas[0]] }), p, {}, F);
+      const lista = r => m.calles.porCalle.filter(x => x.red === r).map(x => [x.calle, x.arboles]);
+      return { redes: m.calles.porRed.map(x => [x.red, x.calles, x.arboles]), primaria: lista('primaria'), secundaria: lista('secundaria'),
+        cabos: [m.cifras.cabosActivos, m.cifras.cabosAsignados], porCabo: m.porCabo.map(x => [x.cabo_id, x.jornadas, x.arboles, x.ultima]),
+        otros: [m.cifras.conOtros, solo.cifras.conOtros, solo.cifras.arboles, solo.cifras.arbolesConMeta, solo.cifras.meta],
+        pct: [I.textoPct1(1768, 22100), I.textoPct1(84, 22100), I.textoPct1(7, 22100), I.textoPct1(0, 10), I.textoPct1(1, 21), I.textoPct1(22100, 22100)] }; }""")
+    ok(u104['redes'] == [['primaria', 1, 3], ['secundaria', 2, 3]] and u104['primaria'] == [['Eje 4 Norte', 3]] and u104['secundaria'] == [['Eje 4 Norte', 2], ['Calle 5', 1]],
+       'una calle con tramos en dos redes va en las dos listas, cada una con sus árboles, y cada lista suma lo que dice su red: %s' % {k: u104[k] for k in ('redes', 'primaria', 'secundaria')})
+    ok(u104['cabos'] == [2, 3] and u104['porCabo'] == [['u-cabo-1', 1, 3, '2026-09-22'], ['u-cabo-9', 2, 3, '2026-09-22'], ['u-coord-1', 1, 1, '2026-09-22'], ['u-cabo-7', 0, 0, '2026-09-22']],
+       '«cabos que trabajaron» son los cabos con árboles, y las jornadas de cada uno, aquellas donde registró, aunque sea de apoyo: %s' % {k: u104[k] for k in ('cabos', 'porCabo')})
+    ok(u104['otros'] == [False, True, 3, 6, 10], 'en Mi avance del cabo de apoyo, lo previsto es de sus jornadas, con todos los que registraron, y se marca: %s' % u104['otros'])
+    ok(u104['pct'] == ['8.0 %', '0.4 %', 'menos de 0.1 %', '0.0 %', '4.8 %', '100.0 %'], 'el porcentaje de una calle va con un decimal, y lo que no llega a 0.1 %% lo dice: %s' % u104['pct'])
+    # Los porcentajes del reporte de jornada: 21 árboles, 2 especies de 4 y 13 de 1
+    r104 = pg104.evaluate("""() => { const regs = []; let n = 0;
+      const poner = (especie, k) => { for (let i = 0; i < k; i++) regs.push({ id: 'r' + (++n), especie_otra: especie, cabo_id: 'u-cabo-1', alcaldia: 'Coyoacán', fecha_plantacion: '2026-09-22', punto_origen: 'gps', gps_precision_m: 5 }); };
+      poner('Fresno', 4); poner('Jacaranda', 4); for (let e = 1; e <= 13; e++) poner('Especie ' + e, 1);
+      const m = SRP.reportes.modelo(regs, {}, '2026-09-22', null);
+      return { textos: [...new Set(m.totales.map(t => t.pctTexto))], suma: Math.round(m.totales.reduce((s, t) => s + t.pct, 0) * 10) / 10, nota: m.notaTotales,
+        igual: SRP.reportes.modelo(regs.slice(0, 8), {}, '2026-09-22', null).notaTotales }; }""")
+    ok(r104['textos'] == ['19.0 %', '4.8 %'] and r104['suma'] == 100.4 and 'Cada porcentaje está redondeado a un decimal; la suma puede diferir de 100 en unas décimas.' in r104['nota']
+       and 'redondeado' not in r104['igual'], 'el reporte de jornada da cada porcentaje con un decimal y, cuando no suman 100 justo, lo dice: %s' % r104)
+    # Con la demostración, como Dirección, «Todo»: cada calle con su porcentaje y cada lista igual a su renglón
+    pg104.evaluate("async () => { await SRP.demo.cargar(); }")
+    pg104.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", 'u-dir-1'); pg104.reload(); pg104.wait_for_selector('html[data-listo]'); aceptar_avisos(pg104)
+    pg104.evaluate("SRP.app.mostrarVista('supervision')"); pg104.wait_for_function("() => !!document.querySelector('#sup-tipos .chip[data-tipo=todo]')", timeout=20000)
+    pg104.evaluate("document.querySelector('#sup-tipos .chip[data-tipo=todo]').click()")
+    pg104.wait_for_function("() => SRP.supervision.modelo && SRP.supervision.modelo.periodo.tipo === 'todo' && !!document.querySelector('details[data-seccion=calles]')", timeout=30000)
+    CALLES104 = """() => { const m = SRP.supervision.modelo, total = m.cifras.arboles, num = t => Number(t.replace(/,/g, '')), sec = document.querySelector('details[data-seccion=calles]');
+      const tablas = [...sec.querySelectorAll('table.sup-tabla')], celdas = tr => [...tr.querySelectorAll('td')].map(td => td.textContent);
+      const redes = [...tablas[0].querySelectorAll('tbody tr')].map(celdas).filter(f => f[2] !== '—');
+      const listas = tablas.slice(1).map(t => [...t.querySelectorAll('tbody tr')].map(tr => [tr.querySelector('td').firstChild.textContent, num(celdas(tr)[1]), celdas(tr)[2]]));
+      const malas = listas.flat().filter(([, n, p]) => p !== SRP.indicadores.textoPct1(n, total));
+      const nombres = listas.map(l => new Set(l.map(x => x[0]))), enDos = [...nombres[0] || []].filter(x => nombres.slice(1).some(s => s.has(x))).length;
+      return { total, redes: redes.length, listas: listas.length, filas: listas.flat().length, malas: malas.slice(0, 3), nMalas: malas.length,
+        suman: redes.map((f, i) => [num(f[3]), (listas[i] || []).reduce((s, x) => s + x[1], 0), num(f[2]), (listas[i] || []).length]),
+        redPct: redes.map(f => f[4]), enDos, nota: sec.querySelector('p.nota:last-child').textContent }; }"""
+    c104 = pg104.evaluate(CALLES104)
+    ok(c104['nMalas'] == 0 and c104['filas'] > 100 and c104['listas'] == c104['redes'] >= 2,
+       'Supervisión, «Todo»: cada calle dice su %% del total con un decimal, redondeado por sí solo (%d calles): %s' % (c104['filas'], c104['malas']))
+    ok(all(s[0] == s[1] and s[2] == s[3] for s in c104['suman']), 'cada lista de calles suma los árboles y las calles de su red: %s (%d calles en dos redes)' % (c104['suman'], c104['enDos']))
+    ok(all(re.fullmatch(r'\d+\.\d %|menos de 0\.1 %', p) for p in c104['redPct']), 'la tabla de las redes, con el mismo decimal: %s' % c104['redPct'])
+    cita104 = pg104.evaluate("SRP.calles.CITA")
+    ok(cita104 in c104['nota'] and 'Red Nacional de Caminos 2025 (INEGI, SICT, IMT)' in cita104 and 'Portal de Datos Abiertos de la Ciudad de México' in cita104
+       and 'esas transformaciones no son del INEGI ni de SEMOVI, ni están respaldadas por ellos' in cita104, 'el pie de «Por calle» lleva la cita completa de la capa')
+    # Con «Compartidas»: cuentan los cabos que registraron árboles, y nadie con árboles aparece sin jornadas
+    pg104.evaluate("([s, v]) => { const e = document.querySelector(s); e.value = v; e.dispatchEvent(new Event('change', { bubbles: true })); }", ['#sup-compartida', 'si'])
+    pg104.wait_for_function("() => SRP.supervision.modelo && SRP.supervision.modelo.filtros.compartida === 'si'", timeout=30000)
+    k104 = pg104.evaluate("""async () => { const m = SRP.supervision.modelo, d = await SRP.indicadores.cargar();
+      const con = new Set(d.jornadas.filter(j => j.estatus !== 'abierta' && SRP.jornadas.siCompartida(j.dato) === 'si').flatMap(j => j.registros.map(r => r.cabo_id)).filter(id => d.cabos.includes(id)));
+      return { activos: m.cifras.cabosActivos, asignados: m.cifras.cabosAsignados, esperados: con.size, sinJornadas: m.porCabo.filter(x => x.arboles && !x.jornadas).map(x => x.nombre),
+        cifra: [...document.querySelectorAll('.sup-cifra')].map(x => x.textContent).find(t => t.includes('cabos trabajaron')) }; }""")
+    ok(k104['activos'] == k104['esperados'] and k104['activos'] > 0 and not k104['sinJornadas'] and k104['cifra'].startswith('%d de %d' % (k104['activos'], k104['asignados'])),
+       'con «Compartidas», «cabos que trabajaron» cuenta a los cabos con árboles en ellas y nadie con árboles queda «sin jornadas»: %s' % k104)
+    c104b = pg104.evaluate(CALLES104)
+    ok(c104b['nMalas'] == 0 and all(s[0] == s[1] and s[2] == s[3] for s in c104b['suman']), 'con «Compartidas», igual: cada calle con su porcentaje y cada lista suma su red: %s' % c104b['suman'])
+    # El informe PDF dice lo mismo que la pantalla
+    with pg104.expect_download() as d104: pg104.click('#btn-sup-pdf')
+    ruta104 = sal('informe_cifras_104.pdf'); d104.value.save_as(ruta104)
+    t104 = ' '.join(' '.join((p.extract_text() or '') for p in _Pdf104(ruta104).pages).split())
+    ok('Cabos que trabajaron %d de %d' % (k104['activos'], k104['asignados']) in t104 and 'Red Nacional de Caminos 2025 (INEGI, SICT, IMT)' in t104
+       and 'Portal de Datos Abiertos de la Ciudad de México' in t104 and 'esas transformaciones no son del INEGI ni de SEMOVI, ni están respaldadas por ellos' in t104,
+       'el informe PDF cuenta los mismos cabos y lleva la cita completa de la capa')
+    pc104 = re.findall(r'(\d[\d,]*) (\d+\.\d %|menos de 0\.1 %) (\d[\d,]*)', t104[t104.find('POR RED VIAL'):t104.find('POR ESPECIE')])
+    ok(len(pc104) > 10 and all(pg104.evaluate("([n, t]) => SRP.indicadores.textoPct1(n, SRP.supervision.modelo.cifras.arboles) === t", [int(n.replace(',', '')), p]) for n, p, _ in pc104),
+       'en el PDF, cada calle con el mismo porcentaje de un decimal (%d renglones revisados)' % len(pc104))
+    # Mi avance del cabo de apoyo, con «Compartidas»: sus árboles, y lo previsto de sus jornadas con todos los que registraron
+    apoyo104 = pg104.evaluate("""async () => { const a = await SRP.almacen.todos('plantaciones'), j = Object.fromEntries((await SRP.almacen.todos('jornadas')).map(x => [x.id, x]));
+      const r = a.find(x => x.estatus === 'activo' && j[x.jornada_id] && j[x.jornada_id].estatus === 'cerrada' && SRP.jornadas.compartida(j[x.jornada_id]) && SRP.ref.usuarioPorId[x.cabo_id].perfil === 'CABO');
+      return r && r.cabo_id; }""")
+    pg104.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", apoyo104); pg104.reload(); pg104.wait_for_selector('html[data-listo]'); aceptar_avisos(pg104)
+    pg104.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+    pg104.evaluate("SRP.app.mostrarVista('supervision')"); pg104.wait_for_function("() => !!document.querySelector('#sup-tipos .chip[data-tipo=todo]')", timeout=20000)
+    pg104.evaluate("document.querySelector('#sup-tipos .chip[data-tipo=todo]').click()")
+    pg104.wait_for_function("() => SRP.supervision.modelo && SRP.supervision.modelo.periodo.tipo === 'todo'", timeout=30000)
+    pg104.evaluate("([s, v]) => { const e = document.querySelector(s); e.value = v; e.dispatchEvent(new Event('change', { bubbles: true })); }", ['#sup-compartida', 'si'])
+    pg104.wait_for_function("() => SRP.supervision.modelo && SRP.supervision.modelo.filtros.compartida === 'si'", timeout=30000)
+    a104 = pg104.evaluate("() => document.querySelector('.sup-cifras').textContent")
+    ok('árboles suyos' in a104 and 'sus jornadas, con todos los que registraron:' in a104, 'Mi avance del cabo de apoyo dice «árboles suyos» y que lo previsto es de sus jornadas, con todos los que registraron: %s' % a104)
+    pg104.evaluate("id => SRP.sesion.iniciar(SRP.ref.usuarioPorId[id])", 'u-admin-1'); pg104.reload(); pg104.wait_for_selector('html[data-listo]')
+    pg104.evaluate("SRP.demo.quitar()")
+    ok(not err104, 'sin errores en consola: %s' % err104[:2])
+    ctx104.close()
 
     b.close()
 

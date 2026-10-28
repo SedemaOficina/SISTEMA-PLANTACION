@@ -67,6 +67,13 @@ for f in glob.glob(APP + '/js/*.js') + [APP + '/index.html']:
     t = re.sub(r'<!--.*?-->', '', t, flags=re.S) if f.endswith('.html') else re.sub(r'/\*.*?\*/|(?<!:)//[^\n]*', '', t, flags=re.S)
     dispositivo += [os.path.basename(f) + ': ' + m.group(0)[:60] for m in re.finditer(r'''['">][^'"<>]*\bdispositivo[^'"<>]*''', t, flags=re.I)]
 mirar(not dispositivo, 'los textos dicen «teléfono» o «este equipo», no «dispositivo»', '; '.join(dispositivo[:4]))
+# El pie de «Por calle» y del informe lleva la cita de la capa de calles tal como la trae su índice: las fuentes, su
+# licencia y lo que hizo SEDEMA (condición de uso de la capa)
+import json as _json
+_cita = _json.load(open(APP + '/assets/calles/indice.json', encoding='utf-8'))['cita']
+_cita_js = re.search(r"\n  CITA: '([^'\n]+)',", open(APP + '/js/calles.js', encoding='utf-8').read())
+mirar(_cita_js and _cita_js.group(1) == _cita and all(x in _cita for x in ('(INEGI, SICT, IMT)', 'Portal de Datos Abiertos de la Ciudad de México', 'esas transformaciones no son del INEGI ni de SEMOVI')),
+      'la cita de la capa de calles en la aplicación es la del índice de la capa, completa', (_cita_js.group(1)[:80] if _cita_js else 'sin CITA en js/calles.js'))
 # La norma completa de la hoja (tokens, reglas repetidas, clases sin uso, estilos fuera de la hoja) la revisa su propia auditoría
 import subprocess, sys as _sys
 _css = subprocess.run([_sys.executable, APP + '/pruebas/auditoria_css.py'], capture_output=True, text=True)
