@@ -4598,3 +4598,19 @@
     servidor».
   · **Sin hacer: E1-05**, los permisos por columna para que la cuenta del servicio no escriba los campos de la calle. Era
     opcional: el disparador los pone en cada alta y en cada cambio de punto, y ningún código los escribe.
+
+- **D341. El vaciado después de la prueba real: qué se borra y qué ve el teléfono.**
+  28-10-2026. Liber contestó las tres preguntas que dejó abiertas D337, con lo recomendado:
+  · **Las bitácoras:** se borra sólo lo de la prueba, lo que dice de jornadas, árboles y fotografías; se conserva lo
+    de cuentas y catálogos, y el registro de entradas.
+  · **Las fotografías:** el guion borra sus registros en la base, y el instructivo le pide al SIA vaciar la carpeta
+    `SRP_FOTOS_DIR` en ese mismo momento.
+  · **Los teléfonos:** al conectarse después del vaciado, cada uno borra lo que guardaba y lo dice: «El servidor se
+    vació después de la prueba: se borró lo que guardaba este teléfono.»
+
+- **D342. Liber aprueba las muestras de los bloques 2, 3 y 5.**
+  28-10-2026. «Apruebo todas», sobre la página de muestras (P-1 a P-26 y R-1), con las opciones recomendadas donde
+  había que elegir: el «% del total» de cada calle con un decimal y «menos de 0.1 %» (P-23 B), y los porcentajes del
+  reporte de jornada con un decimal y la nota del redondeo (R-1 A). P-5 y P-6 no hacen falta con la decisión 2 a.
+  El bloque 2 va en dos partes: las reglas, en el servidor y en la aplicación a la par, y después lo que pasa en el
+  teléfono.

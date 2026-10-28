@@ -77,9 +77,12 @@ export function personasDe(x: Objeto): string[] {
 /** Un cabo de apoyo vigente de la jornada: no ha terminado su parte ni lo quitaron. */
 export const apoyoVigente = (x: Objeto, id: string): boolean => (x.cabos_apoyo ?? []).some((a) => a.cabo_id === id && !a.hasta);
 
-/** Está en la jornada sólo como cabo de apoyo: la ve con todos sus árboles, pero no cambia sus datos ni la cierra. */
-const soloDeApoyo = (x: Objeto, id: string): boolean =>
-  (x.cabos_apoyo ?? []).some((a) => a.cabo_id === id) && ![x.cabo_id, x.relevo_id, ...(x.relevos ?? []).map((r) => r.cabo_id)].includes(id);
+/** Estuvo en la jornada como cabo de apoyo sin ser su titular: la ve con todos sus árboles, pero no cambia sus datos,
+ *  no la cierra ni la elimina, aunque también haya estado en un relevo. */
+const soloDeApoyo = (x: Objeto, id: string): boolean => (x.cabos_apoyo ?? []).some((a) => a.cabo_id === id) && x.cabo_id !== id;
+
+/** Es compartida: tiene o tuvo cabos de apoyo. */
+export const compartida = (x: Objeto): boolean => (x.cabos_apoyo ?? []).length > 0;
 
 export function alcanza(u: Cuenta, x: Objeto, autores: Autores): boolean {
   const alcance = capacidadesDe(u).alcance;
@@ -114,15 +117,17 @@ export const ACCIONES = {
   "registro.mover": { texto: "mover este registro de jornada", regla: (p, u, x, a) => p.editar && alcanza(u, x, a) },
   "jornada.crear": { texto: "iniciar jornadas", regla: (p) => p.registrar },
   "jornada.editar": { texto: "modificar esta jornada", regla: (p, u, x, a) => p.editar && alcanza(u, x, a) && !soloDeApoyo(x, u.id) },
-  "jornada.eliminar": { texto: "eliminar esta jornada", regla: (p, u, x, a) => p.eliminarJornadaVacia && alcanza(u, x, a) && !soloDeApoyo(x, u.id) },
+  // Eliminar, sólo vacía; una compartida, además, sin cabos de apoyo vigentes: pueden tener árboles sin enviar
+  "jornada.eliminar": { texto: "eliminar esta jornada", regla: (p, u, x, a) => p.eliminarJornadaVacia && alcanza(u, x, a) && !soloDeApoyo(x, u.id) && !(x.cabos_apoyo ?? []).some((c) => !c.hasta) },
   // Registrar en una jornada abierta: quien la tiene a su cargo, el titular o el cabo del relevo, y sus cabos de apoyo vigentes
   "jornada.registrar": { texto: "registrar en esta jornada", regla: (p, u, x) => p.registrar && x.estatus === "abierta" && ((x.relevo_id || x.cabo_id) === u.id || apoyoVigente(x, u.id)) },
-  // Relevo: la coordinación pasa una jornada abierta a otro cabo de la institución de la jornada
-  "jornada.relevo": { texto: "pasar esta jornada a otro cabo", regla: (p, u, x, a) => p.relevar && x.estatus === "abierta" && alcanza(u, x, a) },
+  // Relevo: la coordinación pasa una jornada abierta a otro cabo de la institución de la jornada; una compartida no
+  "jornada.relevo": { texto: "pasar esta jornada a otro cabo", regla: (p, u, x, a) => p.relevar && x.estatus === "abierta" && !compartida(x) && alcanza(u, x, a) },
   // Jornada compartida: la Coordinación que la abrió marca a sus cabos de apoyo
   "jornada.compartir": { texto: "elegir los cabos de apoyo de esta jornada", regla: (p, u, x) => p.relevar && x.estatus === "abierta" && x.cabo_id === u.id },
-  // «Terminar mi parte»: el cabo de apoyo vigente, con la jornada abierta
-  "jornada.terminar": { texto: "terminar su parte en esta jornada", regla: (p, u, x) => p.registrar && x.estatus === "abierta" && apoyoVigente(x, u.id) },
+  // «Terminar mi parte»: el cabo de apoyo vigente. También con la jornada ya cerrada: si el cierre llegó primero, el
+  // cabo no se queda vigente en una jornada cerrada
+  "jornada.terminar": { texto: "terminar su parte en esta jornada", regla: (p, u, x) => p.registrar && apoyoVigente(x, u.id) },
   "catalogo.administrar": { texto: "administrar los catálogos", regla: (p) => p.catalogos },
   "usuario.administrar": { texto: "administrar las cuentas", regla: (p) => p.usuarios },
   "carga.masiva": { texto: "cargar árboles en bloque", regla: (p) => p.usuarios && p.catalogos },

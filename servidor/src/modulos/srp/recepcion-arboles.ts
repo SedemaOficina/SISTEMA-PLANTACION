@@ -104,8 +104,12 @@ export async function crearArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
     return jornadaId && (await seElimino(c, jornadaId)) ? jornadaEliminada(id)
       : rechazo(id, "JORNADA_PENDIENTE", "La jornada de este árbol todavía no está en el servidor: el árbol se recibe después de ella.");
   }
-  // Sólo quien la tiene a su cargo registra en ella: el titular o, durante un relevo, el cabo del relevo
-  if (!puede("jornada.registrar", u, comoObjeto(jornada))) return sinPermiso(id, "jornada.registrar");
+  /* Registra en ella quien la tiene a su cargo —el titular o, durante un relevo, el cabo del relevo— y sus cabos de
+     apoyo vigentes. Un cabo de apoyo que ya terminó su parte, o al que quitaron, registra todavía lo que capturó antes
+     de esa hora: llega tarde porque estaba sin señal */
+  const suyo = ((jornada.cabos_apoyo as { cabo_id: string; hasta: string | null }[] | null) ?? []).find((a) => a.cabo_id === u.id && a.hasta);
+  const antesDeSalir = jornada.estatus === "abierta" && !!suyo && new Date(instante(d.fecha_registro)).getTime() < new Date(String(suyo.hasta)).getTime();
+  if (!puede("jornada.registrar", u, comoObjeto(jornada)) && !antesDeSalir) return sinPermiso(id, "jornada.registrar");
 
   const { especieId, especieOtra } = especieDe(d);
   const comentarios = texto(d.comentarios), sitio = sitioDe(d.sitio_plantacion);
@@ -358,6 +362,10 @@ export async function moverArbol(c: pg.PoolClient, u: Usuario, d: Record<string,
   if (destino.cabo_id !== actual.cabo_id) return conVigente(rechazo(id, "OTRO_CABO", "Sólo se mueve a otra jornada del mismo cabo."), actual);
 
   const origen = await filaDe(c, "jornadas", String(actual.jornada_id), "FOR UPDATE");
+  // El reporte de una jornada compartida es de la Coordinación: sólo ella pasa sus árboles a otra jornada
+  if (origen && ((origen.cabos_apoyo as unknown[] | null) ?? []).length && !capacidadesDe(u).relevar) {
+    return conVigente(rechazo(id, "COMPARTIDA", "Es de una jornada compartida: sólo la Coordinación lo pasa a otra jornada."), actual);
+  }
   const cambiaPrograma = actual.programa_id !== destino.programa_id;
   const sigue = !origen || actual.fecha_plantacion === origen.fecha;
   const fecha = sigue ? String(destino.fecha) : fechaEnJornada(String(actual.fecha_plantacion), destino);

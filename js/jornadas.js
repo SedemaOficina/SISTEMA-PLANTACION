@@ -795,6 +795,22 @@ SRP.jornadas = {
     this.el('btn-jornada-relevo').hidden = compartible || !SRP.permisos.puede('jornada.relevo', guardada);
     const vacia = regs.length === 0 && !(await SRP.almacen.porIndice('plantaciones', 'jornada_id', j.id)).length;
     this.el('btn-jornada-eliminar').hidden = !(SRP.permisos.puede('jornada.eliminar', guardada) && vacia);
+    // Lo que en una compartida no se puede se dice en lugar del botón: eliminarla con cabos trabajando, el relevo y,
+    // para el cabo de apoyo, mover sus árboles
+    const p = SRP.permisos.de(u), vigentes = SRP.permisos.vigentes(guardada), nota = [];
+    if (SRP.permisos.compartida(guardada)) {
+      if (vacia && vigentes.length && puedeJornada && p.eliminarJornadaVacia) {
+        const n = vigentes.map(id => SRP.ref.nombreUsuario(id)).join(', '), uno = vigentes.length === 1;
+        nota.push('No se puede eliminar: ' + n + (uno ? ' no ha terminado su parte y puede' : ' no han terminado su parte y pueden') + ' tener árboles sin enviar. ' +
+          'Primero quite a ' + n + ' en «Cabos de apoyo», o espere a que ' + (uno ? 'termine.' : 'terminen.'));
+      }
+      if (p.relevar && !compartible && guardada.estatus === 'abierta' && SRP.permisos.alcanza(u, guardada, SRP.ref.usuarioPorId)) {
+        nota.push('Jornada compartida: no se pasa a otro cabo. La Coordinación agrega o quita cabos de apoyo.');
+      }
+      if (!p.relevar && regs.some(r => SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId))) nota.push('Es una jornada compartida: sólo la Coordinación pasa sus árboles a otra jornada.');
+    }
+    this.el('jornada-nota-acciones').textContent = nota.join(' ');
+    this.el('jornada-nota-acciones').hidden = !nota.length;
     // Cerrar no es aprobar: acción principal con candado; reabrir es corregir: neutro con lápiz
     btnEstado.className = 'btn btn-chico ' + (guardada.estatus === 'abierta' ? 'btn-primario' : 'btn-editar');
     // Reabrir lleva el candado abierto: con el lápiz se confundía con «Editar jornada», al lado y del mismo color
@@ -807,6 +823,8 @@ SRP.jornadas = {
     this.pintarConciliacion();
 
     const puedeEditar = r => SRP.permisos.puedeEditar(u, r, SRP.ref.usuarioPorId);
+    // En una compartida sólo la Coordinación mueve árboles: el reporte es suyo
+    const mueve = !SRP.permisos.compartida(guardada) || !!SRP.permisos.de(u).relevar;
     const puedeEliminar = r => SRP.permisos.puedeEliminar(u, r, SRP.ref.usuarioPorId);
     this.el('jornada-lista').innerHTML = regs.map((r, i) => {
       const esp = SRP.ref.especieDe(r);
@@ -828,7 +846,7 @@ SRP.jornadas = {
          punto capturado por error se corrige o se elimina desde aquí, sin salir de la jornada. Cada
          acción aparece una sola vez: si «Eliminar» ya está en la fila, no se repite. */
       const items = [];
-      if (puedeEditar(r)) items.push({ accion: 'editar', texto: 'Editar', icono: 'lapiz' }, { accion: 'mover', texto: 'Mover a otra jornada', icono: 'jornadas' });
+      if (puedeEditar(r)) items.push({ accion: 'editar', texto: 'Editar', icono: 'lapiz' }, ...(mueve ? [{ accion: 'mover', texto: 'Mover a otra jornada', icono: 'jornadas' }] : []));
       if (SRP.permisos.puede('registro.sustituir', r)) items.push({ accion: 'sustituir', texto: 'Sustituir', icono: 'intercambio' });
       if (puedeEliminar(r) && !eliminarEnFila) items.push({ accion: 'eliminar', texto: 'Eliminar', icono: 'basura', peligro: true });
       const tuerca = items.length ? SRP.ICONOS.menuAcciones(r.id, 'punto ' + (i + 1), items) : '';
@@ -1072,6 +1090,11 @@ SRP.jornadas = {
      `desdeRevisar`: un árbol que nunca llegó porque su jornada se eliminó en el servidor (js/rechazos.js). Sólo
      va a una jornada abierta, la única donde el servidor lo recibe. */
   async abrirMover(r, desdeRevisar) {
+    const origen = this.guardada && this.guardada.id === r.jornada_id ? this.guardada : await SRP.almacen.uno('jornadas', r.jornada_id);
+    if (origen && SRP.permisos.compartida(origen) && !SRP.permisos.de(SRP.sesion.usuario).relevar) {
+      SRP.util.anunciar('Es de una jornada compartida: sólo la Coordinación lo pasa a otra jornada.', 'aviso');
+      return;
+    }
     const jornadas = (await SRP.almacen.porIndice('jornadas', 'cabo_id', r.cabo_id))
       .filter(j => j.id !== r.jornada_id && (!desdeRevisar || j.estatus === 'abierta'))
       .sort((a, b) => b.fecha.localeCompare(a.fecha) || String(b.fecha_inicio).localeCompare(String(a.fecha_inicio)));
@@ -1467,6 +1490,15 @@ SRP.jornadas = {
   async compartir(ids) {
     const c = this.apoyosDe && ((await SRP.almacen.uno('jornadas', this.apoyosDe.id)) || this.apoyosDe); if (!c) return;
     if (!SRP.permisos.exigir('jornada.compartir', c)) return;
+    // Quitar a un cabo se confirma: lo que registró antes se recibe, pero desde ese momento ya no registra
+    const quitar = SRP.permisos.vigentes(c).filter(id => !ids.includes(id));
+    if (quitar.length) {
+      const n = quitar.map(id => SRP.ref.nombreUsuario(id)).join(', '), uno = quitar.length === 1;
+      const ok = await SRP.app.confirmar({ titulo: 'Quitar de la jornada', pregunta: '¿Quitar a ' + n + ' de «' + c.nombre + '»?',
+        nota: 'Lo que ' + (uno ? 'registró' : 'registraron') + ' hasta ahora se recibe, aunque llegue después porque ' + (uno ? 'estaba' : 'estaban') +
+          ' sin señal. Desde este momento ya no ' + (uno ? 'podrá' : 'podrán') + ' registrar en ella.', boton: 'Quitar', icono: 'cerrar', linea: true });
+      if (!ok) return;
+    }
     const dato = await this.guardarApoyos(c, ids);
     this.el('dlg-apoyos').close();
     if (!dato) return;

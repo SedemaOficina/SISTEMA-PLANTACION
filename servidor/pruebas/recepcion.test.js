@@ -658,6 +658,63 @@ test('la jornada compartida: la Coordinación que la abrió agrega cabos de apoy
     ['Agrega: Prueba cabo, Prueba otrocabo', 'Terminó su parte: 1 árbol', 'Agrega: Prueba cabo; Quita: Prueba otrocabo']);
 });
 
+test('la compartida en campo: llega lo capturado antes de salir, un reenvío no deshace lo de otro, se termina aunque ya se cerrara, sin relevo, y sólo la Coordinación mueve sus árboles', async () => {
+  const coord = await telefono(COORD), c1 = await telefono(CABO), c2 = await telefono(CABO2);
+  const J = jornada({ nombre: 'Compartida en campo' });
+  assert.equal((await coord.una('jornada.crear', J)).estado, 'recibido');
+  const r = await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id, CABO2.id], desde: { [CABO.id]: null, [CABO2.id]: null } });
+  assert.equal(r.estado, 'recibido', JSON.stringify(r));
+  const desdeDe = (fila, id) => fila.cabos_apoyo.find((a) => a.cabo_id === id).desde;
+  // El cabo 1 captura sin señal; mientras, la Coordinación lo quita. Lo capturado antes llega; lo de después, no
+  const antes = new Date(Date.now() - 60_000).toISOString();
+  const q = await coord.una('jornada.compartir', { id: J.id, quitar: [CABO.id], desde: { [CABO.id]: desdeDe(r.fila, CABO.id) } });
+  assert.equal(q.fila.cabos_apoyo.find((a) => a.cabo_id === CABO.id).fin, 'quitado');
+  const tarde = await c1.una('registro.crear', arbol(J.id, { fecha_registro: antes }));
+  assert.equal(tarde.estado, 'recibido', 'capturado antes de que lo quitaran: ' + JSON.stringify(tarde));
+  assert.equal((await c1.una('registro.crear', arbol(J.id))).codigo, 'SIN_PERMISO', 'capturado después');
+  // El primer «agregar», reenviado con lo que conocía el teléfono, no vuelve a poner al que ya quitaron
+  assert.equal((await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id, CABO2.id], desde: { [CABO.id]: null, [CABO2.id]: null } })).repetido, true);
+  // El cabo 2 termina su parte; la Coordinación lo vuelve a marcar; el «terminar» reenviado no lo termina otra vez
+  const desde2 = desdeDe(r.fila, CABO2.id);
+  assert.equal((await c2.una('jornada.terminar', { id: J.id, desde: desde2 })).estado, 'recibido');
+  const otraVez = await coord.una('jornada.compartir', { id: J.id, agregar: [CABO2.id], desde: { [CABO2.id]: desde2 } });
+  assert.deepEqual(otraVez.fila.cabos_apoyo.find((a) => a.cabo_id === CABO2.id).fin, null, 'volver a marcar a quien terminó');
+  assert.equal((await c2.una('jornada.terminar', { id: J.id, desde: desde2 })).repetido, true);
+  assert.equal(vigenteEn(await jornadaEnBase(J.id), CABO2.id), true, 'sigue vigente');
+  // En una compartida no hay relevo
+  const version = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_ultima_edicion' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  assert.equal((await coord.una('jornada.relevo', { id: J.id, version, cabo_id: CABO2.id })).codigo, 'SIN_PERMISO');
+  // El árbol del cabo de apoyo sólo lo pasa a otra jornada la Coordinación
+  const propia = jornada({ nombre: 'Jornada propia del cabo' });
+  assert.equal((await c1.una('jornada.crear', propia)).estado, 'recibido');
+  const mover = (t, v) => t.una('registro.mover', { id: tarde.fila.id, version: v, jornada_id: propia.id });
+  assert.equal((await mover(c1, tarde.version)).codigo, 'COMPARTIDA');
+  assert.equal((await mover(coord, tarde.version)).estado, 'recibido');
+  // Si el cierre llega antes que su «Terminar mi parte», el cabo queda terminado, no vigente en una jornada cerrada
+  const v2 = (await admin.query("SELECT to_jsonb(j) ->> 'fecha_ultima_edicion' AS v FROM srp.jornadas j WHERE id = $1", [J.id])).rows[0].v;
+  assert.equal((await coord.una('jornada.cerrar', { id: J.id, version: v2 })).estado, 'recibido');
+  const desde3 = desdeDe(otraVez.fila, CABO2.id);
+  assert.equal((await c2.una('jornada.terminar', { id: J.id, desde: desde3 })).estado, 'recibido');
+  assert.equal(vigenteEn(await jornadaEnBase(J.id), CABO2.id), false);
+  assert.deepEqual((await bitacora(J.id)).filter((b) => b[0] === 'APOYO').map((b) => b[1]),
+    ['Agrega: Prueba cabo, Prueba otrocabo', 'Quita: Prueba cabo', 'Terminó su parte: 0 árboles', 'Agrega: Prueba otrocabo', 'Terminó su parte: 0 árboles']);
+});
+
+test('una compartida con cabos de apoyo trabajando no se elimina: el rechazo dice quiénes; sin ellos, sí', async () => {
+  const coord = await telefono(COORD);
+  const J = jornada({ nombre: 'Compartida vacía' });
+  assert.equal((await coord.una('jornada.crear', J)).estado, 'recibido');
+  const r = await coord.una('jornada.compartir', { id: J.id, agregar: [CABO.id], desde: { [CABO.id]: null } });
+  const e = await coord.una('jornada.eliminar', { id: J.id, version: r.version });
+  assert.deepEqual([e.codigo, e.mensaje], ['CON_APOYOS', 'No se puede eliminar: Prueba cabo no ha terminado su parte y puede tener árboles sin enviar. ' +
+    'Primero quite a Prueba cabo en «Cabos de apoyo», o espere a que termine.']);
+  const q = await coord.una('jornada.compartir', { id: J.id, quitar: [CABO.id], desde: { [CABO.id]: r.fila.cabos_apoyo[0].desde } });
+  assert.equal((await coord.una('jornada.eliminar', { id: J.id, version: q.version })).estado, 'recibido');
+});
+
+const jornadaEnBase = async (id) => (await admin.query('SELECT cabos_apoyo FROM srp.jornadas WHERE id = $1', [id])).rows[0];
+const vigenteEn = (j, id) => j.cabos_apoyo.some((a) => a.cabo_id === id && !a.hasta);
+
 test('los puntos revisados son árboles de la jornada, y la bitácora dice cuáles por su folio', async () => {
   const t = await telefono(CABO);
   const { J, A } = await conArbol(t);

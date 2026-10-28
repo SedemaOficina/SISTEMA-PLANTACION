@@ -92,8 +92,10 @@ SRP.cola = {
     // Lo que el servidor no aceptó por sus datos, o porque su jornada ya no está, se vuelve a intentar con el registro corregido
     const corregidas = esperan.filter(o => o.rechazo && this.CORREGIBLES.includes(o.rechazo.codigo) && o.tipo !== 'foto');
     const nuevas = [];
-    // De una jornada compartida viaja lo que cambió en sus cabos de apoyo, no la lista entera
-    if (!this.EDICIONES.includes(tipo)) nuevas.push(Object.assign({ tipo }, tipo === 'jornada.compartir' ? this.cambiosDeApoyo(antes, despues) : {}));
+    // De una jornada compartida viaja lo que cambió en sus cabos de apoyo, no la lista entera; de «Terminar mi parte»,
+    // desde cuándo estaba el cabo, como lo conocía el teléfono
+    if (!this.EDICIONES.includes(tipo)) nuevas.push(Object.assign({ tipo }, tipo === 'jornada.compartir' ? this.cambiosDeApoyo(antes, despues)
+      : tipo === 'jornada.terminar' ? this.desdeConocido(antes) : {}));
     // Con su alta o con otra edición esperando, la edición viaja con ésa; si ésa ya salió sin respuesta, va aparte
     else if (!esperan.some(o => !o.enviado && (this.ALTAS.includes(o.tipo) || o.tipo === tipo))) nuevas.push({ tipo, antes: antes || null });
     if (tabla === 'plantaciones' && despues && despues.foto_id && SRP.util.fotoSegura(despues.foto_base64) && (!antes || antes.foto_id !== despues.foto_id)) {
@@ -119,10 +121,21 @@ SRP.cola = {
     });
   },
 
-  // Los cabos de apoyo que entran y salen: si mientras tanto uno terminó su parte en el servidor, eso no se deshace
+  /* Los cabos de apoyo que entran y salen, cada uno con el `desde` que conocía el teléfono (nulo si no estaba en la
+     lista). El servidor aplica cada cambio sólo si sigue igual: si la respuesta se perdió y esto se reenvía, no vuelve a
+     poner a un cabo que mientras tanto terminó su parte, ni quita al que la Coordinación volvió a marcar. */
   cambiosDeApoyo(antes, despues) {
     const a = SRP.permisos.vigentes(antes || {}), d = SRP.permisos.vigentes(despues || {});
-    return { agregar: d.filter(x => !a.includes(x)), quitar: a.filter(x => !d.includes(x)) };
+    const agregar = d.filter(x => !a.includes(x)), quitar = a.filter(x => !d.includes(x));
+    const lista = (antes && antes.cabos_apoyo) || [], desde = {};
+    agregar.concat(quitar).forEach(x => { const e = lista.find(c => c.cabo_id === x); desde[x] = e ? e.desde : null; });
+    return { agregar, quitar, desde };
+  },
+
+  // Desde cuándo estaba en la jornada el cabo de apoyo que termina su parte, como lo conocía el teléfono
+  desdeConocido(antes) {
+    const u = SRP.sesion.usuario, e = u && ((antes && antes.cabos_apoyo) || []).find(c => c.cabo_id === u.id && !c.hasta);
+    return { desde: e ? e.desde : null };
   },
 
   /* ---------- Enviar ---------- */
@@ -148,7 +161,8 @@ SRP.cola = {
     if (o.tipo === 'registro.mover') return Object.assign(base, { jornada_id: r.jornada_id });
     if (o.tipo === 'jornada.revisar') return Object.assign(base, { puntos_revisados: r.puntos_revisados || [] });
     if (o.tipo === 'jornada.relevo') return Object.assign(base, { cabo_id: r.relevo_id || r.cabo_id });
-    if (o.tipo === 'jornada.compartir') return Object.assign(base, { agregar: o.agregar || [], quitar: o.quitar || [] });
+    if (o.tipo === 'jornada.compartir') return Object.assign(base, { agregar: o.agregar || [], quitar: o.quitar || [] }, o.desde ? { desde: o.desde } : {});
+    if (o.tipo === 'jornada.terminar') return Object.assign(base, o.desde ? { desde: o.desde } : {});
     if (o.tipo === 'jornada.cierre') {
       ['encargado_id', 'personal', 'apoyo', 'observaciones', 'chofer', 'vehiculo_id', 'hora'].forEach(k => { base[k] = r[k] == null ? null : r[k]; });
     }

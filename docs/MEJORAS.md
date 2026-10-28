@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-En la franja fija de arriba de cualquier pantalla: **«Versión 1.4.5 (Bloque 259)»**.
+En la franja fija de arriba de cualquier pantalla: **«Versión 1.4.6 (Bloque 261)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 

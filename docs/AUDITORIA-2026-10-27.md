@@ -1694,3 +1694,19 @@ completa, 1,539 de 1,540 (sólo el Excel).
 | Clave | Estado | Antes y después | Prueba permanente |
 |---|---|---|---|
 | F4-01 | Corregido en parte | `empaquetar.py` se detiene si el instructivo no corresponde a los guiones del paquete o no dice lo de la calle; con el instructivo de la 1.1 y los guiones de hoy se detiene con tres motivos. El instructivo de la 1.0.0 es un borrador fuera del repositorio, con los 17 puntos; se termina en el bloque 6 | `auditoria.py`: un instructivo bien escrito arma el paquete; uno con el guion viejo o sin el recálculo, no |
+
+### Bloque 2, primera parte · Las reglas de la compartida (bloque 261 del proyecto, versión 1.4.6)
+
+Con las muestras aprobadas por el dueño el 28-10-2026 (D342).
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| B6-01 (servidor) · decisión 1 c | Corregido en parte | Lo que el cabo de apoyo capturó antes de que lo quitaran, o antes de terminar su parte, se recibe aunque llegue después. Lo de la jornada cerrada (que espere en el teléfono) va en la segunda parte | `recepcion.test.js`: un árbol capturado antes de quitarlo llega; uno de después, no |
+| E3-01 · decisión 7 a | Corregido | Un «agregar» reenviado ya no vuelve a poner al cabo que quitaron, y un «terminar» reenviado no termina al que la Coordinación volvió a marcar. Antes, 2 de 2 en cada sentido | `recepcion.test.js`, con un solo «Agrega» en la bitácora |
+| E3-02 | Corregido | «Terminar mi parte» después del cierre deja al cabo terminado | `recepcion.test.js` |
+| E1-02 · decisión 8 a | Corregido | El relevo se rechaza en una compartida, en el servidor y en la aplicación; quien fue cabo de apoyo nunca obtiene editar ni eliminar la jornada. La ficha lo dice (P-21) | `permisos.test.js` (las dos reglas, iguales en los dos lados) y `recepcion.test.js` |
+| B6-03 · decisión 3 a | Corregido | Con cabos de apoyo vigentes no se elimina: el botón no aparece, la ficha dice quiénes faltan (P-4) y el servidor responde `CON_APOYOS` | `recepcion.test.js` y `prueba.py` (ctx103, que entra con la segunda parte) |
+| Decisión 9 b | Corregido | En una compartida sólo la Coordinación mueve árboles: el servidor responde `COMPARTIDA` al cabo, y la aplicación no le ofrece «Mover» (P-22) | `recepcion.test.js` y `prueba.py` (ctx103, que entra con la segunda parte) |
+| P-3 | Hecho | Quitar a un cabo de apoyo pide confirmar | `prueba.py` (ctx103, que entra con la segunda parte) |
+
+Verificación: `npm test` 117 de 117; `prueba_conexion.py` 126 de 126; `auditoria.py` 150 y 0 hallazgos; la prueba completa, 1,539 de 1,540 (sólo el Excel).

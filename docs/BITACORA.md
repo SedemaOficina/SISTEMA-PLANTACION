@@ -6895,3 +6895,43 @@ confirmación del SIA de que no tiene nada instalado. Se termina en el bloque 6.
 - `pruebas/auditoria.py`: 150 comprobaciones, 0 hallazgos.
 - No se corrieron la prueba completa ni la de conexión: la aplicación y el servidor no cambiaron.
 - GitHub: la corrida del bloque 259 (40657880345), en verde. La página publicada sirve la 1.4.5.
+
+## Bloque 261 — La jornada compartida: las reglas (28-10-2026)
+
+**Versión 1.4.6.** La primera parte del bloque 2 del plan de corrección de la auditoría del 27-10-2026, con las
+decisiones de Liber (D339) y las muestras aprobadas (D342): las reglas de la jornada compartida, en el servidor y en
+la aplicación a la par.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| El cabo de apoyo al que quitan o que termina (B6-01) | Lo que capturó sin señal antes de salir se rechazaba al llegar | Se recibe: cuenta la hora en que lo capturó, no la de llegada |
+| Reenvíos de «Cabos de apoyo» y de «Terminar mi parte» (E3-01, decisión 7 a) | Uno que llegaba dos veces volvía a poner al cabo que ya terminó, o terminaba al que la Coordinación volvió a marcar | Cada cambio lleva el `desde` que conocía el teléfono y el servidor lo aplica sólo si sigue igual |
+| «Terminar mi parte» después del cierre (E3-02) | El cabo se quedaba vigente en una jornada cerrada | Se acepta: queda terminado |
+| El relevo en una compartida (E1-02, decisión 8 a) | Otra Coordinación podía hacerlo, y un cabo de apoyo terminaba con permisos de titular | No hay relevo en una compartida, y quien fue cabo de apoyo nunca edita, cierra ni elimina la jornada. La ficha dice por qué no aparece «Relevo de cabo» (P-21) |
+| Eliminar una compartida (B6-03, decisión 3 a) | Se podía con cabos trabajando, y sus árboles se quedaban sin jornada | No mientras haya cabos de apoyo vigentes: la ficha lo dice en lugar del botón (P-4) y el servidor responde con quiénes faltan |
+| Mover árboles de una compartida (decisión 9 b) | El cabo de apoyo sacaba sus árboles y la Coordinación los perdía de su reporte | Sólo la Coordinación: el cabo ya no ve «Mover a otra jornada», y la ficha lo dice (P-22) |
+| Quitar a un cabo de apoyo (P-3) | Se desmarcaba y «Guardar» lo quitaba sin preguntar | «¿Quitar a … de «…»?», con lo que pasa con sus árboles |
+
+**Qué cambió.**
+- Servidor: `permisos.ts` (la regla de quien fue de apoyo, el relevo, eliminar y terminar), `recepcion-jornadas.ts`
+  (el `desde` de compartir y de terminar, y el rechazo `CON_APOYOS`) y `recepcion-arboles.ts` (lo capturado antes de
+  salir, y `COMPARTIDA` al mover).
+- Aplicación: `js/permisos.js` (las mismas reglas), `js/cola.js` (el `desde` en lo que se envía), `js/jornadas.js`
+  (la nota de la ficha, «Mover» y la confirmación de quitar) e `index.html` (la nota).
+- `servidor/pruebas/recepcion.test.js`: dos pruebas nuevas.
+- `VERSION`, marcas de `index.html`, etapa de `js/config.js`, README, `docs/MEJORAS.md`, `docs/DECISIONES.md` (D341 y
+  D342) y el seguimiento del informe.
+
+**Verificación.**
+- `npm test`: 117 de 117 (antes, 115). Las dos pruebas nuevas cubren lo capturado antes de salir, los reenvíos en los
+  dos sentidos con un solo «Agrega» en la bitácora, terminar después del cierre, el relevo, mover y eliminar. La que
+  compara los permisos del servidor y de la aplicación, acción por acción, sigue igual en los dos lados con las reglas
+  nuevas.
+- `pruebas/prueba_conexion.py`: 126 de 126. `pruebas/auditoria.py`: 150 comprobaciones, 0 hallazgos.
+- `pruebas/por_tramos.py` (la prueba completa): 1,539 de 1,540, sin tramos detenidos, 46 min; sólo falló el Excel de
+  `originales/`.
+- Las pruebas de la aplicación para lo que se ve (la nota de la ficha, la confirmación de quitar, «Mover») entran con la
+  segunda parte, en una sección nueva (ctx103).
+- GitHub: la corrida del bloque 260 (40661981242), en verde.
+
+**Siguiente paso.** La segunda parte del bloque 2: lo que pasa en el teléfono del cabo de apoyo.

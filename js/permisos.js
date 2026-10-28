@@ -72,10 +72,12 @@ SRP.permisos = {
   // Los cabos de apoyo vigentes de la jornada, en el orden en que entraron
   vigentes(j) { return (j.cabos_apoyo || []).filter(a => !a.hasta).map(a => a.cabo_id); },
 
-  // Está en la jornada sólo como cabo de apoyo: la ve con todos sus árboles, pero no cambia sus datos ni la cierra
-  soloDeApoyo(j, id) {
-    return (j.cabos_apoyo || []).some(a => a.cabo_id === id) && ![j.cabo_id, j.relevo_id].concat((j.relevos || []).map(r => r.cabo_id)).includes(id);
-  },
+  /* Estuvo en la jornada como cabo de apoyo sin ser su titular: la ve con todos sus árboles, pero no cambia sus datos,
+     no la cierra ni la elimina, aunque también haya estado en un relevo */
+  soloDeApoyo(j, id) { return (j.cabos_apoyo || []).some(a => a.cabo_id === id) && j.cabo_id !== id; },
+
+  // Es compartida: tiene o tuvo cabos de apoyo
+  compartida(j) { return (j.cabos_apoyo || []).length > 0; },
 
   puedeEditar(usuario, registro, usuariosPorId) {
     return this.de(usuario).editar && this.alcanza(usuario, registro, usuariosPorId);
@@ -101,15 +103,18 @@ SRP.permisos = {
     'jornada.crear':        { texto: 'iniciar jornadas',                  regla: (p) => p.registrar },
     // Editar, cerrar, reabrir, revisar sus puntos y llenar el cierre del reporte
     'jornada.editar':       { texto: 'modificar esta jornada',            regla: (p, u, j) => p.editar && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) && !SRP.permisos.soloDeApoyo(j, u.id) },
-    'jornada.eliminar':     { texto: 'eliminar esta jornada',             regla: (p, u, j) => p.eliminarJornadaVacia && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) && !SRP.permisos.soloDeApoyo(j, u.id) },
+    // Eliminar, sólo vacía; una compartida, además, sin cabos de apoyo vigentes: pueden tener árboles sin enviar
+    'jornada.eliminar':     { texto: 'eliminar esta jornada',             regla: (p, u, j) => p.eliminarJornadaVacia && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) && !SRP.permisos.soloDeApoyo(j, u.id) && !SRP.permisos.vigentes(j).length },
     // Registrar árboles en una jornada abierta: quien la tiene a su cargo, el titular o el cabo del relevo, y sus cabos de apoyo vigentes
     'jornada.registrar':    { texto: 'registrar en esta jornada',         regla: (p, u, j) => p.registrar && j.estatus === 'abierta' && ((j.relevo_id || j.cabo_id) === u.id || SRP.permisos.apoyoVigente(j, u.id)) },
-    // Relevo: la coordinación pasa una jornada abierta a otro cabo de la institución de la jornada; el titular no cambia
-    'jornada.relevo':       { texto: 'pasar esta jornada a otro cabo',    regla: (p, u, j) => !!p.relevar && j.estatus === 'abierta' && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) },
+    // Relevo: la coordinación pasa una jornada abierta a otro cabo de la institución de la jornada; el titular no
+    // cambia. Una compartida no tiene relevo: la Coordinación agrega o quita cabos de apoyo
+    'jornada.relevo':       { texto: 'pasar esta jornada a otro cabo',    regla: (p, u, j) => !!p.relevar && j.estatus === 'abierta' && !SRP.permisos.compartida(j) && SRP.permisos.alcanza(u, j, SRP.ref.usuarioPorId) },
     // Jornada compartida: la Coordinación que la abrió marca a sus cabos de apoyo
     'jornada.compartir':    { texto: 'elegir los cabos de apoyo de esta jornada', regla: (p, u, j) => !!p.relevar && j.estatus === 'abierta' && j.cabo_id === u.id },
-    // «Terminar mi parte»: el cabo de apoyo vigente, con la jornada abierta
-    'jornada.terminar':     { texto: 'terminar su parte en esta jornada', regla: (p, u, j) => p.registrar && j.estatus === 'abierta' && SRP.permisos.apoyoVigente(j, u.id) },
+    // «Terminar mi parte»: el cabo de apoyo vigente. También con la jornada ya cerrada: si el cierre llegó primero, el
+    // cabo no se queda vigente en una jornada cerrada
+    'jornada.terminar':     { texto: 'terminar su parte en esta jornada', regla: (p, u, j) => p.registrar && SRP.permisos.apoyoVigente(j, u.id) },
     'catalogo.administrar': { texto: 'administrar los catálogos',         regla: (p) => p.catalogos },
     'usuario.administrar':  { texto: 'administrar las cuentas',           regla: (p) => p.usuarios },
     'carga.masiva':         { texto: 'cargar árboles en bloque',          regla: (p) => p.usuarios && p.catalogos },

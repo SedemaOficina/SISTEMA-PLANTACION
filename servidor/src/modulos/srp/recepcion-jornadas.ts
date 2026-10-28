@@ -387,7 +387,10 @@ const ahoraIso = async (c: pg.PoolClient): Promise<string> =>
    institución de la jornada, que registran en ella a la vez. Llega lo que cambió en su teléfono —`agregar` y
    `quitar`—, no la lista entera: si mientras tanto un cabo terminó su parte, eso no se deshace. Al que entra se le
    anota desde cuándo y quién lo puso; al que sale, hasta cuándo y que lo quitaron; uno que vuelve queda vigente otra
-   vez. Cada cabo aparece una vez, y todo queda en la bitácora (APOYO). */
+   vez. Cada cabo aparece una vez, y todo queda en la bitácora (APOYO).
+   Con cada cabo llega también el `desde` que conocía el teléfono (nulo si no estaba en la lista): el cambio se aplica
+   sólo si sigue igual. Así un reenvío —la respuesta se perdió y el teléfono lo manda otra vez— no vuelve a poner a un
+   cabo que ya terminó su parte, ni quita al que la Coordinación volvió a marcar mientras tanto. */
 export async function compartirJornada(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
   const leido = await jornadaParaCambiar(c, d);
   if (esResultado(leido)) return leido;
@@ -398,8 +401,10 @@ export async function compartirJornada(c: pg.PoolClient, u: Usuario, d: Record<s
   if (malFormada(d.agregar) || malFormada(d.quitar)) return conVigente(rechazo(id, "DATOS_INVALIDOS", "Revise los cabos de apoyo.", [["cabos_apoyo", "Elija cabos activos de la institución de la jornada."]]), actual);
   const ids = (v: unknown) => (Array.isArray(v) ? [...new Set(v.map(idDe).filter((x): x is string => !!x))] : []);
   const vigente = (x: string) => apoyoVigente(comoObjeto(actual), x);
-  const agregar = ids(d.agregar).filter((x) => !vigente(x));
-  const quitar = ids(d.quitar).filter((x) => vigente(x) && !agregar.includes(x));
+  const conocidos = d.desde && typeof d.desde === "object" ? (d.desde as Record<string, unknown>) : null;
+  const sigueIgual = (x: string) => !conocidos || (apoyosDe(actual).find((a) => a.cabo_id === x)?.desde ?? null) === (conocidos[x] ?? null);
+  const agregar = ids(d.agregar).filter((x) => !vigente(x) && sigueIgual(x));
+  const quitar = ids(d.quitar).filter((x) => vigente(x) && !agregar.includes(x) && sigueIgual(x));
   if (!agregar.length && !quitar.length) return recibido(actual, { repetido: true });
   if (agregar.length) {
     const { n } = (await c.query<{ n: number }>(
@@ -421,13 +426,17 @@ export async function compartirJornada(c: pg.PoolClient, u: Usuario, d: Record<s
 
 /* «TERMINAR MI PARTE». El cabo de apoyo vigente avisa que acabó: queda hasta cuándo y que terminó, y deja de
    registrar en la jornada. No cambia la versión de la jornada, para que lo que la Coordinación tenga por enviar de
-   ella no choque con esto. Si hace falta que vuelva, la Coordinación lo marca otra vez. */
+   ella no choque con esto. Si hace falta que vuelva, la Coordinación lo marca otra vez. Vale también con la jornada
+   ya cerrada, si el cierre llegó primero. Llega con el `desde` que conocía el teléfono: si la Coordinación lo volvió a
+   marcar después, un reenvío no lo termina otra vez. */
 export async function terminarParte(c: pg.PoolClient, u: Usuario, d: Record<string, unknown>): Promise<Resultado> {
   const leido = await jornadaParaCambiar(c, d);
   if (esResultado(leido)) return leido;
   const { id, actual } = leido;
   const lista = apoyosDe(actual);
   if (!apoyoVigente(comoObjeto(actual), u.id) && lista.some((a) => a.cabo_id === u.id && a.fin === "terminado")) return recibido(actual, { repetido: true });
+  const suyo = lista.find((a) => a.cabo_id === u.id && !a.hasta);
+  if (suyo && typeof d.desde === "string" && d.desde !== suyo.desde) return recibido(actual, { repetido: true });
   if (!puede("jornada.terminar", u, comoObjeto(actual))) return sinPermiso(id, "jornada.terminar");
   const ahora = await ahoraIso(c);
   const nueva = lista.map((a) => (a.cabo_id === u.id && !a.hasta ? { ...a, hasta: ahora, fin: "terminado" } : a));
@@ -452,7 +461,18 @@ export async function eliminarJornada(c: pg.PoolClient, u: Usuario, d: Record<st
     const ya = (await c.query("SELECT 1 FROM srp.bitacora WHERE entidad = 'jornada' AND entidad_id = $1 AND accion = 'ELIMINADO'", [id])).rowCount;
     return ya ? { id, estado: "recibido", repetido: true } : rechazo(id, "NO_EXISTE", "Esa jornada no está en el servidor.");
   }
-  if (!puede("jornada.eliminar", u, comoObjeto(actual), await autoresDe(c, actual))) return sinPermiso(id, "jornada.eliminar");
+  const autores = await autoresDe(c, actual);
+  if (!puede("jornada.eliminar", u, comoObjeto(actual), autores)) {
+    // Si lo único que falta es que sus cabos de apoyo terminen, se dice quiénes: pueden tener árboles sin enviar
+    const vigentes = apoyosDe(actual).filter((a) => !a.hasta);
+    if (vigentes.length && puede("jornada.editar", u, comoObjeto(actual), autores)) {
+      const nombres = (await Promise.all(vigentes.map((a) => nombreDe(c, a.cabo_id)))).join(", ");
+      const uno = vigentes.length === 1;
+      return conVigente(rechazo(id, "CON_APOYOS", "No se puede eliminar: " + nombres + (uno ? " no ha terminado su parte y puede" : " no han terminado su parte y pueden") +
+        " tener árboles sin enviar. Primero quite a " + nombres + " en «Cabos de apoyo», o espere a que " + (uno ? "termine." : "terminen.")), actual);
+    }
+    return sinPermiso(id, "jornada.eliminar");
+  }
   if (!(await esVigente(c, "jornadas", id, d.version))) return versionVieja(actual);
   const { activos, otros } = (await c.query<{ activos: number; otros: number }>(
     "SELECT count(*) FILTER (WHERE estatus = 'activo')::int AS activos, count(*) FILTER (WHERE estatus <> 'activo')::int AS otros FROM srp.plantaciones WHERE jornada_id = $1",
