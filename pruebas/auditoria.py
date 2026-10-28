@@ -463,6 +463,42 @@ try:
 finally:
     shutil.rmtree(_tmp, ignore_errors=True)
 
+# --- El paquete para el SIA no lleva secretos, respaldos ni lo de prueba: empaquetar.py se detiene con cada uno ---
+_tmp = tempfile.mkdtemp(prefix='srp-auditoria-paquete-')
+PLANTADOS = {
+    '.env': 'SRP_DB_USER=srp_api\nSRP_DB_PASS=Secreta2026\nSRP_DB_HOST=db.sia.local\n',
+    'datos/respaldo-srp.dump': 'PGDMP',
+    'datos/cuentas.csv': 'correo,clave\nalguien@sedema.cdmx.gob.mx,Secreta2026\n',
+    '.vscode/settings.json': '{}',
+    'Captura de pantalla 2026-10-27.png': 'PNG',
+    'app/js/datos-ficticios.js': '// las cuentas de prueba',
+}
+def _paquete(nombre, extra=None):
+    r = os.path.join(_tmp, nombre)
+    os.makedirs(os.path.join(r, 'app', 'js'))
+    open(os.path.join(r, 'VERSION'), 'w', encoding='utf-8').write('1.0.0\n')
+    open(os.path.join(r, 'LEEME.md'), 'w', encoding='utf-8').write('# SRP\n\nVersión 1.0.0\n')
+    open(os.path.join(r, 'app', 'js', 'config.js'), 'w', encoding='utf-8').write('  ES_FICTICIO: false,\n')
+    if extra:
+        os.makedirs(os.path.dirname(os.path.join(r, extra)), exist_ok=True)
+        open(os.path.join(r, extra), 'w', encoding='utf-8').write(PLANTADOS[extra])
+    return r
+def _empaquetar(r):
+    return subprocess.run([sys.executable, os.path.join(APP, 'herramientas', 'empaquetar.py'), r],
+                          capture_output=True, text=True, encoding='utf-8', env=dict(os.environ, PYTHONUTF8='1'))
+try:
+    _limpio = _empaquetar(_paquete('limpio'))
+    mirar(_limpio.returncode == 0, 'un paquete sin nada sospechoso se arma', _limpio.stderr.strip()[-300:])
+    _pasaron = []
+    for _i, _rel in enumerate(PLANTADOS):
+        _r = _paquete('plantado-%d' % _i, _rel)
+        if _empaquetar(_r).returncode == 0 or os.path.exists(_r + '.zip'):
+            _pasaron.append(_rel)
+    mirar(not _pasaron, 'el paquete no se arma con un .env, un respaldo de la base, una lista con claves, una carpeta de editor, una captura ni un archivo de prueba',
+          'pasaron: %s' % _pasaron)
+finally:
+    shutil.rmtree(_tmp, ignore_errors=True)
+
 malos = [h for h in hallazgos if not h[0]]
 for ok_, desc, det in hallazgos:
     print(('OK    ' if ok_ else 'FALLA ') + desc + (('  -> ' + det) if (det and not ok_) else ''))

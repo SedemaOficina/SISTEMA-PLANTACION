@@ -6804,3 +6804,36 @@ no cambia pantallas y sus decisiones ya estaban tomadas (D339, D340).
 (antes era `SELECT`), fuera de una transacción. Va en el instructivo del paquete (bloque 6).
 
 **Siguiente paso.** Las muestras de los bloques 2, 3 y 5 esperan la aprobación de Liber; con ella, el bloque 2.
+
+## Bloque 258 — El paquete sin secretos ni archivos de prueba, y los documentos al día (28-10-2026)
+
+**Sin versión nueva:** no cambia la aplicación. Adelanta tres puntos del bloque 6 del plan de corrección de la auditoría
+del 27-10-2026 que no tocan pantallas: la herramienta del paquete (F4-02), un resto de prueba en la base (F4-03, en
+parte) y las contradicciones entre documentos (D1-02, D1-03, D1-06 y D1-07).
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| `herramientas/empaquetar.py` (F4-02) | Con seis archivos plantados en un paquete (un `.env` con contraseña y servidor, un respaldo de la base, una lista con columna «clave», una carpeta de editor, una captura y un archivo de prueba), armaba el ZIP con los seis | Se detiene con cada uno. Busca además variables de entorno con su valor, equipos de la red interna, cuentas `@ejemplo.local`, la lista de archivos de prueba de `preparar_produccion.py` y una aplicación con `ES_FICTICIO` en `true` |
+| El identificador de la cuenta en la base (F4-03, en parte) | El comentario decía «las de arranque: u-admin-1, u-coord-1, u-cabo-1», que no es cierto en una instalación | UUID v4, también la primera cuenta; sólo la versión de prueba usa `u-admin-1`. Lo demás de F4-03 (`CUENTAS_POR_ROL` en `js/app.js`) va con M563 |
+| `docs/FASE2-Y-TRASPASO.md` (D1-02, D1-06) | Las filas 14 y 18 hablaban de la cuadrilla y los coordinadores de cada cabo; la carga, de 6.6 MB y 1.7 MB | La regla de la institución (D333); 7.27 MB y 1.97 MB, con el presupuesto de 2 MB (D339) |
+| `docs/PLAN-TRASPASO-SIA.md` (D1-03) | «Siguiente paso»: entregar la 1.1 con la etiqueta `entrega-2026-10-22` | Terminar el plan de corrección y entregar la 1.0.0, la primera que se instala (D337) |
+| `docs/ALINEACION-SIA.md` (D1-07) | La pregunta 1, quién opera las cuentas, seguía abierta | Resuelta con D337 |
+
+**Qué cambió.** `herramientas/empaquetar.py`; `pruebas/auditoria.py` (dos comprobaciones: un paquete limpio se arma, y
+con cada uno de los seis archivos plantados no); `datos/esquema.json`, con `DICCIONARIO-DATOS.md` y `02-srp-tablas.sql`
+generados otra vez; los tres documentos.
+
+**Verificación.**
+- Los seis archivos plantados, con la herramienta anterior: el ZIP se armó las seis veces. Con la nueva: se detiene las
+  seis.
+- La entrega anterior (1.1), copiada y empaquetada con la herramienta nueva: se arma igual, con los dos avisos que ya
+  estaban revisados. La primera versión del patrón de la red interna se detenía con «doc.internal», una propiedad de la
+  biblioteca de PDF; ahora sólo busca nombres de equipo en direcciones, correos y asignaciones.
+- `pruebas/auditoria.py`: 149 comprobaciones, 0 hallazgos. `npm test`: 115 de 115.
+- No se corrieron la prueba completa ni la de conexión: la aplicación y el servidor no cambiaron.
+- GitHub, la corrida del bloque 257 (número 40648783369): seguía en curso al subir este bloque; se anota en el siguiente.
+
+**Pendiente del bloque 6.** M563 (que la copia para el SIA no lleve ni escondidos los bloques de prueba de `index.html`)
+pide sacar del arranque de `js/app.js` y `js/envio.js` lo que sólo usa la versión de prueba: se deja para hacerlo con
+Liber, junto con el guion de vaciado, el instructivo y la renumeración a 1.0.0. La herramienta del paquete de la skill
+`proyecto-sia` es otra copia y no cambió.

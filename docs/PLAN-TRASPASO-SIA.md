@@ -189,7 +189,9 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 
 ## 9. Siguiente paso
 
-Dar al SIA acceso al repositorio privado `srp-sia`, con la entrega de la versión 1.1 en la etiqueta
-`entrega-2026-10-22` y sus instrucciones de instalación, y pedirle las respuestas de sus «Preguntas abiertas»,
-entre ellas la del respaldo (pregunta 7). Con el sistema instalado y el respaldo confirmado, el piloto (fase 5).
+Terminar el plan de corrección de la auditoría del 27-10-2026 (`docs/AUDITORIA-2026-10-27.md`, sección 11) y armar
+la entrega como versión 1.0.0, la primera que se instala (D337): al SIA no le ha llegado ningún paquete del SRP.
+Después, darle acceso al repositorio privado `srp-sia` con esa entrega y sus instrucciones de instalación, y pedirle
+las respuestas de sus «Preguntas abiertas», entre ellas la del respaldo (pregunta 7). Con el sistema instalado, la
+prueba real con datos ficticios y el vaciado del servidor (D337); con el respaldo confirmado, el piloto (fase 5).
 La pantalla de entradas y la última actividad de cada cuenta van después del piloto (M532).

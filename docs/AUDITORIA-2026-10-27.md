@@ -1663,3 +1663,18 @@ instalar sobre él. Cada una revisa algo que antes no existía o respondía dist
 Verificación del bloque: `npm test` 115 de 115; `prueba_conexion.py` 126 de 126; `auditoria.py` 147 comprobaciones y
 0 hallazgos; la prueba completa, 1,539 de 1,540 (sólo el Excel) y ningún tramo detenido. GitHub, en verde con el bloque 1
 (corrida 40642306243).
+
+### Adelantos del bloque 6 (bloque 258 del proyecto, sin versión nueva)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| F4-02 | Corregido | Con los seis archivos plantados, la herramienta anterior armó el ZIP las seis veces; la nueva se detiene con cada uno. La entrega anterior se arma igual, con sus dos avisos revisados | `auditoria.py`: un paquete limpio se arma; con cada archivo plantado, no |
+| F4-03 | Corregido en parte | El comentario de `usuarios.id` en la base ya no cita las cuentas de prueba. `CUENTAS_POR_ROL` de `js/app.js` va con M563 | — |
+| D1-01 | Corregido (bloque 257) | El README describe la regla de la institución, sin `coordinadores_ids` | — |
+| D1-02 | Corregido | Las filas 14 y 18 de `FASE2-Y-TRASPASO.md` describen la regla de la institución, la que corre en el servidor | — |
+| D1-03 | Corregido | El «Siguiente paso» de `PLAN-TRASPASO-SIA.md` dice la 1.0.0 (D337) | — |
+| D1-04 y D1-05 | Corregido (bloque 256) | El README y `MEJORAS.md` dicen que la versión va en la franja de arriba, con su número de hoy | — |
+| D1-06 | Corregido | `FASE2-Y-TRASPASO.md` trae las cifras de carga medidas el 27-10-2026 y el presupuesto de 2 MB | — |
+| D1-07 | Corregido | La pregunta 1 de `ALINEACION-SIA.md` queda resuelta con D337 | — |
+
+Verificación: `auditoria.py` 149 comprobaciones y 0 hallazgos; `npm test` 115 de 115.

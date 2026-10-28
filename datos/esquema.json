@@ -667,7 +667,7 @@
           "tipo": "uuid",
           "nulo": false,
           "origen": "Sistema",
-          "dominio": "UUID v4 (las de arranque: u-admin-1, u-coord-1, u-cabo-1)",
+          "dominio": "UUID v4; en el servidor, también la primera cuenta, que crea el SIA. Sólo la versión de prueba usa identificadores como `u-admin-1`",
           "pantalla": "No",
           "regla": ""
         },

@@ -125,7 +125,7 @@ Cuentas del sistema. Una por persona; el perfil decide qué puede hacer (js/perm
 
 | Campo | Tipo | Nulo | Origen | Dominio / formato | Se ve en pantalla | Regla |
 |---|---|---|---|---|---|---|
-| `id` | uuid | No | Sistema | UUID v4 (las de arranque: u-admin-1, u-coord-1, u-cabo-1) | No | — |
+| `id` | uuid | No | Sistema | UUID v4; en el servidor, también la primera cuenta, que crea el SIA. Sólo la versión de prueba usa identificadores como `u-admin-1` | No | — |
 | `correo` | text | No | Persona | Correo válido, en minúsculas, único | Correo | Identifica la cuenta y sirve para entrar; no se puede cambiar después. No tiene que ser institucional |
 | `nombre_completo` | text | No | Persona | Texto, hasta 160: nombre y al menos un apellido | Nombre completo | Un solo campo. Sustituye a nombre, apellido_paterno y apellido_materno: al abrir, las cuentas que los tenían se unen aquí (js/almacen.js normalizar) |
 | `organizacion_id` | text | No | Catálogo | → instituciones.id | Tipo de institución e Institución | La institución de la cuenta. En el alta se elige primero el tipo (Alcaldía, Gobierno de la CDMX, Empresa privada, Organización civil) y luego la institución de la lista; las que falten las agrega la Administración en Catálogos › Instituciones, a solicitud. Sólo SEDEMA (o-sedema) tiene área y ADMIN; las cuentas de fuera son CABO o COORDINADOR, y el cabo depende de un coordinador de su misma institución. Al abrir, las cuentas sin institución quedan en SEDEMA |

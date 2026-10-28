@@ -6,8 +6,11 @@ Uso:  python empaquetar.py <carpeta-del-paquete> [--revision]
 El manifiesto tiene el formato de sha256sum, así que en el SIA se comprueba con
 `sha256sum -c MANIFIESTO.sha256` desde la carpeta del paquete. Sólo usa la biblioteca estándar.
 
-Antes de escribir nada se detiene si encuentra archivos de trabajo (respaldos, temporales, bitácoras, los de
-Windows y Mac) o algo que parezca una dirección interna, una llave o una contraseña. Un aviso que ya se revisó
+Antes de escribir nada se detiene si encuentra archivos de trabajo (respaldos de archivos y de la base,
+temporales, bitácoras, archivos de entorno, carpetas de editor, capturas de pantalla, los de Windows y Mac), los
+archivos de la versión de prueba (la lista de herramientas/preparar_produccion.py), una aplicación con los datos de
+prueba encendidos, una lista con una columna de claves, o algo que parezca una dirección interna, el nombre de un
+equipo de la red interna, una cuenta de prueba, una llave o una contraseña. Un aviso que ya se revisó
 y no lleva secreto se anota en AVISOS-REVISADOS.txt, en la raíz del paquete, un renglón por archivo:
 `<sha256>  <ruta>  <por qué no es un secreto>`. La suma ata la revisión a ese contenido: si el archivo cambia,
 el aviso vuelve a detener el paquete. La lista viaja en el paquete, para que el SIA vea qué se revisó.
@@ -17,11 +20,24 @@ instalar va en 1 o más; si dice 0.N, una versión de prueba, se detiene. La exc
 SIA sólo revisa: con --revision acepta 0.N, siempre que el LEEME diga que es «para revisión»."""
 import hashlib, os, re, sys, zipfile
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from preparar_produccion import DE_PRUEBA
+
 MANIFIESTO = 'MANIFIESTO.sha256'
 REVISADOS = 'AVISOS-REVISADOS.txt'
-SOSPECHOSO = re.compile(rb'\b(?:10|172|192)\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?i:password|contrase\xc3\xb1a)\s*[:=]\s*\S{6,}')
-# Respaldos, temporales, bitácoras, archivos abiertos de Office y los que dejan Windows y Mac
-DE_TRABAJO = re.compile(r'(?i)(\.(bak|tmp|temp|orig|rej|swp|log)|~)$|^~\$|^(\.DS_Store|Thumbs\.db|desktop\.ini)$')
+SOSPECHOSO = re.compile(rb'\b(?:10|172|192)\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?i:password|contrase\xc3\xb1a)\s*[:=]\s*\S{6,}'
+                        # una variable de entorno con su valor (SRP_DB_PASS=…), y un equipo de la red interna en una dirección,
+                        # un correo o una asignación (db.sia.local, una cuenta de prueba @ejemplo.local)
+                        rb'|\b[A-Z][A-Z0-9_]*(?:PASS|PASSWORD|SECRET|TOKEN|CLAVE)[A-Z0-9_]*\s*=\s*[^\s<>"\'$]{4,}'
+                        rb'|(?://|@|=)[\w.-]+\.(?:local|lan|intranet)\b')
+# Respaldos de archivos y de la base, temporales, bitácoras, archivos de entorno, capturas, archivos abiertos de
+# Office y los que dejan Windows y Mac
+DE_TRABAJO = re.compile(r'(?i)(\.(bak|tmp|temp|orig|rej|swp|log|dump|backup|pgdump|sqlite3?)|\.sql\.(gz|bz2|xz|zip)|~)$|^~\$|'
+                        r'^(\.DS_Store|Thumbs\.db|desktop\.ini)$|^\.env(\..+)?$|^(captura|screenshot|rev_)')
+# Carpetas de editores: su configuración no viaja
+EDITORES = {'.vscode', '.idea', '.vs'}
+# El primer renglón de una lista con una columna de claves o contraseñas
+COLUMNA_CLAVE = re.compile(r'(?i)(^|[,;\t])\s*"?(clave|contraseña|password|pass)"?\s*([,;\t]|$)')
 USO = 'Uso: python empaquetar.py <carpeta-del-paquete> [--revision]'
 
 
@@ -70,11 +86,21 @@ def leer_revisados(raiz):
     return revisados
 
 
-# Se detiene ante archivos de trabajo y ante avisos sin revisar; devuelve los revisados que encontró
+# Se detiene ante archivos de trabajo o de prueba y ante avisos sin revisar; devuelve los revisados que encontró
 def revisar_contenido(raiz, archivos):
-    trabajo = [rel for rel, _ in archivos if DE_TRABAJO.search(rel.rsplit('/', 1)[-1])]
+    trabajo = [rel for rel, _ in archivos if DE_TRABAJO.search(rel.rsplit('/', 1)[-1]) or EDITORES & set(rel.split('/')[:-1])]
     if trabajo:
         sys.exit('El paquete trae archivos de trabajo; quítelos y vuelva a empaquetar:\n' + '\n'.join('  ' + r for r in trabajo))
+    de_prueba = [rel for rel, _ in archivos if any(rel == p or rel.endswith('/' + p) for p in DE_PRUEBA)]
+    de_prueba += [rel + ' (con ES_FICTICIO en true)' for rel, ruta in archivos
+                  if rel.endswith('js/config.js') and 'ES_FICTICIO: true' in open(ruta, encoding='utf-8', errors='replace').read()]
+    if de_prueba:
+        sys.exit('El paquete trae lo de la versión de prueba; arme la aplicación con herramientas/preparar_produccion.py:\n' +
+                 '\n'.join('  ' + r for r in de_prueba))
+    listas = [rel for rel, ruta in archivos if rel.lower().endswith(('.csv', '.tsv'))
+              and COLUMNA_CLAVE.search(open(ruta, encoding='utf-8', errors='replace').readline())]
+    if listas:
+        sys.exit('Parecen listas con claves o contraseñas; no se armó el paquete:\n' + '\n'.join('  ' + r for r in listas))
     revisados, aceptados, pendientes = leer_revisados(raiz), [], []
     for rel, ruta in archivos:
         with open(ruta, 'rb') as f:

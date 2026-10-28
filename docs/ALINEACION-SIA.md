@@ -113,7 +113,9 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
 
 1. Cuentas de las personas: ¿cada proyecto con las suyas o todas en `acceso`? Si van en `acceso`, ¿la
    Administración del SRP puede dar de alta, activar y desactivar desde la aplicación, o cada alta la hace
-   el SIA?
+   el SIA? **Resuelta (D337):** cuentas propias del SRP. La Secretaría las opera con dos cuentas de
+   Administración global: la primera la crea el SIA con `servidor/deploy/srp-cuenta-inicial.mjs`, y las demás
+   se dan de alta desde la aplicación.
 2. `territorio.colonias_iecm_2022`: ¿su columna de geometría se llama `geom`? (Se cargó desde un
    shapefile.)
 3. `territorio.malla_uga_1km`: ¿es la versión final que el SIA entregó el 22-09-2026? El folio depende de
