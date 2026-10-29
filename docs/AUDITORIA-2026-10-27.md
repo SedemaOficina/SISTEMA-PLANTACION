@@ -1759,3 +1759,14 @@ Verificación: la prueba completa, 1,562 de 1,563 (sólo el Excel conocido); ctx
 | A1-05 | Resuelto antes | Con la decisión 19 b, en el bloque 256 (`<html data-avisos>`) | `prueba.py` (ctx102) |
 
 Verificación: la prueba completa, 1,552 de 1,554 (el Excel conocido y una prueba con el texto anterior de la calle, corregida) y ctx102 repetido 3 de 3 y con el equipo lento; ctx105, 9 de 9; `npm test` 117 de 117; `prueba_conexion.py` 132 de 132; `auditoria.py` 152 y 0 hallazgos; la franja y la ventana revisadas a la vista en el teléfono. Con esto el bloque 5 queda cerrado.
+
+### Bloque 6, primera parte · El vaciado y las respuestas del SIA (bloque 265 del proyecto, versión 1.4.10)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| El guion de vaciado (D337, D341) | Hecho | `vaciar-tras-prueba.sql` con su palabra de confirmación, y el sello de los datos que limpia los teléfonos (D345) | `servidor/pruebas/vaciado.test.js`, `acceso.test.js` y `prueba_conexion.py` |
+| F4-01 | En parte | El instructivo lleva el vaciado, la ruta y las respuestas del SIA; falta armarlo con la 1.0.0 y su ensayo | El empaquetador revisa el instructivo (bloque 260) |
+| La ruta de la API | Hecho | `/srp/api`, como respondió el SIA | `acceso.test.js` (la cookie) y `prueba_conexion.py` |
+| El peso de cada envío | Corregido | 100 árboles pasaban de 100 KB; ahora hasta 80 KB por envío | `prueba_conexion.py` |
+
+Verificación: `npm test` 121 de 121 (3 nuevas, del vaciado); `prueba_conexion.py` 138 de 138 (6 nuevas: el sello, el tope de peso y el vaciado visto desde el teléfono); `auditoria.py` 153 y 0 hallazgos; la prueba completa, 1,573 de 1,574 (sólo el Excel conocido). Sigue la segunda parte del bloque 6: la 1.0.0, los manuales, el paquete y el ensayo de instalación.

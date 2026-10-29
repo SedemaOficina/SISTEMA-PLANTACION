@@ -1,11 +1,11 @@
-"""Sirve la aplicación para las pruebas en http://127.0.0.1:8099/, y reenvía /api/ al servicio local.
+"""Sirve la aplicación para las pruebas en http://127.0.0.1:8099/, y reenvía /srp/api/ al servicio local.
 
 `python -m http.server` deja sólo 5 conexiones en espera. Al abrir, la aplicación pide unos 55 archivos a la
 vez; en Windows las conexiones que no caben se rechazan, y si la rechazada era la del mapa la página queda
 sin él («L is not defined»). Las fallas así eran intermitentes y no de la aplicación. Este servidor admite
 256 en espera y atiende cada petición en su propio hilo.
 
-Lo que va a /api/ lo reenvía al servicio del SRP que corre en esta computadora (`npm run iniciar`, en
+Lo que va a /srp/api/ lo reenvía al servicio del SRP que corre en esta computadora (`npm run iniciar`, en
 servidor/), como lo hace el servidor web del SIA: la aplicación y su servicio quedan en el mismo sitio y la
 cookie de la sesión funciona igual que allá. Si el servicio no está corriendo, responde 502, y la aplicación
 lo trata como falta de conexión.
@@ -18,12 +18,16 @@ import functools
 import http.client
 import http.server
 import os
+import re
 import urllib.parse
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Lo que pasa del navegador al servicio y del servicio al navegador; lo demás es de cada conexión
-PASAN = {'content-type', 'cookie', 'user-agent', 'accept'}
+PASAN = {'content-type', 'cookie', 'user-agent', 'accept', 'x-srp-sello'}
 NO_REGRESAN = {'transfer-encoding', 'connection', 'keep-alive', 'content-length'}
+# Las cabeceras de seguridad que pondrá el servidor web del SIA, de su mismo archivo: las pruebas corren con ellas
+CABECERAS = os.path.join(RAIZ, 'servidor', 'servidor-web', 'srp-cabeceras.conf')
+SEGURIDAD = re.findall(r'^\s*add_header\s+(\S+)\s+"([^"]*)"', open(CABECERAS, encoding='utf-8').read(), re.M) if os.path.exists(CABECERAS) else []
 
 
 class Servidor(http.server.ThreadingHTTPServer):
@@ -53,7 +57,8 @@ class Peticion(http.server.SimpleHTTPRequestHandler):
         cabeceras['X-Forwarded-For'] = self.client_address[0]
         try:
             c = http.client.HTTPConnection(destino.hostname, destino.port, timeout=60)
-            c.request(self.command, self.path, body=cuerpo, headers=cabeceras)
+            # Como el servidor web del SIA: /srp/api/x pasa a /api/srp/x, donde se monta el módulo
+            c.request(self.command, '/api/srp/' + self.path[len('/srp/api/'):], body=cuerpo, headers=cabeceras)
             r = c.getresponse()
             datos = r.read()
             c.close()
@@ -69,7 +74,13 @@ class Peticion(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(datos)
 
     def de_la_api(self):
-        return self.path.startswith('/api/')
+        return self.path.startswith('/srp/api/')
+
+    def end_headers(self):
+        if not self.de_la_api():
+            for k, v in SEGURIDAD:
+                self.send_header(k, v)
+        super().end_headers()
 
     def do_GET(self):
         if self.de_la_api():
@@ -90,7 +101,7 @@ class Peticion(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    a = argparse.ArgumentParser(description='Sirve la aplicación y reenvía /api/ al servicio local.')
+    a = argparse.ArgumentParser(description='Sirve la aplicación y reenvía /srp/api/ al servicio local.')
     a.add_argument('puerto', nargs='?', type=int, default=8099)
     a.add_argument('--api', default='http://127.0.0.1:3100', help='dónde corre el servicio del SRP')
     a.add_argument('--raiz', default=RAIZ, help='la carpeta de la aplicación que se sirve')

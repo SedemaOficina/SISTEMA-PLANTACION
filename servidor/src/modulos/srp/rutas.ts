@@ -11,6 +11,7 @@ import { rutasFotografias } from "./fotografias";
 import { rutasHistorial } from "./historial";
 import { rutasParametros } from "./parametros";
 import { rutasRecepcion } from "./recepcion";
+import { revisarSello } from "./sello";
 import { traducir } from "./errores";
 
 /* ============================================================
@@ -20,6 +21,9 @@ import { traducir } from "./errores";
    `territorio` por su rol de grupo. Se monta así en el backend:
 
      app.use("/api/srp", crearRutasSrp(poolSrp));
+
+   como los demás módulos. El navegador lo ve en /srp/api/, dentro de la ruta de la aplicación: el servidor web pasa
+   /srp/api/ a /api/srp/, como con Categorías, y la cookie va acotada a /srp/api (SRP_RUTA).
 
    Hoy: el acceso con cuentas propias y su registro de entradas, la administración de cuentas, de
    catálogos y de parámetros, la consulta de jornadas y árboles, cada quien lo de su alcance (permisos.ts), y la recepción
@@ -37,6 +41,8 @@ export function crearRutasSrp(pool: pg.Pool, config: ConfigSrp = leerConfig()): 
     res.set({ "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
     next();
   });
+  // Lo que envía un teléfono con el sello de antes de vaciar el servidor no entra (sello.ts)
+  r.use(revisarSello(pool));
   const acceso = rutasAcceso(pool, config);
   r.use(acceso.router);
   r.use(rutasCuentas(pool, config, acceso.sesion));

@@ -36,7 +36,7 @@ Teléfono (navegador, trabaja sin señal)
    ▼
 Dominio de la Secretaría
    ├── /srp/               archivos de la aplicación        → servidor web
-   ├── /api/srp/           acceso, recepción, consulta      → servicio del SRP
+   ├── /srp/api/           acceso, recepción, consulta      → servicio del SRP
    │                              ├── esquema srp           → base de datos
    │                              ├── esquema territorio    → sólo lectura
    │                              └── fotografías           → volumen de datos, fuera de carpeta pública
@@ -162,7 +162,7 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 - **Fotografías.** Son opcionales, una por árbol, de 800 × 600 px y entre 60 y 120 KB. Diez mil árboles con
   fotografía ocupan de 0.6 a 1.2 GB; cien mil, de 6 a 12 GB. El disco del servidor de aplicaciones se
   comparte con otros sistemas: alcanza para el piloto, y **la ampliación se solicita a la ADIP antes de la
-  operación plena**, con lo que mida `GET /api/srp/fotos/uso` en el piloto.
+  operación plena**, con lo que mida `GET /srp/api/fotos/uso` en el piloto.
 - **Base de datos.** Sin fotografías, cada árbol pesa menos de 1 KB. Cien mil árboles con su bitácora caben
   en decenas de MB: no requiere ampliación.
 - **Servidor de aplicaciones.** Verificar el espacio libre de su disco de sistema antes de instalar el

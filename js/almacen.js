@@ -670,6 +670,13 @@ SRP.almacen = {
     try { [SRP.CONFIG.CLAVE_ENVIOS_PRUEBA, 'srp_demo_quitados'].forEach(k => localStorage.removeItem(k)); } catch (e) { /* sin persistencia */ }
   },
 
+  // El servidor se vació después de la prueba (js/sesion.js): fuera lo capturado y lo pendiente de enviar; las cuentas
+  // y los catálogos se quedan
+  async vaciarCapturas() {
+    const a = ['plantaciones', 'jornadas', 'bitacora'].concat(this.AUXILIARES);
+    await this._tx(a, 'readwrite', (tx) => { a.forEach(n => tx.objectStore(n).clear()); });
+  },
+
   async restablecer() {
     await this._tx(this.ALMACENES, 'readwrite', (tx) => {
       this.ALMACENES.forEach(n => tx.objectStore(n).clear());

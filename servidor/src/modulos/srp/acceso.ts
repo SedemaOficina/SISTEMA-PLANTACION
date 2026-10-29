@@ -4,6 +4,7 @@ import { agenteDeUsuario, ipDeOrigen } from "../../comun/procedencia";
 import type { ConfigSrp } from "./config";
 import { derivar, revisarNueva, verificar, verificarSombra } from "./contrasenas";
 import { responder } from "./errores";
+import { leerSello } from "./sello";
 import * as S from "./sesiones";
 import { enTransaccion } from "./transaccion";
 
@@ -200,7 +201,7 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
     await anotar(pool, req, "ENTRADA", quien);
     recortarSiToca();
     S.ponerCookie(res, testigo, { ruta: config.ruta, segura: config.cookieSegura });
-    res.json({ usuario: cuentaPublica(u), debeCambiar: Boolean(u.temporal) });
+    res.json({ usuario: cuentaPublica(u), debeCambiar: Boolean(u.temporal), sello: await leerSello(pool) });
   });
 
   const sesion = exigirSesion(pool, config);
@@ -213,9 +214,9 @@ export function rutasAcceso(pool: pg.Pool, config: ConfigSrp): { router: Router;
     res.json({ ok: true });
   });
 
-  r.get("/acceso/yo", sesion, (req: Request, res: Response) => {
+  r.get("/acceso/yo", sesion, async (req: Request, res: Response) => {
     const s = sesionDe(res);
-    res.json({ usuario: cuentaPublica(s.usuario), debeCambiar: s.debeCambiar });
+    res.json({ usuario: cuentaPublica(s.usuario), debeCambiar: s.debeCambiar, sello: await leerSello(pool) });
   });
 
   r.post("/acceso/contrasena", sesion, async (req: Request, res: Response) => {

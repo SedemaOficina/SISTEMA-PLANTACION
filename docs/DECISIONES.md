@@ -4646,3 +4646,39 @@
   · **El CSV, sin la cita.** El informe proponía agregarla como un renglón más. Liber decidió no hacerlo, con lo
     recomendado: el CSV tiene un renglón por árbol para abrirlo en Excel o procesarlo, y un renglón de texto al final
     estorba; la cita va completa en Supervisión y en el informe PDF.
+
+- **D345. El vaciado tras la prueba, el sello de los datos y lo que respondió el SIA (bloque 265).**
+  28-10-2026. Lo que pidió D337 con lo que decidió Liber en D341, y lo que cambió con las respuestas del SIA:
+  · **El guion de vaciado** es `servidor/db/srp/vaciar-tras-prueba.sql`. Lo corre una vez quien administra la base, con
+    `-v confirmar=VACIAR-SRP`; sin esa palabra no toca nada. Va en una transacción y apaga los disparadores de
+    inmutabilidad de la bitácora y de los folios sólo dentro de ella. Borra jornadas, árboles, registros de fotografías,
+    folios con sus secuencias, duplicados, prioridades congeladas, cargas y lo que la bitácora dice de jornadas,
+    árboles y cargas; conserva cuentas, contraseñas, sesiones, catálogos, parámetros, la capa de prioritarias, el
+    registro de entradas y lo que la bitácora dice de cuentas y catálogos. La cuenta del servicio no lo puede correr.
+  · **El sello de los datos** es un renglón de `srp.sello`: nace con la instalación y el guion lo cambia. Llega al
+    teléfono al entrar y al confirmar la sesión, y el teléfono lo manda en la cabecera `X-SRP-Sello` con todo lo que
+    envía. Si es más viejo que el vigente, el servicio responde `SELLO_DISTINTO` (409) con el vigente, y el teléfono borra los
+    árboles, las jornadas, la bitácora, lo pendiente y los borradores; conserva la sesión, las cuentas y los catálogos,
+    y dice «El servidor se vació después de la prueba: se borró lo que guardaba este teléfono.» Se descartó mandarlo en
+    cada respuesta: costaba una consulta también en cada lectura, y con revisarlo al entrar, al confirmar y en cada envío
+    nada de la prueba vuelve a entrar. Sin cabecera (un teléfono que aún no lo conoce) se atiende como siempre.
+    `SELLO_REINICIO`, el de la versión de prueba, no cambia.
+  · **La ruta de la API que ve el navegador es `/srp/api`**, como pidió el SIA (antes `/api/srp`): la aplicación en
+    `/srp/` y su API dentro, como Categorías. Por dentro el módulo sigue montado en `/api/srp`, como los demás del
+    backend del SIA: el servidor web pasa `/srp/api/` a `/api/srp/`, y `pruebas/servir.py` hace lo mismo en las pruebas.
+    La cookie va acotada a la ruta pública, `/srp/api`. El fragmento lleva su propia ubicación para la API y la de la
+    entrada con límite de velocidad.
+  · **Las cabeceras de seguridad** van en `servidor-web/srp-cabeceras.conf`, incluido en cada ubicación de `srp.conf`:
+    las globales del sitio repetidas (un `add_header` en una ubicación deja de heredarlas) y la política de seguridad
+    de contenido de `index.html` más `frame-ancestors`; sin HSTS. `pruebas/servir.py` manda las mismas, y
+    `pruebas/auditoria.py` comprueba que la política sea la de `index.html` y que cada ubicación las incluya.
+  · **El sello empieza con la fecha y la hora** (`srp.sello_nuevo()`), así que se ordena en el tiempo. El servicio sólo
+    rechaza lo que trae un sello más viejo que el suyo, y el teléfono sólo borra lo suyo si el del servidor es más
+    nuevo: si un día se restaura un respaldo de antes del vaciado (los respaldos del SIA rotan en unos 14 días), nadie
+    borra datos reales y lo pendiente se recibe. La constancia del vaciado queda en `srp.sello.nota`.
+  · **Cada envío del teléfono lleva hasta 80 KB de JSON** (`SRP.cola.LOTE_BYTES`), además del tope de 100 operaciones:
+    el backend del SIA corta el JSON en 100 KB, y el propio módulo también. Las tandas de la carga masiva ya tenían su
+    tope de 80 KB, y las fotografías no viajan en JSON.
+  · **Sin bandera para la prueba en campo.** El SIA propuso separar los datos de la prueba con una bandera. El SRP no la
+    necesita: la prueba es toda con datos ficticios y después se corre el guion de vaciado. Va así en el instructivo,
+    con lo que el SIA dijo del respaldo de las fotografías y de la restauración, como requisitos antes de operar.

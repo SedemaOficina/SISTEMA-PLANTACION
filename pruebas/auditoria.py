@@ -76,6 +76,18 @@ for f in [x for x in glob.glob(APP + '/js/*.js') if not x.endswith(('datos-ficti
     t = re.sub(r'<!--.*?-->', '', t, flags=re.S) if f.endswith('.html') else re.sub(r'/\*.*?\*/|(?<!:)//[^\n]*', '', t, flags=re.S)
     papeles += [os.path.basename(f) + ': ' + m.group(0)[:60] for m in re.finditer(r'''['"`>][^'"`<>\n]*(\bCoordinador\b|\bDirectivo\b|\(coordinación\))[^'"`<>\n]*''', t)]
 mirar(not papeles, 'cada perfil tiene un solo nombre: «Coordinación» y «Dirección», no «Coordinador», «Directivo» ni «(coordinación)»', '; '.join(papeles[:4]))
+# La política de seguridad del servidor web es la de index.html más frame-ancestors, y srp-cabeceras.conf trae también las
+# globales del sitio (la protección contra marcos) y no trae HSTS; srp.conf la incluye en cada ubicación
+_cab = open(APP + '/servidor/servidor-web/srp-cabeceras.conf', encoding='utf-8').read()
+_frag = open(APP + '/servidor/servidor-web/srp.conf', encoding='utf-8').read()
+_meta = re.search(r'http-equiv="Content-Security-Policy" content="([^"]+)"', open(APP + '/index.html', encoding='utf-8').read())
+_csp = re.search(r'add_header Content-Security-Policy "([^"]+)"', _cab)
+_sin_com = re.sub(r'#[^\n]*', '', _frag)
+mirar(_meta and _csp and _csp.group(1) == _meta.group(1) + "; frame-ancestors 'self'"
+      and all(h in _cab for h in ('X-Frame-Options "SAMEORIGIN"', 'X-Content-Type-Options "nosniff"', 'Referrer-Policy', 'Permissions-Policy "geolocation=(self)'))
+      and 'Strict-Transport-Security' not in re.sub(r'#[^\n]*', '', _cab) and 'add_header' not in _sin_com
+      and _sin_com.count('location') == _sin_com.count('include /RUTA/DE/LOS/FRAGMENTOS/srp-cabeceras.conf;'),
+      'el servidor web manda la política de seguridad de index.html con frame-ancestors y las cabeceras globales, en cada ubicación y sin HSTS')
 # El pie de «Por calle» y del informe lleva la cita de la capa de calles tal como la trae su índice: las fuentes, su
 # licencia y lo que hizo SEDEMA (condición de uso de la capa)
 import json as _json

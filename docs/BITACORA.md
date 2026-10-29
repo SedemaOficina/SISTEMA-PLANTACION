@@ -7085,3 +7085,61 @@ en el bloque 256 con la decisión 19 b.
 
 **Siguiente paso.** El bloque 6, el paquete 1.0.0 para el SIA: el guion de vaciado con el aviso del teléfono, el
 instructivo, los manuales y el ensayo de instalación.
+
+## Bloque 265 — El vaciado tras la prueba en campo y lo que respondió el SIA (28-10-2026)
+
+**Versión 1.4.10.** La primera parte del bloque 6 del plan de corrección (el paquete 1.0.0): el guion de vaciado que
+pidió D337 con lo que decidió Liber en D341, y los ajustes por las respuestas del SIA del mismo día. Lo programado va
+en D345.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Dejar el servidor en blanco después de la prueba en campo | No había cómo: reinstalar desde cero o borrar a mano | `servidor/db/srp/vaciar-tras-prueba.sql`, con la palabra `VACIAR-SRP`: borra lo de la prueba y conserva cuentas, catálogos, parámetros y el registro de entradas; los folios vuelven a empezar en 1 |
+| Los teléfonos después del vaciado | Habrían reenviado lo de la prueba al servidor limpio | El sello de los datos (`srp.sello`) cambia al vaciar; el teléfono lo manda con lo que envía, y si es más viejo que el del servidor el servicio no lo acepta. El teléfono borra lo que guardaba y dice «El servidor se vació después de la prueba: se borró lo que guardaba este teléfono.» |
+| La ruta de la API | `/api/srp` | El navegador la ve en `/srp/api`, dentro de la de la aplicación, como pidió el SIA; por dentro sigue montada en `/api/srp`, como los demás módulos, y el servidor web traduce una en otra (como Categorías). La cookie, acotada a `/srp/api` |
+| Las cabeceras de seguridad | El fragmento no ponía ninguna, para no perder las globales del sitio | `srp-cabeceras.conf`, incluido en cada una de las 7 ubicaciones: las globales repetidas y la política de seguridad de contenido de `index.html` más `frame-ancestors`; sin HSTS. Las pruebas corren con ellas |
+| Restaurar un respaldo de antes del vaciado | Con un sello cualquiera, los teléfonos habrían borrado datos reales sin enviar | El sello empieza con la fecha y la hora: el teléfono sólo borra si el del servidor es más nuevo, y el servicio sólo rechaza uno más viejo. La constancia del vaciado queda en `srp.sello.nota` |
+| El peso de cada envío del teléfono | Hasta 100 operaciones, sin tope de peso: cada árbol pesa unos 1,126 bytes, así que 100 pasaban de los 100 KB que acepta el backend | Hasta 80 KB de JSON por envío; lo que no cabe va en el siguiente |
+| La prueba en campo en el instructivo | «Por llenar» | La frase que pidió Liber para el SIA («El SRP no usa bandera…»), el comando, qué borra y qué conserva, y los pasos del día del cambio; el respaldo de las fotografías y una restauración de prueba, como requisitos antes de operar |
+
+**Qué cambió.**
+- Base: `01-srp-esquema.sql` (la tabla del sello con su constancia y `srp.sello_nuevo()`), `10-srp-rol-y-grants.sql`
+  (la cuenta del servicio sólo lee el sello) y el guion nuevo `vaciar-tras-prueba.sql`.
+- Servicio: `src/modulos/srp/sello.ts` (nuevo), `acceso.ts` (el sello al entrar y al confirmar), `rutas.ts`, `config.ts`
+  (la ruta pública `/srp/api` y el montaje `/api/srp`), `iniciar.ts` e `independiente.ts`; `bd.js` corre el guion como
+  psql, para las pruebas.
+- Aplicación: `js/servidor.js` (la cabecera del sello y el rechazo `SELLO_DISTINTO`), `js/sesion.js` (anotar el sello y
+  borrar lo de la prueba), `js/almacen.js`, `js/app.js`, `js/cola.js` (el tope de 80 KB) y `js/config.js` (la ruta).
+- Servidor web: `servidor/servidor-web/srp.conf`, con la ubicación de la API (`/srp/api/` a `/api/srp/`) y la de la
+  entrada, y `srp-cabeceras.conf` (nuevo), incluido en cada ubicación.
+- Pruebas: `servidor/pruebas/vaciado.test.js` (nuevo: sin confirmación no toca nada, la cuenta del servicio no lo
+  puede correr, y con ella borra y conserva lo debido), `acceso.test.js` (el sello y la cookie en `/srp/api`),
+  `esquema.test.js`; `pruebas/prueba_conexion.py` (el teléfono que envía con el sello de antes, quien entra después del
+  vaciado, y el tope de peso), `pruebas/apoyo_servidor.mjs`, `pruebas/servir.py` (traduce la ruta como el servidor
+  web, deja pasar la cabecera del sello y manda las cabeceras de seguridad del archivo que se entrega) y
+  `pruebas/auditoria.py` (la política del servidor web, la de `index.html` en cada ubicación).
+- Documentos: el README del servidor, el README, `docs/FASE2-Y-TRASPASO.md`, `docs/PLAN-TRASPASO-SIA.md`,
+  `docs/ALINEACION-SIA.md` (las preguntas que ya respondió el SIA) y `docs/DECISIONES.md` (D345). El instructivo del
+  paquete, que no se sube, con todo lo anterior y las respuestas del SIA.
+- `VERSION`, marcas de `index.html`, etapa de `js/config.js`, README y `docs/MEJORAS.md`.
+
+**Verificación.**
+- `pruebas/por_tramos.py` (la prueba completa, 88 tramos): 1,573 de 1,574, 52 min. La única falla es la conocida del
+  Excel de `originales/`. En la corrida anterior falló además ctx102: la demostración de ese día (29-10) no traía un
+  cabo de apoyo al que quitaran de una compartida; ahora siempre trae uno, y la comprobación pasó, 20 de 20. En esa
+  misma corrida el tramo 43 se detuvo porque el equipo se suspendió; repetido, 12 de 12.
+- Antes: con la 1.4.9, cada árbol pesaba unos 1,126 bytes en el envío, así que uno de 100 pasaba de los 100 KB.
+  Ahora tres árboles con un tope de prueba de 1,500 bytes salen en 3 envíos y llegan todos.
+- `npm test`: 121 de 121 (13 + 8 + 97 + 3). Las 3 de `vaciado.test.js` son nuevas, y la del sello en
+  `acceso.test.js`: el formato, el 409 con el sello de antes, que un sello más nuevo se acepte (el respaldo restaurado),
+  y la cookie en `/srp/api`. Al vaciar, los dos disparadores de inmutabilidad quedan encendidos (revisado en
+  `pg_trigger`) y la bitácora sigue rechazando un `TRUNCATE`.
+- `pruebas/prueba_conexion.py`: 138 de 138. Seis nuevas: el sello al entrar, el tope de peso, el teléfono que envía con
+  el sello de antes (borra, sigue dentro y lo dice), lo pendiente que no llega al servidor limpio, quien entra después
+  del vaciado con algo guardado, y sin errores en la página. Todas a través de `pruebas/servir.py`, que ya traduce la
+  ruta y manda las cabeceras de seguridad.
+- `pruebas/auditoria.py`: 153 comprobaciones (una nueva: las cabeceras del servidor web), 0 hallazgos.
+- GitHub: la corrida del bloque 264 (40756370092), en verde.
+
+**Siguiente paso.** La segunda parte del bloque 6: pasar todo a la 1.0.0, rehacer los manuales, armar el paquete y el
+ensayo de instalación.

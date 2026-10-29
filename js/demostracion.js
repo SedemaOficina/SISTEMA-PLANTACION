@@ -428,7 +428,9 @@ SRP.demo = {
     const compartida = (titular, d, apoyos, n, abierta) => {
       const s = sitio(titular), idj = g.sig.jornada(), programa = programaDe(titular, s.alc);
       const inicio = minutos(d, Math.floor(r() * 30));
-      const quitado = !abierta && apoyos.length > 2 && r() < 0.12 ? apoyos[apoyos.length - 1] : null;
+      // Al menos una cerrada con un cabo quitado, cualquier día: la demostración enseña los tres finales
+      const quitado = !abierta && apoyos.length > 2 && (r() < 0.12 || !g.conQuitado) ? apoyos[apoyos.length - 1] : null;
+      if (quitado) g.conQuitado = true;
       const olvida = !abierta && !quitado && r() < 0.15 ? apoyos[0] : null;
       const corte = 60 + Math.floor(r() * 60);
       const reloj = {}, regs = [];

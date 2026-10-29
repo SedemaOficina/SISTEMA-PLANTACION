@@ -7,7 +7,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { conectar, limpiar } from './apoyo.js';
-import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente.js';
+import { leerConfig, crearGrupo, crearApp, derivar, MONTAJE } from '../dist/independiente.js';
 
 const CORRIDA = Date.now();
 const CLAVE = 'Recepcion de prueba 2026';
@@ -61,7 +61,7 @@ before(async () => {
   grupo = crearGrupo({ rol: 'srp_api' });
   servidor = crearApp({ pool: grupo, config, proxy: 0 }).listen(0);
   await new Promise((r) => servidor.once('listening', r));
-  base = 'http://127.0.0.1:' + servidor.address().port + config.ruta;
+  base = 'http://127.0.0.1:' + servidor.address().port + MONTAJE;
 });
 
 after(async () => {

@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { conectar, limpiar, RAIZ } from './apoyo.js';
-import { leerConfig, crearGrupo, crearApp, derivar, parametros as P } from '../dist/independiente.js';
+import { leerConfig, crearGrupo, crearApp, derivar, parametros as P, MONTAJE } from '../dist/independiente.js';
 
 const CORRIDA = Date.now();
 const CLAVE = 'Parametros de prueba 2026';
@@ -36,7 +36,7 @@ before(async () => {
   const config = leerConfig({ SRP_COOKIE_SEGURA: 'no' });
   servidor = crearApp({ pool: grupo, config, proxy: 0 }).listen(0);
   await new Promise((r) => servidor.once('listening', r));
-  base = 'http://127.0.0.1:' + servidor.address().port + config.ruta;
+  base = 'http://127.0.0.1:' + servidor.address().port + MONTAJE;
 });
 
 after(async () => {

@@ -65,6 +65,19 @@ export async function instalar(c) {
   }
 }
 
+/* El guion de vaciado tras la prueba como lo corre psql con «-v confirmar=…»: sin sus órdenes de psql (las líneas que
+   empiezan con «\») y con la confirmación dada, o ninguna. Un error deja la transacción deshecha */
+export async function vaciarTrasPrueba(c, confirmar) {
+  const sql = leer('vaciar-tras-prueba.sql').split('\n').filter(l => !l.trim().startsWith('\\')).join('\n')
+    .replace(":'confirmar'", confirmar == null ? 'NULL' : "'" + String(confirmar).replace(/'/g, "''") + "'");
+  try {
+    return await c.query(sql);
+  } catch (e) {
+    await c.query('ROLLBACK').catch(() => {});
+    throw e;
+  }
+}
+
 // Sólo para la base local de desarrollo: borra el esquema y sus cuentas sin preguntar
 export async function destruir(c) {
   await c.query(leer('destruir.sql', SQL_LOCAL));

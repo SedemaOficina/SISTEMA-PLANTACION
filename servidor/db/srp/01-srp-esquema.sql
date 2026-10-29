@@ -42,3 +42,23 @@ CREATE TABLE srp.migraciones (
   CONSTRAINT migraciones_pk PRIMARY KEY (version)
 );
 COMMENT ON TABLE srp.migraciones IS 'Versiones del esquema aplicadas, en orden. La instalación es la 1.';
+
+-- El sello de los datos: nace con la instalación y cambia cuando el servidor se vacía (vaciar-tras-prueba.sql). Cada
+-- teléfono lo recibe al entrar y lo manda con lo que envía: si el del servidor es más nuevo, el servicio no acepta lo
+-- que manda y el teléfono borra lo que guardaba, para que los datos de la prueba no vuelvan al servidor limpio. Empieza
+-- con la fecha y la hora en UTC, así que ordenarlos como texto es ordenarlos en el tiempo: si un día se restaura un
+-- respaldo de antes del vaciado, el sello del servidor queda más viejo que el de los teléfonos y nadie borra nada.
+-- `nota` deja la constancia de cuándo se instaló o se vació, y qué se borró.
+CREATE FUNCTION srp.sello_nuevo() RETURNS text LANGUAGE sql VOLATILE SET search_path = pg_catalog, pg_temp AS $$
+  SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYYMMDD"T"HH24MISS.US') || '-' || substr(md5(random()::text), 1, 8)
+$$;
+CREATE TABLE srp.sello (
+  unico  boolean      NOT NULL DEFAULT true,
+  valor  text         NOT NULL,
+  desde  timestamptz  NOT NULL DEFAULT now(),
+  nota   text         NOT NULL,
+  CONSTRAINT sello_pk PRIMARY KEY (unico),
+  CONSTRAINT sello_uno CHECK (unico)
+);
+COMMENT ON TABLE srp.sello IS 'Un solo renglón: el sello de los datos del servidor, ordenable en el tiempo. Cambia al vaciarlo después de la prueba; nota dice qué pasó.';
+INSERT INTO srp.sello (valor, nota) VALUES (srp.sello_nuevo(), 'Instalación');

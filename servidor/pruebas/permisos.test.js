@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { conectar, limpiar, RAIZ } from './apoyo.js';
-import { leerConfig, crearGrupo, crearApp, derivar, permisos as S } from '../dist/independiente.js';
+import { leerConfig, crearGrupo, crearApp, derivar, permisos as S, MONTAJE } from '../dist/independiente.js';
 
 const SEDEMA = 'o-sedema', INST_A = 'o-prueba-permisos-a', INST_B = 'o-prueba-permisos-b', PROGRAMA = 'p-prueba-permisos';
 const CLAVE = 'Permisos de prueba 2026';
@@ -122,7 +122,7 @@ before(async () => {
   grupo = crearGrupo({ rol: 'srp_api' });
   servidor = crearApp({ pool: grupo, config, proxy: 0 }).listen(0);
   await new Promise((r) => servidor.once('listening', r));
-  base = 'http://127.0.0.1:' + servidor.address().port + config.ruta;
+  base = 'http://127.0.0.1:' + servidor.address().port + MONTAJE;
 });
 
 after(async () => {

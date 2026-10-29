@@ -110,7 +110,7 @@ global desde Usuarios, en Configuración.
 aparente, porque cualquiera puede leer el código de la página. Lo único que se comprueba es que el correo
 corresponda a una cuenta dada de alta y activa.
 
-**Con datos reales, la verifica el servicio del SRP**, en `/api/srp` del mismo sitio:
+**Con datos reales, la verifica el servicio del SRP**, en `/srp/api` del mismo sitio:
 - El servicio abre la sesión con una cookie sólo HTTP, que la aplicación no ve.
 - Al entrar bajan los catálogos, la cuenta, las cuentas que cada quien ve (sin correo, salvo la
   Administración global) y los parámetros. Eso se queda en el teléfono para trabajar sin señal.
@@ -200,7 +200,7 @@ js/                     La aplicación, un archivo por tema
   config.js             ÚNICO lugar con valores configurables (distancias, precisión, versión, base)
   permisos.js           ÚNICO lugar con las reglas de cada perfil y lo que exige cada acción
   almacen.js            Base del dispositivo (IndexedDB), migraciones y bitácora
-  servidor.js           Cómo se habla con el servicio del SRP (/api/srp): cada pedido dice si respondió, si faltó conexión o qué no aceptó
+  servidor.js           Cómo se habla con el servicio del SRP (/srp/api): cada pedido dice si respondió, si faltó conexión o qué no aceptó
   remoto.js             Lo que viene del servidor: catálogos, cuentas y parámetros, que se quedan; lo enviado, sólo en memoria; los avisos cuando falta
   cola.js               La cola de envío con datos reales: qué se anota con cada cambio, cómo se envía y qué hace el teléfono con la respuesta
   turno.js              Una pestaña a la vez: la que quedó atrás se detiene con su aviso y «Usar aquí»
@@ -313,7 +313,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1, la que se entrega al SIA para instalar, dice «Versión» y el número de `VERSION`
-(hoy, «Versión 1.4.9»).
+(hoy, «Versión 1.4.10»).
 
 **Las pruebas de GitHub, en verde.** Cada subida corre la prueba completa en GitHub (`.github/workflows/pruebas.yml`;
 el indicador de arriba dice cómo salió la última). Antes de cerrar un bloque se revisa que la corrida del commit
@@ -578,7 +578,7 @@ corrida, y el resultado de cada tramo, en sus «Artifacts». Ahí no
 hay `originales/` (no se sube): lo que se compara con ellos se omite y se dice. El servicio y la base de datos
 se prueban en el equipo de desarrollo (`npm test` y `prueba_conexion.py`).
 
-`servir.py` reenvía lo que va a `/api/` al servicio del SRP de esta computadora, como lo hace el servidor
+`servir.py` reenvía lo que va a `/srp/api/` al servicio del SRP de esta computadora, como lo hace el servidor
 web del SIA: la aplicación y su servicio quedan en el mismo sitio. `prueba_conexion.py` arranca su propio
 servicio y su propio servidor (puertos 3109 y 8098). Abre la aplicación con `ES_FICTICIO: false` sólo en el
 navegador de la prueba, sin cambiar el archivo, y crea y quita sus cuentas en la base local.

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { conectar, limpiar } from './apoyo.js';
 // El módulo compilado, tal como corre (npm test compila antes de probar)
-import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente.js';
+import { leerConfig, crearGrupo, crearApp, derivar, MONTAJE } from '../dist/independiente.js';
 
 // El límite por procedencia se prueba aparte, con su propio servicio: aquí todas las peticiones vienen del mismo equipo
 const config = leerConfig({ SRP_COOKIE_SEGURA: 'no', SRP_INTENTOS_MAXIMOS: '3', SRP_BLOQUEO_MINUTOS: '15', SRP_INTENTOS_POR_PROCEDENCIA: '0' });
@@ -41,7 +41,7 @@ before(async () => {
   grupo = crearGrupo({ rol: 'srp_api' });
   servidor = crearApp({ pool: grupo, config, proxy: 0 }).listen(0);
   await new Promise(r => servidor.once('listening', r));
-  base = 'http://127.0.0.1:' + servidor.address().port + config.ruta;
+  base = 'http://127.0.0.1:' + servidor.address().port + MONTAJE;
 });
 
 after(async () => {
@@ -114,7 +114,7 @@ test('al entrar, la cookie es sólo HTTP, del mismo sitio y sólo para la API; a
   assert.equal(e.estado, 200);
   assert.equal(e.datos.usuario.perfil, 'ADMIN');
   assert.equal(e.datos.debeCambiar, false);
-  assert.match(e.puesta, /^sia_srp_sesion=/); assert.match(e.puesta, /HttpOnly/i); assert.match(e.puesta, /SameSite=Strict/i); assert.match(e.puesta, /Path=\/api\/srp/);
+  assert.match(e.puesta, /^sia_srp_sesion=/); assert.match(e.puesta, /HttpOnly/i); assert.match(e.puesta, /SameSite=Strict/i); assert.match(e.puesta, /Path=\/srp\/api;/);
   const testigo = decodeURIComponent(c.cookie.split('=')[1]);
   assert.match(testigo, /^[A-Za-z0-9_-]{43}$/, 'el testigo: 32 bytes al azar en base64url, como en acceso');
   const g = (await admin.query("SELECT count(*) FILTER (WHERE testigo_resumen = $1)::int AS tal_cual, count(*) FILTER (WHERE testigo_resumen = encode(sha256(convert_to($1, 'UTF8')), 'hex'))::int AS resumen FROM srp.sesiones", [testigo])).rows[0];
@@ -340,7 +340,7 @@ test('eliminar una cuenta sólo si no aparece en nada; una que ya entró se desa
 test('las entradas fallidas de una misma dirección se cuentan: pasado el tope, esa dirección espera sin que se verifique nada', async () => {
   const conTope = crearApp({ pool: grupo, config: leerConfig({ SRP_COOKIE_SEGURA: 'no', SRP_INTENTOS_POR_PROCEDENCIA: '3' }), proxy: 0 }).listen(0);
   await new Promise((r) => conTope.once('listening', r));
-  const en = 'http://127.0.0.1:' + conTope.address().port + config.ruta;
+  const en = 'http://127.0.0.1:' + conTope.address().port + MONTAJE;
   // El servidor de pruebas es un intermediario propio: la dirección de la persona es la que reenvía
   const entrar = (ip, correo, contrasena) => fetch(en + '/acceso/entrar', { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': ip },
     body: JSON.stringify({ correo, contrasena }) }).then(async (r) => [r.status, (await r.json()).codigo]);
@@ -482,4 +482,40 @@ test('una vez al día, con la primera entrada, se borra el registro de entradas 
   const viejos = async () => (await admin.query("SELECT count(*)::int AS n FROM srp.bitacora_acceso WHERE correo_intentado = 'viejo.prueba.recorte@ejemplo.local'")).rows[0].n;
   for (let i = 0; i < 30 && (await viejos()); i++) await new Promise((r) => setTimeout(r, 100));
   assert.equal(await viejos(), 0);
+});
+
+test('el sello de los datos llega al entrar y al confirmar la sesión, y un envío con el sello de antes de vaciar no entra', async () => {
+  const a = cliente();
+  const sello = (await admin.query('SELECT valor FROM srp.sello')).rows[0].valor;
+  const e = await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
+  assert.equal(e.datos.sello, sello);
+  assert.equal((await a.pedir('GET', '/acceso/yo')).datos.sello, sello);
+  const enviar = async (cabecera) => {
+    const r = await fetch(base + '/envios', { method: 'POST', body: JSON.stringify({ operaciones: [] }),
+      headers: Object.assign({ 'content-type': 'application/json', cookie: a.cookie }, cabecera === undefined ? {} : { 'x-srp-sello': cabecera }) });
+    return [r.status, await r.json()];
+  };
+  // Con el sello vigente, o sin él (un teléfono que todavía no lo conoce), el envío se atiende como siempre
+  assert.equal((await enviar(sello))[1].codigo, 'SIN_OPERACIONES');
+  assert.equal((await enviar())[1].codigo, 'SIN_OPERACIONES');
+  // El servidor se vació: el sello cambió por uno más nuevo. Lo que manda un teléfono con el de antes no entra, y se le
+  // dice el vigente
+  assert.match(sello, /^\d{8}T\d{6}\.\d{6}-[0-9a-f]{8}$/, 'empieza con la fecha y la hora: se ordena en el tiempo');
+  const nuevo = (await admin.query('SELECT srp.sello_nuevo() AS v')).rows[0].v;
+  assert.ok(nuevo > sello, 'un sello posterior es mayor como texto');
+  await admin.query('UPDATE srp.sello SET valor = $1, desde = now()', [nuevo]);
+  try {
+    const [estado, datos] = await enviar(sello);
+    assert.deepEqual([estado, datos.codigo, datos.sello], [409, 'SELLO_DISTINTO', nuevo]);
+    assert.equal((await a.pedir('GET', '/acceso/yo')).datos.sello, nuevo, 'al confirmar la sesión, el teléfono se entera');
+    // Si el servidor vuelve a un respaldo de antes del vaciado, su sello queda más viejo que el del teléfono: lo que éste
+    // manda es real y se recibe
+    await admin.query('UPDATE srp.sello SET valor = $1', [sello]);
+    assert.equal((await enviar(nuevo))[1].codigo, 'SIN_OPERACIONES', 'un teléfono con un sello más nuevo que el del servidor envía como siempre');
+    // Salir no envía datos: se atiende aunque el sello sea el de antes
+    const salir = await fetch(base + '/acceso/salir', { method: 'POST', headers: { cookie: a.cookie, 'x-srp-sello': sello } });
+    assert.equal(salir.status, 200);
+  } finally {
+    await admin.query('UPDATE srp.sello SET valor = $1', [sello]);
+  }
 });

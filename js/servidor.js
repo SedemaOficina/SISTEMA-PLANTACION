@@ -12,7 +12,11 @@
 
    La sesión es una cookie sólo HTTP que guarda el navegador: la aplicación no la ve ni la toca. Si el
    servicio ya no la reconoce (SIN_SESION o SESION_…), se avisa a SRP.sesion, que pide volver a entrar sin
-   perder lo capturado. */
+   perder lo capturado.
+
+   Lo que se envía lleva el sello de los datos que conoce el teléfono (X-SRP-Sello). Si el servidor se vació
+   después de la prueba, responde SELLO_DISTINTO: no es un rechazo de lo enviado sino que ya no va, y
+   SRP.sesion borra lo que guardaba el teléfono. */
 window.SRP = window.SRP || {};
 
 SRP.servidor = {
@@ -24,13 +28,13 @@ SRP.servidor = {
   subir(ruta, datos, tipo) { return this.mandar('PUT', ruta, datos, tipo); },
 
   async mandar(metodo, ruta, cuerpo, tipo) {
-    const C = SRP.CONFIG, ctrl = new AbortController();
+    const C = SRP.CONFIG, ctrl = new AbortController(), sello = metodo === 'GET' ? null : SRP.sesion.selloServidor();
     const reloj = setTimeout(() => ctrl.abort(), C.ESPERA_SERVIDOR_MS);
     let r;
     try {
       r = await fetch(C.API + ruta, {
         method: metodo, credentials: 'same-origin', cache: 'no-store', signal: ctrl.signal,
-        headers: tipo ? { 'content-type': tipo } : {}, body: cuerpo
+        headers: Object.assign(tipo ? { 'content-type': tipo } : {}, sello ? { 'x-srp-sello': sello } : {}), body: cuerpo
       });
     } catch (e) {
       return { ok: false, sinRed: true, mensaje: 'No hay conexión con el servidor. Lo capturado se guarda en este equipo.' };
@@ -49,6 +53,8 @@ SRP.servidor = {
     const codigo = (datos && datos.codigo) || 'ERROR';
     const mensaje = (datos && datos.mensaje) || 'El servidor no pudo atender el pedido (error ' + r.status + ').';
     if (r.status === 401 && ruta !== '/acceso/entrar' && (codigo === 'SIN_SESION' || codigo.startsWith('SESION_'))) SRP.sesion.perdida(mensaje);
+    // Como sin conexión: lo enviado no pasa a «Revisar»; se borra con lo demás del teléfono
+    if (r.status === 409 && codigo === 'SELLO_DISTINTO') { SRP.sesion.servidorVaciado(datos.sello, true); return { ok: false, sinRed: true, mensaje }; }
     return { ok: false, estado: r.status, codigo, mensaje, errores: (datos && datos.errores) || [] };
   }
 };

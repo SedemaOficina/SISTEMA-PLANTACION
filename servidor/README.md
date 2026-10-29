@@ -16,7 +16,7 @@ en el SIA»).
 
 | | |
 |---|---|
-| `src/modulos/srp/` | **El módulo**, lo único que viaja al SIA: se copia tal cual a `sia-backend/src/modulos/srp/`. `crearRutasSrp(pool)` da sus rutas; el backend central lo monta en `/api/srp` con su propia conexión, la de `SRP_DB_USER` y `SRP_DB_PASS` |
+| `src/modulos/srp/` | **El módulo**, lo único que viaja al SIA: se copia tal cual a `sia-backend/src/modulos/srp/`. `crearRutasSrp(pool)` da sus rutas; el backend central lo monta en `/srp/api` con su propia conexión, la de `SRP_DB_USER` y `SRP_DB_PASS` |
 | `src/independiente.ts` | El módulo fuera del SIA, para desarrollo y pruebas: la conexión local (con el archivo de contraseñas del equipo y, si se pide, asumiendo `srp_api`) y una aplicación que lo monta |
 | `src/comun/procedencia.ts` | Fuera del SIA, sustituye al módulo común de procedencia de `sia-backend`, que el módulo importa para su registro de entradas y su límite por procedencia, con el mismo criterio: la dirección es la primera que no es de un intermediario propio. No viaja: en el SIA se usa el suyo |
 | `src/iniciar.ts` | Arranca el módulo solo |
@@ -51,7 +51,7 @@ repositorio:
 
 | Guion | Qué hace |
 |---|---|
-| `db/srp/01-srp-esquema.sql` | Comprueba que estén PostGIS, `territorio` y `territorio_lectura`; crea el esquema `srp` y la tabla de versiones. Si el esquema ya está instalado, se detiene sin tocar nada |
+| `db/srp/01-srp-esquema.sql` | Comprueba que estén PostGIS, `territorio` y `territorio_lectura`; crea el esquema `srp`, la tabla de versiones y el sello de los datos (`srp.sello`). Si el esquema ya está instalado, se detiene sin tocar nada |
 | `db/srp/02-srp-tablas.sql` | Las diez tablas, con sus llaves, reglas, índices y comentarios. **Generado**: no se edita a mano |
 | `db/srp/03-srp-acceso.sql` | Contraseñas (sólo derivadas con sal, nunca en claro), sesiones (sólo el resumen del testigo) y el registro de entradas; las dos bitácoras, que sólo crecen, y `srp.recortar_acceso`, la única excepción: borra el registro de entradas y las sesiones terminadas de hace más de un año |
 | `db/srp/04-srp-sobre-territorio.sql` | La capa propia (colonias prioritarias), el índice espacial de árboles y jornadas, `srp.derivar`, que da alcaldía, colonia y celda UGA de un punto sobre `territorio` con las mismas reglas que la aplicación, el folio (la secuencia de cada celda y lo que se congela con cada folio) y la prioridad de la colonia, congelada con cada árbol y cada jornada |
@@ -62,6 +62,7 @@ repositorio:
 | `db/srp/09-srp-calles.sql` | La calle de cada árbol sobre `territorio.calles`: `srp.calle`, con la versión vigente de la capa (`srp.version_calles`: la de `territorio.version_capa` y, si el SIA no la registró ahí, la del paquete), el disparador que la pone al recibir el árbol y al corregir su punto, y el procedimiento `srp.recalcular_calles`, para después de instalar la capa, por tandas de 2,000 confirmadas una por una. Sin la capa, el árbol queda por asignar |
 | `db/srp/10-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
 | `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
+| `db/srp/vaciar-tras-prueba.sql` | **No es de la instalación.** Se corre una sola vez, después de la prueba en campo con datos ficticios: `psql -d <base> -v ON_ERROR_STOP=on -v confirmar=VACIAR-SRP -f vaciar-tras-prueba.sql`. Sin la confirmación no toca nada. Borra jornadas, árboles, registros de fotografías, folios (vuelven a empezar en 1), duplicados, prioridades, cargas y lo que la bitácora dice de ellos; conserva cuentas, catálogos, parámetros y el registro de entradas; cambia el sello de los datos. La carpeta `SRP_FOTOS_DIR` se vacía aparte. La cuenta del servicio no lo puede correr |
 
 Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
 de `datos/esquema.json` con `python herramientas/generar_sql.py`; si el diccionario cambia, se vuelve a
@@ -167,8 +168,10 @@ sus archivos queden byte por byte como en su repositorio.
 
 ## El servicio: acceso, cuentas, catálogos, consultas y recepción
 
-En el SIA lo monta el backend central: `app.use("/api/srp", crearRutasSrp(poolSrp))`. Fuera de él,
-`npm run iniciar` lo arranca solo, en `SRP_PUERTO` (3100), bajo `/api/srp`. La configuración, toda por
+En el SIA lo monta el backend central como los demás módulos: `app.use("/api/srp", crearRutasSrp(poolSrp))`. El
+navegador lo ve en `/srp/api/`, dentro de la ruta de la aplicación: el servidor web pasa `/srp/api/` a `/api/srp/`, como
+con Categorías, y la cookie va acotada a `/srp/api` (`SRP_RUTA`). Fuera del SIA, `npm run iniciar` lo arranca solo, en
+`SRP_PUERTO` (3100), bajo `/api/srp`, y `pruebas/servir.py` hace la misma traducción. La configuración, toda por
 variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respuestas de error llevan
 `{ codigo, mensaje }`: el código lo lee la aplicación y el mensaje lo ve la persona.
 
@@ -270,7 +273,8 @@ validación con la de la aplicación caso por caso.
 
 ### Recepción y folio
 
-`POST /envios` recibe hasta 100 operaciones por vez, en el orden en que se hicieron, cada una con el nombre
+`POST /envios` recibe hasta 100 operaciones por vez (el teléfono manda hasta 80 KB de JSON por envío: el backend del
+SIA corta el JSON en 100 KB), en el orden en que se hicieron, cada una con el nombre
 de la acción de permisos que la autoriza, o de lo que hace: para las jornadas, `jornada.crear`,
 `jornada.editar`, `jornada.cerrar`, `jornada.reabrir`, `jornada.revisar`, `jornada.cierre`,
 `jornada.reporte`, `jornada.relevo`, `jornada.compartir`, `jornada.terminar` y `jornada.eliminar`; para los árboles, `registro.crear`,
@@ -280,6 +284,11 @@ propia transacción, así que una rechazada no detiene a las demás. La respuest
 quedó recibida —con el renglón como lo guardó el servidor— o rechazada y por qué, con los mensajes de los
 formularios de la aplicación. Reenviar una operación ya recibida no duplica nada: el id del registro es la
 clave, y la respuesta es la misma.
+
+**El sello de los datos.** `POST /acceso/entrar` y `GET /acceso/yo` responden también el sello de `srp.sello`, y el
+teléfono lo manda en la cabecera `X-SRP-Sello` con todo lo que envía (`src/modulos/srp/sello.ts`). El guion de vaciado
+lo cambia: un envío con el sello de antes se responde `409 SELLO_DISTINTO`, con el vigente, y el teléfono borra lo que
+guardaba en lugar de reenviarlo. Sin cabecera se atiende como siempre; el acceso no se revisa.
 
 - El servidor no se queda con lo que calcula el teléfono: vuelve a ubicar el punto con `srp.derivar`, y
   pone el autor, la institución, el estado y el programa del árbol, que es el de su jornada.
@@ -479,7 +488,7 @@ npm test
 
 **La aplicación con su servicio.** Para usarlos juntos en esta computadora, como quedarán en el SIA:
 `SRP_COOKIE_SEGURA=no SRP_ROL=srp_api npm run iniciar` aquí, y `python pruebas/servir.py` en la carpeta del
-proyecto. Ese servidor sirve la aplicación en `http://127.0.0.1:8099/` y reenvía `/api/` al servicio. La
+proyecto. Ese servidor sirve la aplicación en `http://127.0.0.1:8099/` y reenvía `/srp/api/` al servicio. La
 aplicación habla con el servicio sólo con `ES_FICTICIO: false`. `pruebas/prueba_conexion.py` lo hace así en
 su navegador, sin cambiar el archivo.
 

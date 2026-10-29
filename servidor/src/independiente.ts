@@ -1,11 +1,11 @@
 import express from "express";
 import pg from "pg";
 import { contrasenaDe } from "../bd.js";
-import { leerConfig, numero, type ConfigSrp } from "./modulos/srp/config";
+import { leerConfig, MONTAJE, numero, type ConfigSrp } from "./modulos/srp/config";
 import { crearRutasSrp } from "./modulos/srp/rutas";
 
 /* EL MÓDULO FUERA DEL SIA: para desarrollo y pruebas, contra la base local. En el SIA no se usa este
-   archivo: el backend central monta crearRutasSrp(poolSrp) en /api/srp con su propia conexión, la de
+   archivo: el backend central monta crearRutasSrp(poolSrp) en /srp/api con su propia conexión, la de
    SRP_DB_USER y SRP_DB_PASS. Nada de esta carpeta, salvo modulos/srp/, viaja al SIA.
 
    SRP_PUERTO   Puerto (por omisión 3100).
@@ -14,7 +14,7 @@ import { crearRutasSrp } from "./modulos/srp/rutas";
    SRP_ROL      Cuenta que se asume al conectar (el parámetro role), para que la cuenta local de administración
                 opere con los permisos de srp_api. */
 
-export { leerConfig } from "./modulos/srp/config";
+export { leerConfig, MONTAJE } from "./modulos/srp/config";
 export { derivar, temporal, verificar } from "./modulos/srp/contrasenas";
 // Para las pruebas, que comparan estas reglas con las de la aplicación
 export * as permisos from "./modulos/srp/permisos";
@@ -51,11 +51,11 @@ export function crearGrupo({ rol = "" }: { rol?: string } = {}): pg.Pool {
   });
 }
 
-// La aplicación: el módulo montado donde lo monta el SIA, en la ruta de la configuración
+// La aplicación: el módulo montado donde lo monta el SIA (/api/srp); la ruta del navegador la traduce el servidor web
 export function crearApp({ pool, config = leerConfig(), proxy = 2 }: { pool: pg.Pool; config?: ConfigSrp; proxy?: number }): express.Express {
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", proxy);
-  app.use(config.ruta, crearRutasSrp(pool, config));
+  app.use(MONTAJE, crearRutasSrp(pool, config));
   return app;
 }

@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { conectar, limpiar } from './apoyo.js';
-import { leerConfig, crearGrupo, crearApp, derivar } from '../dist/independiente.js';
+import { leerConfig, crearGrupo, crearApp, derivar, MONTAJE } from '../dist/independiente.js';
 
 const CORRIDA = Date.now();
 const CLAVE = 'Fotografias de prueba 2026';
@@ -43,8 +43,8 @@ before(async () => {
   servidor = crearApp({ pool: grupo, config, proxy: 0 }).listen(0);
   sinCarpeta = crearApp({ pool: grupo, config: leerConfig({ SRP_COOKIE_SEGURA: 'no' }), proxy: 0 }).listen(0);
   await Promise.all([servidor, sinCarpeta].map((s) => new Promise((r) => s.once('listening', r))));
-  base = 'http://127.0.0.1:' + servidor.address().port + config.ruta;
-  baseSin = 'http://127.0.0.1:' + sinCarpeta.address().port + config.ruta;
+  base = 'http://127.0.0.1:' + servidor.address().port + MONTAJE;
+  baseSin = 'http://127.0.0.1:' + sinCarpeta.address().port + MONTAJE;
 });
 
 after(async () => {

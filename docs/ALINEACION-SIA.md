@@ -45,7 +45,7 @@ de equipo, versiones ni detalles de seguridad de la infraestructura del SIA.
 
 | # | Decisión | Estado |
 |---|---|---|
-| 1 | El esquema se llama `srp`, la cuenta `srp_api` y la ruta `/api/srp`: siglas, como `jpv`, `irs` o `caec`, sin chocar con `plantacion` | Aprobada (08-10-2026) |
+| 1 | El esquema se llama `srp`, la cuenta `srp_api` y la ruta `/srp/api` (la pidió el SIA el 28-10-2026, como Categorías; antes `/api/srp`): siglas, como `jpv`, `irs` o `caec`, sin chocar con `plantacion` | Aprobada (08-10-2026) |
 | 2 | El servicio pasa a TypeScript con la forma de los módulos del SIA, para copiarse tal cual | Aprobada (08-10-2026) |
 | 3 | Dónde viven las cuentas de las personas: en el SRP (las da de alta la Administración global desde la aplicación) o en `acceso` del SIA | **Inclinada a esquema propio**: falta el acuerdo por escrito. Hay precedente: el 21-10-2026 el SIA instaló el Tablero de Categorías de Protección con cuentas propias que opera la Oficina de la Secretaría desde su vista de administración; el SIA sólo mantiene el servidor (D324) |
 
@@ -120,11 +120,13 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    shapefile.)
 3. `territorio.malla_uga_1km`: ¿es la versión final que el SIA entregó el 22-09-2026? El folio depende de
    ella. Y `territorio.alcaldia`: ¿es la misma capa de alcaldías que usa el SRP?
-4. ¿Les parecen bien el esquema `srp`, la cuenta `srp_api` y la ruta `/api/srp`?
+4. ¿Les parecen bien el esquema `srp`, la cuenta `srp_api` y la ruta `/api/srp`? (Respondido el 28-10-2026: la ruta es `/srp/api/`.)
 5. La aplicación es una página estática que se instala en el teléfono: ¿dónde la publican, junto a su
-   API? ¿La API va en `/api/srp` o colgada de la ruta de la aplicación, como Categorías de Protección?
+   API? ¿La API va en `/api/srp` o colgada de la ruta de la aplicación, como Categorías de Protección? (Respondido el
+   28-10-2026: en `/srp/`, con la API en `/srp/api/`.)
 6. ¿Cuál es el límite de subida del servidor web para `/api/`? De él dependen las tandas de la carga
-   masiva y las fotografías.
+   masiva y las fotografías. (Respondido el 28-10-2026: alcanza para la fotografía de 1 MB; el JSON, hasta 100 KB, y el
+   SRP manda hasta 80 KB.)
 
 ## 5. Lo que no se copia
 
@@ -146,7 +148,7 @@ equipo, aplican igual al SRP:
 | 2 | Límite de intentos por procedencia: contar sólo los fallidos, y tomar la dirección de la persona descartando los saltos conocidos, no la última de `X-Forwarded-For`, que es el intermediario y es la misma para todos. El SIA lo corrige en su módulo común (`src/comun/procedencia.ts`): se importa de ahí, no se copia | Las entradas fallidas se cuentan por dirección, con la de `procedencia.ts` del SIA, que ya salta sus intermediarios: pasadas 30 en 15 minutos (`SRP_INTENTOS_POR_PROCEDENCIA`), esa dirección espera (429) sin que se verifique nada. El bloqueo por cuenta sigue igual | **Hecho** (bloque 233) |
 | 3 | Cada petición termina en menos de un minuto: el servidor web corta la API después. Una alta masiva de cuentas con un hash lento perdía las contraseñas temporales | La carga masiva va por tandas de hasta 300 árboles y 80 KB (5,000 en 14 s, medido en el bloque 229) y el envío, por lotes de hasta 100 operaciones; en la base, cada consulta de `srp_api` se cancela a los 50 s | **Hecho** (bloques 229 y 233) |
 | 4 | El hash de contraseñas con los parámetros de `acceso` (scrypt N=2^14): con 2^17, diez accesos simultáneos ocupaban 1.3 GB de una memoria que comparten todos los módulos | Igual que `acceso`: `scrypt$16384$8$1$sal$derivada` en base64url, sal de 16 bytes, 64 de derivada, texto en NFKC. Las guardadas antes siguen verificando | **Hecho** (bloque 206) |
-| 5 | La cookie con su ruta acotada, nunca `/`: con `/` viaja a todas las aplicaciones del dominio | `Path=/api/srp` | Bien |
+| 5 | La cookie con su ruta acotada, nunca `/`: con `/` viaja a todas las aplicaciones del dominio | `Path=/srp/api` | Bien |
 | 6 | Sesiones propias de cada aplicación: con una tabla común, «cerrar sesiones» cierra también las de otra | Tabla propia, `srp.sesiones` | Bien |
 | 7 | Bitácora que no se edita ni se borra, por disparador y no sólo por permisos; nada que la recorte | Disparadores que impiden editarla, borrarla o vaciarla, también a quien administra la base | **Hecho** (bloque 206) |
 | 8 | Fragmento del servidor web: `absolute_redirect off` en las redirecciones; sin `Strict-Transport-Security`, que se decide para todo el dominio; la entrada de sesión con su límite de velocidad | `servidor/servidor-web/srp.conf`, con la ruta pública por confirmar (pregunta 5); desde el bloque 244, `location ^~ /srp/`, como el Tablero de Categorías de Protección, y la comprobación de `/srp/sw.js` al instalar | **Hecho** (bloques 206 y 244) |

@@ -1,7 +1,10 @@
 /* CONFIGURACIÓN DEL MÓDULO SRP. Todo se toma de variables de entorno, con valores de arranque. Nada secreto
    vive aquí: la cuenta de la base la pone el backend, con SRP_DB_USER y SRP_DB_PASS en su archivo de entorno.
 
-   SRP_RUTA                  Ruta de la API que ve el navegador (por omisión /api/srp): acota la cookie.
+   SRP_RUTA                  Ruta de la API que ve el navegador (por omisión /srp/api, dentro de la de la
+                             aplicación, como pidió el SIA): acota la cookie. El módulo se monta por dentro en
+                             /api/srp (MONTAJE), como los demás del SIA, y el servidor web pasa /srp/api/ a
+                             /api/srp/, igual que con Categorías.
    SRP_COOKIE_SEGURA         «no» sólo en desarrollo sin HTTPS. Se decide aquí y no por la petición: el
                              intermediario que termina el cifrado no avisa que llegó cifrada.
    SRP_SESION_INACTIVIDAD_DIAS   Días sin uso tras los que la sesión pide otra vez la contraseña (7).
@@ -53,10 +56,13 @@ export function numero(v: string | undefined, porOmision: number, nombre = "el v
   return porOmision;
 }
 
+// Donde el backend del SIA monta el módulo; la ruta que ve el navegador es otra (SRP_RUTA) y la traduce el servidor web
+export const MONTAJE = "/api/srp";
+
 export function leerConfig(env: Entorno = process.env): ConfigSrp {
   const n = (clave: string, porOmision: number) => numero(env[clave], porOmision, clave);
   return {
-    ruta: env.SRP_RUTA || "/api/srp",
+    ruta: env.SRP_RUTA || "/srp/api",
     cookieSegura: env.SRP_COOKIE_SEGURA !== "no",
     acceso: {
       // Una semana sin entrar y pide la contraseña otra vez; cada uso renueva la semana, sin límite total

@@ -49,6 +49,8 @@ SRP.cola = {
   DEL_SERVIDOR: ['folio', 'alcaldia_cve', 'alcaldia', 'colonia_cve', 'colonia', 'uga', 'uga_borde_m', 'capa_version',
     'calle_estado', 'calle_clave', 'calle_version', 'calle', 'calle_entre_1', 'calle_entre_2', 'calle_esquina', 'vialidad_red', 'vialidad_tipo', 'calle_atiende', 'calle_llave', 'calle_distancia_m'],
   LOTE: 100,
+  // Y hasta 80 KB de JSON por envío: el backend del SIA corta el JSON en 100 KB
+  LOTE_BYTES: 80000,
 
   activa() { return SRP.remoto.activo(); },
 
@@ -188,6 +190,7 @@ SRP.cola = {
     const eliminadas = new Set();   // jornadas que el servidor dice que se eliminaron
     for (;;) {
       const lote = [], ids = new Set(), sobran = new Set();
+      let peso = 0;
       for (const o of this.ops) {
         if (o.tipo === 'foto' || o.usuario_id !== u.id || ids.has(o.registro_id) || sobran.has(o)) continue;
         if (o.rechazo || esperan.has(o.registro_id) || (o.version === null && !this.ALTAS.includes(o.tipo))) { esperan.add(o.registro_id); continue; }
@@ -200,7 +203,11 @@ SRP.cola = {
           else { sobran.add(o); await this.heredar(o, o.version); }
           continue;
         }
-        lote.push({ o, op: { tipo: o.tipo, datos: d } });
+        const op = { tipo: o.tipo, datos: d }, bytes = new TextEncoder().encode(JSON.stringify(op)).length;
+        // Lo que ya no cabe va en el envío que sigue; una operación sola siempre sale
+        if (lote.length && peso + bytes > this.LOTE_BYTES) break;
+        lote.push({ o, op });
+        peso += bytes;
         ids.add(o.registro_id);
         if (lote.length === this.LOTE) break;
       }

@@ -76,10 +76,12 @@ GRANT SELECT, INSERT, UPDATE ON srp.cargas TO srp_api;
 -- Los parámetros: la Administración los cambia; volver al valor de arranque es escribirlo
 GRANT SELECT, INSERT, UPDATE ON srp.parametros TO srp_api;
 GRANT SELECT ON srp.migraciones TO srp_api;
+-- El sello de los datos, sólo para leerlo: lo cambia el guion de vaciado, que corre quien administra la base
+GRANT SELECT ON srp.sello TO srp_api;
 
 -- La capa propia sólo se lee: la carga quien administra la base
 GRANT SELECT ON srp.capas, srp.capa_prioritarias TO srp_api;
-REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric), srp.version_calles(), srp.recortar_acceso() FROM PUBLIC;
+REVOKE ALL ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric), srp.version_calles(), srp.recortar_acceso(), srp.sello_nuevo() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION srp.punto(numeric, numeric), srp.derivar(numeric, numeric, integer), srp.prioridad(numeric, numeric), srp.especie_clave(text, text), srp.vecinos(uuid, numeric), srp.de_carga_oculta(uuid), srp.calle(numeric, numeric), srp.version_calles(), srp.recortar_acceso() TO srp_api;
 -- Volver a calcular la calle de todos los árboles es de quien administra la base, después de instalar la capa
 REVOKE ALL ON PROCEDURE srp.recalcular_calles(integer) FROM PUBLIC;

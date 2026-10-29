@@ -75,6 +75,7 @@ SRP.sesion = {
   async autenticarEnServidor(correo, clave) {
     const r = await SRP.servidor.pedir('POST', '/acceso/entrar', { correo, contrasena: clave });
     if (!r.ok) return { ok: false, motivo: r.sinRed ? 'Para entrar hace falta conexión con el servidor. Intente de nuevo cuando tenga señal.' : r.mensaje };
+    await this.revisarSello(r.datos.sello, false);
     // Con una temporal, primero escribe una propia; la de ahora hace falta para cambiarla
     if (r.datos.debeCambiar) {
       this.temporal = { cuenta: r.datos.usuario, actual: clave };
@@ -143,6 +144,8 @@ SRP.sesion = {
       if (this.usuario) SRP.remoto.cambiar(r.sinRed ? 'sin-senal' : 'error');
       return;
     }
+    // El servidor se vació después de la prueba: lo de este teléfono se borra y la pantalla vuelve a empezar
+    if (await this.revisarSello(r.datos.sello, true)) return;
     // La Administración le dio una temporal: se entra con ella para escribir una propia
     if (r.datos.debeCambiar) { this.perdida('Su contraseña ahora es temporal: entre con ella para escribir una propia.'); return; }
     const antes = this.usuario;
@@ -152,6 +155,47 @@ SRP.sesion = {
     // Si la Administración le cambió el perfil, la institución o el nombre, se vuelve a entrar con lo nuevo
     if (['perfil', 'organizacion_id', 'nombre_completo', 'activo'].some(k => antes[k] !== u[k])) SRP.app.entrar();
     SRP.remoto.cargar();
+  },
+
+  /* EL SELLO DE LOS DATOS DEL SERVIDOR (servidor/src/modulos/srp/sello.ts). Llega al entrar y al confirmar la
+     sesión, y viaja con lo que se envía. Cambia cuando el servidor se vacía después de la prueba en campo: lo que
+     guarda este teléfono es de la prueba y se borra, en lugar de reenviarlo al servidor limpio. */
+  AVISO_VACIADO: 'El servidor se vació después de la prueba: se borró lo que guardaba este teléfono.',
+  selloServidor() { try { return localStorage.getItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR); } catch (e) { return null; } },
+
+  /* Devuelve true si el servidor se vació y se borró lo de este teléfono; la primera vez sólo lo anota. El sello empieza
+     con la fecha y la hora: sólo uno más nuevo que el guardado es un vaciado. Uno más viejo es un respaldo de antes del
+     vaciado: no se borra nada y se conserva el guardado, así lo pendiente se recibe */
+  async revisarSello(sello, recargar) {
+    if (!sello) return false;
+    const antes = this.selloServidor();
+    if (antes && sello > antes) { await this.servidorVaciado(sello, recargar); return true; }
+    if (!antes) { try { localStorage.setItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR, sello); } catch (e) { /* se anota la próxima vez */ } }
+    return false;
+  },
+
+  /* Se borran los árboles, las jornadas, la bitácora, lo pendiente de enviar y los borradores; se quedan la sesión,
+     las cuentas y los catálogos. Con `recargar` la pantalla vuelve a empezar, porque lo que estaba a la vista ya no
+     existe, y el aviso se da al abrir; al entrar no hace falta. */
+  async servidorVaciado(sello, recargar) {
+    if (this._vaciando) return;
+    this._vaciando = true;
+    await SRP.almacen.vaciarCapturas();
+    SRP.remoto.vaciar();
+    try {
+      [SRP.formulario.CLAVE_BORRADOR, SRP.activa.CLAVE_BORRADOR, SRP.reportes.CLAVE_BORRADOR, SRP.activa.CLAVE_EXCESO].forEach(k => localStorage.removeItem(k));
+      if (sello) localStorage.setItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR, sello);
+    } catch (e) { /* sin almacenamiento: no había borradores */ }
+    if (!recargar) { this._vaciando = false; SRP.util.anunciar(this.AVISO_VACIADO, 'aviso'); return; }
+    try { sessionStorage.setItem(SRP.CONFIG.CLAVE_AVISO_VACIADO, '1'); } catch (e) { /* se recarga sin aviso */ }
+    location.reload();
+  },
+
+  // Al abrir después de recargar por un servidor vaciado, el aviso una vez
+  avisarVaciado() {
+    let hay = false;
+    try { hay = sessionStorage.getItem(SRP.CONFIG.CLAVE_AVISO_VACIADO) === '1'; sessionStorage.removeItem(SRP.CONFIG.CLAVE_AVISO_VACIADO); } catch (e) { return; }
+    if (hay) setTimeout(() => SRP.util.anunciar(this.AVISO_VACIADO, 'aviso'), 600);
   },
 
   /* El servicio ya no reconoce la sesión: se vuelve a pedir la contraseña; lo capturado se queda. Con un árbol
