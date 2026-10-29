@@ -7143,3 +7143,80 @@ en D345.
 
 **Siguiente paso.** La segunda parte del bloque 6: pasar todo a la 1.0.0, rehacer los manuales, armar el paquete y el
 ensayo de instalación.
+
+## Bloque 266 — La versión 1.0.0 y el paquete para el SIA (29-10-2026)
+
+**Versión 1.0.0.** La segunda parte del bloque 6 del plan de corrección de la auditoría del 27-10-2026: la numeración
+de la primera instalación (D337), los manuales, el paquete armado sobre el `sia-backend` vigente y su ensayo de
+instalación. Lo programado va en D346.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| La versión | 1.4.10 | 1.0.0, la primera que se instala (D337): la franja, `VERSION`, las marcas y la instalación en la base |
+| Cómo instala el SIA la base | `instalar.sql`, con `\ir`: por la entrada estándar, como el SIA aplica el SQL de cada módulo, no encuentra los archivos | `srp-instalar-por-stdin.sql`, con los mismos guiones ya juntos; lo arma un programa y `auditoria.py` y el empaquetador revisan que corresponda |
+| Un envío roto o de más de 100 KB, en el SIA | El backend del SIA lee el JSON antes del módulo: respondía la página de error de Express, en HTML | `{ codigo, mensaje }`, como Categorías: el manejador de errores del SRP va también detrás del módulo |
+| El vaciado sin la palabra de confirmación | No tocaba nada, pero salía como si hubiera terminado bien | Sale con error: «No se vació nada: falta -v confirmar=VACIAR-SRP» |
+| Los manuales | Decían 1.0.0, pero «Coordinador», el folio en la ficha y 16 diferencias con la aplicación (D1-08 a D1-23); los PDF sin idioma ni marcadores (B3-01) | Al día con la aplicación, con «Coordinación» y «Dirección»; 37 y 24 páginas, con idioma, estructura y un marcador por sección |
+| Las dependencias del servicio local | Un aviso alto (`body-parser`) y uno moderado (`qs`) | Actualizadas, sin avisos en lo que corre (decisión 15) |
+| Dos Administraciones que se editan una a la otra al mismo tiempo | La base abortaba una por bloqueo mutuo: error 500 | Las dos terminan; a la segunda se le dice por qué no (`FOR NO KEY UPDATE`) |
+| El mensaje del GPS cuando no mejora | «… toque «Actualizar ubicación»…», y el botón dice otra cosa | «… toque «Actualizar ubicación con mi posición»…», como el botón |
+| «Revertir» en el instructivo | Restaurar el respaldo de toda la base, que es compartida con los demás módulos | Quitar sólo lo del SRP: su esquema, su cuenta y su línea de acceso |
+| `/api/srp/` | Sólo se decía que no se publica | El fragmento la cierra con 404 |
+| El paquete | El de la 1.1, sobre una copia de `sia-backend` del 21-10, nunca enviado | El de la 1.0.0, sobre el último commit de `main` del 29-10, con su instructivo completo, en el repositorio privado `srp-sia` con la etiqueta `entrega-2026-10-29` |
+
+**Qué cambió.**
+- `VERSION`, las 65 marcas de `index.html`, la etapa de `js/config.js`, el README (la versión y la jornada compartida
+  sin «desde la 1.4.1») y `docs/MEJORAS.md`; `servidor/db/srp/10-srp-rol-y-grants.sql` (el nombre de la instalación).
+- `herramientas/instalar_por_stdin.py` (nuevo) y `servidor/db/srp/srp-instalar-por-stdin.sql` (generado);
+  `servidor/db/srp/instalar.sql` (dice cuál usar); `herramientas/empaquetar.py` (pide el instalador por la entrada
+  estándar al día y nombrado en el instructivo); `pruebas/auditoria.py` (que corresponda a los guiones, y dos casos
+  más del instructivo).
+- `servidor/src/modulos/srp/rutas.ts` (`manejarErroresSrp`, exportado), `servidor/src/independiente.ts` (lee el JSON
+  antes del módulo, como el SIA) y `servidor/pruebas/acceso.test.js` (un JSON roto y uno de 120 KB).
+- `servidor/db/srp/vaciar-tras-prueba.sql` (sale con error sin la confirmación) y `servidor/bd.js` (lo corre como
+  psql).
+- `servidor/package-lock.json`: `body-parser` 2.4.0 y `qs` 6.17.1.
+- `pruebas/ensayo_instalacion.py` (nuevo): el ensayo de instalación de la auditoría, adaptado a la 1.0.0, para correrlo
+  con cada entrega.
+- `servidor/src/modulos/srp/cuentas.ts` (la edición de una cuenta, con `FOR NO KEY UPDATE`).
+- `js/mapa.js` (el mensaje del GPS) y `pruebas/prueba.py`; `js/reportes.js` (un comentario que decía «ese día» en lugar
+  de «la jornada»).
+- `servidor/servidor-web/srp.conf` (`/api/srp/` con 404), `servidor/db/srp/10-srp-rol-y-grants.sql` (la verificación con
+  `SET ROLE` y cada orden que debe fallar en su transacción) y `servidor/datos-arranque.js` (el archivo empieza con
+  `\set ON_ERROR_STOP on`).
+- Los manuales: `docs/manual/manual-personal.html`, `manual-administracion.html`, sus PDF y 32 capturas;
+  `herramientas/manual_pdf.py` (idioma, estructura y marcadores, y el membrete chico una sola vez) y
+  `herramientas/manual_personal.py`.
+- Documentos: el README del servidor (el instalador por la entrada estándar, el montaje con su manejador y el paquete
+  de la 1.0.0), `docs/PLAN-TRASPASO-SIA.md`, `docs/FASE2-Y-TRASPASO.md`, `docs/ALINEACION-SIA.md` y `docs/DECISIONES.md`
+  (D346).
+- Fuera del repositorio: el paquete en el repositorio privado de la entrega, con su instructivo, que lleva las cuentas
+  iniciales.
+
+**Verificación.**
+- `pruebas/por_tramos.py` (la prueba completa, 88 tramos): 1,573 de 1,574, 50 min. La única falla es la conocida del
+  Excel de `originales/`. Después del cambio del mensaje del GPS, su tramo otra vez: 27 de 27.
+- `npm test`: 122 de 122 (una nueva: el JSON roto y el de 120 KB). En una de las corridas falló la de las dos
+  Administraciones que se editan al mismo tiempo; corregida, 122 de 122 y la serie de acceso 3 veces seguidas, 24 de 24.
+- Antes y después:
+  - el JSON roto, con el lector global y el manejador sólo dentro del módulo, respondía la página de Express en HTML;
+    ahora `{"codigo":"JSON_INVALIDO", …}`;
+  - el bloqueo mutuo, reproducido en la base con dos conexiones: con `FOR UPDATE`, «se ha detectado un deadlock»; con
+    `FOR NO KEY UPDATE`, las dos siguen;
+  - el instalador por la entrada estándar con un renglón agregado a mano: el empaquetador se detiene.
+- `pruebas/prueba_conexion.py`: 138 de 138; con la copia que se entrega (`--app`), 141 de 141.
+- `pruebas/auditoria.py`: 154 comprobaciones (dos nuevas: el instalador por la entrada estándar al día, y los casos del
+  instructivo que lo deben nombrar), 0 hallazgos.
+- El ensayo de instalación en limpio con el paquete y su instructivo (el guion de la auditoría, adaptado a la entrada
+  estándar, al sello y al vaciado): 82 de 82. En las primeras corridas, lo que falló era del propio ensayo: la copia
+  local de `sia-backend` no traía el commit, el orden de las huellas cambiaba al restaurar, y la cookie, acotada a
+  `/srp/api`, no viajaba si se le hablaba al backend directo. Al terminar, la base local quedó idéntica.
+- El fragmento en un nginx real (1.26), con una regla general para `/api/` como la del SIA: `nginx -t` sin errores, las
+  cabeceras en cada ruta del SRP y `/api/srp/` con 404.
+- Una revisión independiente del instructivo, hecha por un revisor que no lo escribió, como lo seguiría quien instala:
+  19 observaciones, todas atendidas; el manifiesto, 124 de 124, y el diff aplica limpio.
+- La entrega, bajada otra vez de GitHub por su etiqueta: 124 de 124 archivos con su suma.
+- GitHub: la corrida del bloque 265 (40933489062), en verde.
+
+**Siguiente paso.** Que Liber le dé acceso al SIA al repositorio privado `srp-sia` y le avise de la etiqueta
+`entrega-2026-10-29`. Con el sistema instalado, la prueba en campo y el vaciado.

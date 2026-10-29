@@ -292,7 +292,7 @@ SRP.mapa = {
     p.dataset.tipo = 'normal';
     const consejo = this.vigilancia != null ? 'Afinando la lectura del GPS (<span aria-hidden="true">faltan <span data-faltan>' + this.faltanAfinado() + '</span> s</span>' +
         '<span class="oculto-visual">hasta ' + tope + ' s</span>). Mientras, puede llenar lo demás.'
-      : this.sinMejora && n.nivel === 'baja' ? 'El GPS no mejoró en ' + tope + ' s. Vaya a un lugar abierto y toque «Actualizar ubicación», o arrastre el punto hasta el árbol.'
+      : this.sinMejora && n.nivel === 'baja' ? 'El GPS no mejoró en ' + tope + ' s. Vaya a un lugar abierto y toque «Actualizar ubicación con mi posición», o arrastre el punto hasta el árbol.'
       : n.consejo;
     p.innerHTML = '<span class="precision" data-nivel="' + n.nivel + '"><span class="precision-punto" aria-hidden="true"></span>' +
       n.texto + ' · ±' + Math.round(m) + ' m</span>' + (consejo ? ' <span class="precision-consejo">' + consejo + '</span>' : '');

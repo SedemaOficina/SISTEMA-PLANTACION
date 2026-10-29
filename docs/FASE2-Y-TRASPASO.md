@@ -10,7 +10,7 @@ aquí, además de en `DECISIONES.md`. El detalle técnico de cada campo está en
 `datos/DICCIONARIO-DATOS.md`, que se genera de él); las reglas de la Fase 2 del esquema son las `S-nn`
 que se citan abajo.
 
-**La Etapa 1 quedó cerrada con la versión 0.9.41 (D249).** Estado al 21-10-2026: versión 1.1, con el servidor construido y su paquete de instalación (D315, D321, D322). Base del teléfono versión 10: `srp_db` en pruebas, `srp_sia` en la real.
+**La Etapa 1 quedó cerrada con la versión 0.9.41 (D249).** Estado al 29-10-2026: versión 1.0.0, la primera que se instala, con el servidor construido y su paquete de instalación (D337, D346). Base del teléfono versión 10: `srp_db` en pruebas, `srp_sia` en la real.
 
 **El servidor se construye en este proyecto**, en la carpeta `servidor/`, como módulo del backend central
 del SIA (`src/modulos/srp/`), con la forma de sus módulos (D277). Se
@@ -74,7 +74,7 @@ Ver `servidor/README.md`.
 
 ## 1. Qué construir en el servidor
 
-Lo que dice «Hecho» ya está en el servidor y en el paquete de la versión 1.1; el detalle, en
+Lo que dice «Hecho» ya está en el servidor y en el paquete de la versión 1.0.0; el detalle, en
 `servidor/README.md`. La última columna dice dónde vive cada regla en la aplicación.
 
 | # | Tema | Qué debe hacer el servidor | Estado | Dónde está hoy en el código |

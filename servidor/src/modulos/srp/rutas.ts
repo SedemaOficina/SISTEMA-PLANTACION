@@ -20,10 +20,12 @@ import { traducir } from "./errores";
    Frontera propia y conexión propia: entra como `srp_api`, que sólo alcanza el esquema `srp` y lee
    `territorio` por su rol de grupo. Se monta así en el backend:
 
-     app.use("/api/srp", crearRutasSrp(poolSrp));
+     app.use("/api/srp", crearRutasSrp(poolSrp), manejarErroresSrp);
 
    como los demás módulos. El navegador lo ve en /srp/api/, dentro de la ruta de la aplicación: el servidor web pasa
-   /srp/api/ a /api/srp/, como con Categorías, y la cookie va acotada a /srp/api (SRP_RUTA).
+   /srp/api/ a /api/srp/, como con Categorías, y la cookie va acotada a /srp/api (SRP_RUTA). manejarErroresSrp va también
+   detrás del módulo, como el de Categorías: el backend lee el JSON de todas las peticiones antes de llegar aquí, y un
+   cuerpo que no se puede leer o que pasa de 100 KB falla ahí; así también responde { codigo, mensaje }.
 
    Hoy: el acceso con cuentas propias y su registro de entradas, la administración de cuentas, de
    catálogos y de parámetros, la consulta de jornadas y árboles, cada quien lo de su alcance (permisos.ts), y la recepción
@@ -57,11 +59,14 @@ export function crearRutasSrp(pool: pg.Pool, config: ConfigSrp = leerConfig()): 
   r.use((req: Request, res: Response) => {
     res.status(404).json({ codigo: "NO_EXISTE", mensaje: "Esa dirección no existe en el servicio." });
   });
-  // Un error inesperado no enseña detalles internos: el detalle queda en el registro del servidor
-  r.use((e: unknown, req: Request, res: Response, _next: NextFunction) => {
-    const t = traducir(e);
-    if (t.estado >= 500) console.error(`🔥 [SRP] ${req.method} ${req.originalUrl} → ${t.detalle}`);
-    res.status(t.estado).json({ codigo: t.codigo, mensaje: t.mensaje });
-  });
+  r.use(manejarErroresSrp);
   return r;
+}
+
+// Un error inesperado no enseña detalles internos: el detalle queda en el registro del servidor
+export function manejarErroresSrp(e: unknown, req: Request, res: Response, next: NextFunction): void {
+  if (res.headersSent) return next(e);
+  const t = traducir(e);
+  if (t.estado >= 500) console.error(`🔥 [SRP] ${req.method} ${req.originalUrl} → ${t.detalle}`);
+  res.status(t.estado).json({ codigo: t.codigo, mensaje: t.mensaje });
 }

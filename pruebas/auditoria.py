@@ -88,6 +88,12 @@ mirar(_meta and _csp and _csp.group(1) == _meta.group(1) + "; frame-ancestors 's
       and 'Strict-Transport-Security' not in re.sub(r'#[^\n]*', '', _cab) and 'add_header' not in _sin_com
       and _sin_com.count('location') == _sin_com.count('include /RUTA/DE/LOS/FRAGMENTOS/srp-cabeceras.conf;'),
       'el servidor web manda la política de seguridad de index.html con frame-ancestors y las cabeceras globales, en cada ubicación y sin HSTS')
+# El instalador por la entrada estándar, la vía con que el SIA aplica el SQL de cada módulo, trae los mismos guiones que
+# instalar.sql, en su orden: no se edita a mano
+import sys as _sys0
+_sys0.path.insert(0, APP + '/herramientas')
+import instalar_por_stdin as _stdin
+mirar(_stdin.al_dia(), 'servidor/db/srp/srp-instalar-por-stdin.sql trae, en su orden, los guiones de instalar.sql (lo arma herramientas/instalar_por_stdin.py)')
 # El pie de «Por calle» y del informe lleva la cita de la capa de calles tal como la trae su índice: las fuentes, su
 # licencia y lo que hizo SEDEMA (condición de uso de la capa)
 import json as _json
@@ -524,21 +530,26 @@ try:
             _pasaron.append(_rel)
     mirar(not _pasaron, 'el paquete no se arma con un .env, un respaldo de la base, una lista con claves, una carpeta de editor, una captura ni un archivo de prueba',
           'pasaron: %s' % _pasaron)
-    # Con la base de hoy, el instructivo nombra sus guiones reales, el de la verificación y lo de la calle
+    # Con la base de hoy, el instructivo nombra sus guiones reales, el de la verificación, el instalador por la entrada
+    # estándar (que debe traer los guiones de hoy) y lo de la calle
     _guiones = sorted(n for n in os.listdir(os.path.join(APP, 'servidor', 'db', 'srp')) if n.endswith('.sql'))
     _bien = ('# SRP\n\nVersión 1.0.0\n\nLa capa territorio.calles va antes; si llega después, CALL srp.recalcular_calles();. '
-             'La verificación está al final de 10-srp-rol-y-grants.sql.\n')
+             'La verificación está al final de 10-srp-rol-y-grants.sql. Se instala con srp-instalar-por-stdin.sql.\n')
     _resultados = {}
     for _nombre, _leeme in [('bien', _bien), ('guion-viejo', _bien + 'Verifique con 09-srp-rol-y-grants.sql.\n'),
-                            ('sin-recalculo', _bien.replace('CALL srp.recalcular_calles();', 'el recálculo'))]:
+                            ('sin-recalculo', _bien.replace('CALL srp.recalcular_calles();', 'el recálculo')),
+                            ('sin-stdin', _bien.replace(' Se instala con srp-instalar-por-stdin.sql.', '')), ('stdin-viejo', _bien)]:
         _r = _paquete('instructivo-' + _nombre)
         os.makedirs(os.path.join(_r, 'db', 'srp'))
         for _g in _guiones:
             shutil.copy2(os.path.join(APP, 'servidor', 'db', 'srp', _g), os.path.join(_r, 'db', 'srp'))
         open(os.path.join(_r, 'LEEME.md'), 'w', encoding='utf-8').write(_leeme)
+        if _nombre == 'stdin-viejo':
+            open(os.path.join(_r, 'db', 'srp', 'srp-instalar-por-stdin.sql'), 'a', encoding='utf-8').write('-- un cambio a mano\n')
         _resultados[_nombre] = _empaquetar(_r).returncode
-    mirar(_resultados == {'bien': 0, 'guion-viejo': 1, 'sin-recalculo': 1},
-          'el paquete no se arma si el instructivo nombra un guion que no trae o no dice cómo recalcular la calle', str(_resultados))
+    mirar(_resultados == {'bien': 0, 'guion-viejo': 1, 'sin-recalculo': 1, 'sin-stdin': 1, 'stdin-viejo': 1},
+          'el paquete no se arma si el instructivo nombra un guion que no trae, no dice cómo recalcular la calle o no nombra el '
+          'instalador por la entrada estándar, ni si ese instalador no trae los guiones de hoy', str(_resultados))
 finally:
     shutil.rmtree(_tmp, ignore_errors=True)
 

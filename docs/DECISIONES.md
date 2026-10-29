@@ -4682,3 +4682,57 @@
   · **Sin bandera para la prueba en campo.** El SIA propuso separar los datos de la prueba con una bandera. El SRP no la
     necesita: la prueba es toda con datos ficticios y después se corre el guion de vaciado. Va así en el instructivo,
     con lo que el SIA dijo del respaldo de las fotografías y de la restauración, como requisitos antes de operar.
+
+- **D346. La versión 1.0.0 y el paquete para el SIA (bloque 266).**
+  29-10-2026. La segunda parte del bloque 6 del plan de corrección de la auditoría del 27-10-2026, con lo que pidió D337
+  y lo que se vio al armar el paquete sobre el `sia-backend` vigente:
+  · **La numeración vuelve a empezar en la 1.0.0** (D337): `VERSION`, las marcas de `index.html`, la franja («Versión
+    1.0.0», y en la versión de prueba «Versión 1.0.0 (Bloque 266)») y la instalación en `srp.migraciones` («Instalación
+    de la versión 1.0.0: …», que nombra también el sello de los datos). Los teléfonos comparan la versión sólo por
+    igualdad (`sw.js` y `js/conexion.js`), así que bajar el número no estorba la actualización. `servidor/package.json`
+    sigue en 0.1.0: es el arnés local y no viaja.
+  · **El SQL por la entrada estándar.** El SIA aplica el SQL de cada módulo con psql por la entrada estándar, un archivo
+    por módulo, y por esa vía `\ir` no encuentra los archivos. `servidor/db/srp/srp-instalar-por-stdin.sql` trae los
+    guiones de `instalar.sql` ya juntos, en su orden y en una transacción. No se edita: lo arma
+    `herramientas/instalar_por_stdin.py`, que se detiene si un guion lleva una orden de psql; `pruebas/auditoria.py`
+    comprueba que corresponda a los guiones, y el empaquetador, además, que el instructivo lo nombre. `instalar.sql` se
+    queda para correrlo desde la carpeta. Lleva las siglas en el nombre: el SIA busca cada archivo por su nombre en todas
+    las carpetas de su base y se detiene si hay dos, y Categorías ya tiene un `instalar-por-stdin.sql`.
+  · **El manejador de errores, también detrás del módulo.** Al armar el diff se vio que `sia-backend` pone
+    `express.json()` y `helmet()` para todas las rutas antes de montar los módulos. Un cuerpo roto o de más de 100 KB
+    falla en ese lector y ya no entra al router del SRP: respondía la página de error de Express, en HTML. Como en
+    Categorías, el módulo exporta `manejarErroresSrp` y el backend lo monta detrás:
+    `app.use("/api/srp", crearRutasSrp(poolSrp), manejarErroresSrp)`. `crearApp`, el servicio local, lee el JSON igual
+    que el SIA antes del módulo, para que las pruebas lo cubran.
+  · **El vaciado sin confirmación sale con error.** Sin `-v confirmar=VACIAR-SRP` se detenía sin tocar nada, pero con
+    `\echo` y `\quit` salía con 0, y un mecanismo automático lo habría tomado por un vaciado hecho. Ahora levanta un error
+    con el mensaje. Es el único guion con una variable: el instructivo lo manda correr con psql directo, no con el
+    mecanismo con que el SIA aplica los demás, que no pasa variables.
+  · **Las dependencias del servicio local**: `body-parser` 2.4.0 y `qs` 6.17.1, sin avisos en lo que corre (decisión
+    15). Queda uno bajo de `esbuild`, herramienta de desarrollo que no viaja; su aviso es del servidor de desarrollo, que
+    no se usa. Al SIA el instructivo le pide actualizar los suyos.
+  · **Los manuales** con la 1.0.0 y los hallazgos D1-08 a D1-23 y B3-01: «Coordinación» y «Dirección», la ficha sin
+    folio, los textos de los botones, los filtros reales, lo que avisa el cierre con cabos de apoyo y qué pasa con un
+    árbol que llega después, la pantalla del bloque 264, y un renglón para el aviso del vaciado. Los PDF declaran
+    idioma es-MX, llevan estructura etiquetada y un marcador por sección.
+  · **Dos ediciones de cuentas al mismo tiempo.** En la última corrida de las pruebas, dos Administraciones que se
+    quitaban el perfil una a la otra al mismo tiempo terminaron en un bloqueo mutuo de la base (500). Al editar una
+    cuenta, `SELECT … FOR UPDATE` también detenía la referencia a la cuenta propia que la misma edición escribe (quién
+    editó, la bitácora). La edición no cambia el id, así que el bloqueo correcto es `FOR NO KEY UPDATE`, que no detiene
+    esas referencias. Se reprodujo en la base con dos conexiones: con `FOR UPDATE`, bloqueo mutuo; con
+    `FOR NO KEY UPDATE`, las dos siguen. Los demás `FOR UPDATE` se quedan: protegen borrados o el orden entre jornadas y
+    árboles, que no fallaron.
+  · **El mensaje del GPS cita el botón tal como se ve:** «… toque «Actualizar ubicación con mi posición», o arrastre el
+    punto hasta el árbol.» Lo aprobó Liber con su antes y después; lo había visto la revisión de los manuales.
+  · **Lo que vio la revisión independiente del instructivo** (19 observaciones, todas atendidas): «Revertir» ya no
+    restaura el respaldo de toda la base, que es compartida: quita el esquema, la cuenta y su línea de acceso; el
+    fragmento cierra `/api/srp/` con 404, porque la regla general del SIA para `/api/` la habría publicado sin el límite de
+    la entrada de sesión; la verificación de la cuenta se hace con `SET ROLE srp_api` después de comprobar
+    `current_user`, y cada orden que debe fallar va en su propia transacción que se deshace, para que no dañe nada si se
+    corre por error como quien administra; el paso 1.2 comprueba que `territorio_lectura` lea la capa de calles; los
+    datos de arranque empiezan con `\set ON_ERROR_STOP on`; la comprobación de la calle en la aplicación pasa al arranque
+    de la prueba en campo, con los textos que de verdad se ven.
+  · **El paquete** se armó sobre `sia-backend` en el último commit de `main` después de `git fetch` el
+    29-10-2026: 22 archivos del módulo, `db.ts` y `index.ts`. Su instructivo es privado (lleva las cuentas iniciales):
+    vive en el paquete, no en este repositorio. La entrega va al repositorio privado `srp-sia`, con la etiqueta
+    `entrega-2026-10-29`, que Liber pidió crear (repositorio `SedemaOficina/srp-sia`, privado).

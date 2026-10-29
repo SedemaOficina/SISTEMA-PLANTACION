@@ -101,8 +101,8 @@ Cada fase tiene un criterio de salida; no se pasa a la siguiente sin cumplirlo.
 | **5. Piloto** | Una cuadrilla, una semana, datos reales. Teléfonos iPhone y Android. Revisión diaria de lo recibido contra lo capturado. Antes de empezar, el SIA confirma por escrito el respaldo diario del esquema `srp`, con su restauración de prueba, y el de la carpeta de fotografías. Cada día: la Coordinación descarga la tabla de Supervisión en CSV y las fotografías en ZIP a una carpeta de la Secretaría; nadie termina el día sin que la pastilla diga «Al día»; en iPhone, la aplicación va en la pantalla de inicio (D323) | Oficina de la Secretaría, Reforestación Urbana y SIA | Cero árboles perdidos o duplicados; folios consecutivos por celda; reporte de jornada conforme |
 | **6. Operación** | Alta de cuentas y catálogos reales, vehículos incluidos. Carga del histórico. Monitoreo de disco de fotografías. Archivo del repositorio público | SIA | Todas las cuadrillas capturan en producción; el repositorio de GitHub queda privado y archivado |
 
-Al 21-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho y va en el paquete de la versión 1.1 (D315,
-D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operación.
+Al 29-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho y va en el paquete de la versión 1.0.0, la primera
+que se instala (D337, D346): falta que el SIA lo instale. Después siguen el piloto y la operación.
 
 ## 5. Qué está listo y qué falta
 
@@ -155,7 +155,7 @@ D321, D322): falta que el SIA lo instale. Después siguen el piloto y la operaci
 | 6 | Módulo de plantación existente | Conservar, archivar o migrar su contenido | **Decidido: convive con el SRP** hasta que éste opere; entonces se carga como histórico (fila 16) o se archiva (D251) |
 | 7 | Aviso de privacidad | — | **Decidido: no se requiere** (consultado con la Unidad de Transparencia; D249, D321). Falta su respuesta por escrito, como constancia |
 | 8 | Montaje del servicio | Módulo del backend central o servicio aparte | **Aprobado: módulo del backend central** (`src/modulos/srp/`), con la forma de los módulos del SIA (08-10-2026, D277) |
-| 9 | Esquema y cuenta de servicio | Los crea el SIA con el guion del SRP, o el proyecto | Así va en el paquete: el SIA corre `instalar.sql`, como en sus demás módulos |
+| 9 | Esquema y cuenta de servicio | Los crea el SIA con el guion del SRP, o el proyecto | Así va en el paquete: el SIA corre `srp-instalar-por-stdin.sql` por la entrada estándar, como en sus demás módulos |
 
 ## 7. Capacidad
 

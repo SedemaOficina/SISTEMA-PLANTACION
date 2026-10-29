@@ -7,11 +7,13 @@ la dice y la aplicación de las capturas la enseña, con la marca X en lugar de 
 aplicación; sólo cambia el número."""
 import base64
 import datetime
+import hashlib
 import io
 import os
 
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
+from pypdf.generic import Fit, NameObject, TextStringObject
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEMBRETE = os.path.join(RAIZ, 'assets', 'encabezado-ru-sia.png')
@@ -73,15 +75,56 @@ def imprimir(b, html, pdf, titulo, carpeta_capturas, version=None):
     pie = ('<div style="font: 8px sans-serif; color: #666; width: 100%; padding: 0 14mm; display: flex; justify-content: space-between;">'
            '<span>Sistema de Registro de Plantaciones · ' + titulo + '</span>'
            '<span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>')
-    # La portada sale de una segunda impresión sin el membrete de arriba. Con los mismos márgenes, las dos paginan igual
+    # La portada sale de una segunda impresión sin el membrete de arriba. Con los mismos márgenes, las dos paginan igual.
+    # Etiquetado y con marcadores: el idioma sale del lang de la página (es-MX) y cada título es un marcador
     margen = {'top': '20mm', 'bottom': '18mm', 'left': '16mm', 'right': '16mm'}
-    con = pg.pdf(format='A4', print_background=True, display_header_footer=True, header_template=cabeza, footer_template=pie, margin=margen)
-    sin = pg.pdf(format='A4', print_background=True, display_header_footer=True, header_template='<span></span>', footer_template=pie, margin=margen)
+    con = pg.pdf(format='A4', print_background=True, display_header_footer=True, header_template=cabeza, footer_template=pie, margin=margen,
+                 tagged=True, outline=True)
+    sin = pg.pdf(format='A4', print_background=True, display_header_footer=True, header_template='<span></span>', footer_template=pie, margin=margen,
+                 tagged=True)
     pg.close()
-    salida = PdfWriter()
-    salida.add_page(PdfReader(io.BytesIO(sin)).pages[0])
-    for pagina in PdfReader(io.BytesIO(con)).pages[1:]:
-        salida.add_page(pagina)
+    # Se parte de la impresión con membrete, que trae la estructura y los marcadores; de la otra sólo se toma lo que
+    # se dibuja en la portada. El cuerpo de las dos portadas es el mismo, con las mismas marcas de su estructura
+    salida = PdfWriter(clone_from=PdfReader(io.BytesIO(con)))
+    portada = PdfReader(io.BytesIO(sin)).pages[0]
+    for clave in ('/Contents', '/Resources'):
+        salida.pages[0][NameObject(clave)] = portada.raw_get(clave).clone(salida)
+    salida._root_object[NameObject('/Lang')] = TextStringObject('es-MX')
+    marcadores(salida)
+    una_sola_copia(salida)
+    salida.compress_identical_objects(remove_identicals=False, remove_orphans=True)
     salida.add_metadata({'/Title': titulo + ' · Sistema de Registro de Plantaciones', '/Author': 'Secretaría del Medio Ambiente de la Ciudad de México'})
     with open(pdf, 'wb') as f:
         salida.write(f)
+
+
+def una_sola_copia(salida):
+    """Chrome guarda el membrete chico una vez por página: todas las páginas usan la primera copia."""
+    primera = {}
+    for pagina in salida.pages:
+        imagenes = pagina['/Resources'].get('/XObject') or {}
+        for nombre in list(imagenes.keys()):
+            ref = imagenes.raw_get(nombre)
+            o = ref.get_object()
+            if o.get('/Subtype') != '/Image':
+                continue
+            clave = (o.get('/Width'), o.get('/Height'), hashlib.sha256(o.get_data()).hexdigest())
+            imagenes[NameObject(nombre)] = primera.setdefault(clave, ref)
+
+
+def marcadores(salida):
+    """Chrome cuelga todos los marcadores del título de la portada; aquí cada sección queda arriba, con sus apartados
+    dentro."""
+    viejos = salida.outline
+    raiz = viejos[1] if len(viejos) > 1 and isinstance(viejos[1], list) else viejos
+    del salida._root_object['/Outlines']
+
+    def poner(items, padre=None):
+        ultimo = None
+        for it in items:
+            if isinstance(it, list):
+                poner(it, ultimo)
+                continue
+            fit = Fit.xyz(it.left, it.top, None) if it.typ == '/XYZ' else Fit.fit()
+            ultimo = salida.add_outline_item(it.title, salida.get_destination_page_number(it), parent=padre, fit=fit, is_open=False)
+    poner(raiz)

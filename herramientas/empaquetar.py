@@ -84,6 +84,14 @@ def revisar_instructivo(raiz, leeme):
     faltas = []
     if sorted(corre) != guiones:
         faltas.append('db/srp/instalar.sql corre %s y la carpeta trae %s' % (corre, guiones))
+    # El SIA aplica el SQL por la entrada estándar: el instalador de esa vía va, y trae los mismos guiones
+    import instalar_por_stdin
+    if not os.path.isfile(os.path.join(carpeta, instalar_por_stdin.NOMBRE)):
+        faltas.append('falta db/srp/%s, el instalador por la entrada estándar' % instalar_por_stdin.NOMBRE)
+    elif not instalar_por_stdin.al_dia(carpeta):
+        faltas.append('db/srp/%s no trae los guiones de instalar.sql: vuelva a armarlo' % instalar_por_stdin.NOMBRE)
+    elif instalar_por_stdin.NOMBRE not in leeme:
+        faltas.append('no nombra %s, con el que el SIA instala la base' % instalar_por_stdin.NOMBRE)
     nombrados = set(re.findall(r'\b\d\d-srp-[\w-]+\.sql\b', leeme))
     if nombrados - set(guiones):
         faltas.append('nombra guiones que el paquete no trae: %s' % sorted(nombrados - set(guiones)))

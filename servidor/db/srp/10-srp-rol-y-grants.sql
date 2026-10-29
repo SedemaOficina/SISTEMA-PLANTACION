@@ -90,11 +90,14 @@ REVOKE ALL ON PROCEDURE srp.recalcular_calles(integer) FROM PUBLIC;
 GRANT territorio_lectura TO srp_api;
 
 INSERT INTO srp.migraciones (version, nombre)
-VALUES (1, 'Instalación: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados, lotes de carga masiva, la calle de cada árbol y la jornada compartida')
+VALUES (1, 'Instalación de la versión 1.0.0: diez tablas del SRP, contraseñas, sesiones, registro de entradas, prioritarias, derivación sobre territorio, folio, fotografías, parámetros, prioridad congelada, posibles duplicados, lotes de carga masiva, la calle de cada árbol, la jornada compartida y el sello de los datos')
 ON CONFLICT (version) DO NOTHING;
 
 /*
-  VERIFICACIÓN · conectado COMO srp_api, no como quien administra la base
+  VERIFICACIÓN · como srp_api, no como quien administra la base. En psql, conectado como quien la administra:
+      SET ROLE srp_api;
+      SELECT current_user;                                       -- srp_api: si dice otra cuenta, NO siga
+  y al terminar, RESET ROLE. (También sirve entrar como srp_api desde el servidor de aplicaciones.)
 
   Debe funcionar:
       SELECT count(*) FROM srp.plantaciones;
@@ -104,24 +107,25 @@ ON CONFLICT (version) DO NOTHING;
       SELECT srp.version_calles();                               -- la versión vigente de la capa de calles
       SELECT has_table_privilege('srp.bitacora', 'INSERT');      -- t
       SELECT has_table_privilege('srp.bitacora_acceso', 'INSERT');  -- t
-      SHOW statement_timeout;                                    -- 50s
+      SELECT rolconfig FROM pg_roles WHERE rolname = 'srp_api';  -- trae statement_timeout=50s
 
-  Debe fallar (permiso denegado); si alguna pasa, la cuenta quedó abierta de más:
-      UPDATE srp.bitacora SET detalle = 'x';
-      DELETE FROM srp.bitacora;
-      DELETE FROM srp.bitacora_acceso;
-      DELETE FROM srp.folios;
-      DELETE FROM srp.fotografias;
-      DELETE FROM srp.duplicados;
-      DELETE FROM srp.cargas;
-      DELETE FROM srp.plantaciones;
-      DELETE FROM srp.sesiones;
-      TRUNCATE srp.plantaciones;
-      CREATE TABLE srp.otra (x int);
-      CREATE TABLE public.otra (x int);
-      INSERT INTO srp.migraciones VALUES (2, 'x');
-      CALL srp.recalcular_calles();
-      UPDATE territorio.alcaldia SET nombre = 'x';
+  Debe fallar (permiso denegado); si alguna pasa, la cuenta quedó abierta de más. Cada una va en su propia transacción
+  que se deshace: si por error se corre como quien administra la base, no cambia nada:
+      BEGIN; UPDATE srp.bitacora SET detalle = 'x'; ROLLBACK;
+      BEGIN; DELETE FROM srp.bitacora; ROLLBACK;
+      BEGIN; DELETE FROM srp.bitacora_acceso; ROLLBACK;
+      BEGIN; DELETE FROM srp.folios; ROLLBACK;
+      BEGIN; DELETE FROM srp.fotografias; ROLLBACK;
+      BEGIN; DELETE FROM srp.duplicados; ROLLBACK;
+      BEGIN; DELETE FROM srp.cargas; ROLLBACK;
+      BEGIN; DELETE FROM srp.plantaciones; ROLLBACK;
+      BEGIN; DELETE FROM srp.sesiones; ROLLBACK;
+      BEGIN; TRUNCATE srp.plantaciones; ROLLBACK;
+      BEGIN; CREATE TABLE srp.otra (x int); ROLLBACK;
+      BEGIN; CREATE TABLE public.otra (x int); ROLLBACK;
+      BEGIN; INSERT INTO srp.migraciones VALUES (2, 'x'); ROLLBACK;
+      CALL srp.recalcular_calles();                              -- solo: confirma por tandas y no corre dentro de BEGIN
+      BEGIN; UPDATE territorio.alcaldia SET nombre = 'x'; ROLLBACK;
 
   Y el control global, que debe dar 0: ningún permiso directo fuera de srp
       SELECT count(*) FROM information_schema.role_table_grants

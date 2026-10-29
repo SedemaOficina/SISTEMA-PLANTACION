@@ -3,8 +3,10 @@
 
    Uso:  node datos-arranque.js <guion.sql> [<vehiculos.csv>]
 
-   Lo corre quien administra la base, una vez, después de instalar.sql:
-     psql -d <base> -v ON_ERROR_STOP=on -f <guion.sql>
+   Lo corre quien administra la base, una vez, después de instalar.sql, también por la entrada estándar:
+     psql -d <base> -v ON_ERROR_STOP=on < <guion.sql>
+   El archivo empieza con \set ON_ERROR_STOP on, por si se corre sin esa opción: un error no debe pasar por un
+   arranque hecho. sqlDeArranque, la que usan las pruebas y la base local, no lo lleva: corre también desde Node.
    Va en una sola transacción. Agrega lo que falte y no toca lo que ya está, así que correrlo otra vez no
    cambia nada; la capa se carga sólo si está vacía. La lista de vehículos es un CSV con columnas placa,
    modelo y tipo; sin ella, el guion no lleva vehículos y la Administración los da de alta en Catálogos.
@@ -70,8 +72,8 @@ export function sqlDeArranque({ vehiculos = null } = {}) {
   const autos = vehiculos ? vehiculosDe(vehiculos) : [];
   const partes = [
     `-- SRP · datos de arranque. Generado por servidor/datos-arranque.js: no se edita a mano.
--- Lo corre quien administra la base, una vez, después de instalar.sql:
---   psql -d <base> -v ON_ERROR_STOP=on -f <este archivo>
+-- Lo corre quien administra la base, una vez, después de instalar la base:
+--   psql -d <base> -v ON_ERROR_STOP=on < <este archivo>
 -- Agrega lo que falte y no toca lo que ya está: correrlo otra vez no cambia nada.
 -- Lleva ${A.programas.length} programas, ${A.areas.length} áreas, ${A.instituciones.length} instituciones, ${A.solicitantes.length} solicitantes, ${especies.length} especies, ${autos.length} vehículos
 -- y la capa de colonias prioritarias (${capa.geojson.features.length} colonias, versión ${capa.meta.version}).
@@ -108,6 +110,6 @@ SELECT (SELECT count(*) FROM srp.programas) AS programas, (SELECT count(*) FROM 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const [destino, csv] = process.argv.slice(2);
   if (!destino) { console.error('Uso: node datos-arranque.js <guion.sql> [<vehiculos.csv>]'); process.exit(1); }
-  fs.writeFileSync(destino, sqlDeArranque({ vehiculos: csv || null }), 'utf8');
+  fs.writeFileSync(destino, '\\set ON_ERROR_STOP on\n' + sqlDeArranque({ vehiculos: csv || null }), 'utf8');
   console.log(`${destino}: ${(fs.statSync(destino).size / 1048576).toFixed(1)} MB${csv ? ', con los vehículos de ' + path.basename(csv) : ', sin vehículos'}`);
 }

@@ -1770,3 +1770,17 @@ Verificación: la prueba completa, 1,552 de 1,554 (el Excel conocido y una prueb
 | El peso de cada envío | Corregido | 100 árboles pasaban de 100 KB; ahora hasta 80 KB por envío | `prueba_conexion.py` |
 
 Verificación: `npm test` 121 de 121 (3 nuevas, del vaciado); `prueba_conexion.py` 138 de 138 (6 nuevas: el sello, el tope de peso y el vaciado visto desde el teléfono); `auditoria.py` 153 y 0 hallazgos; la prueba completa, 1,573 de 1,574 (sólo el Excel conocido). Sigue la segunda parte del bloque 6: la 1.0.0, los manuales, el paquete y el ensayo de instalación.
+
+### Bloque 6, segunda parte · La 1.0.0 y el paquete (bloque 266 del proyecto, versión 1.0.0)
+
+| Clave | Estado | Antes y después | Prueba permanente |
+|---|---|---|---|
+| F4-01 · decisión 17 | Corregido | El instructivo es el de la 1.0.0, «primera instalación» (confirmado por el SIA), con la base por la entrada estándar, el vaciado, «Revertir» sin tocar los demás módulos y lo verificado. Una revisión independiente lo siguió como quien instala: 19 observaciones, atendidas | `empaquetar.py` (revisa el instructivo) y `pruebas/ensayo_instalacion.py`: 82 de 82 |
+| D1-08 a D1-23 | Corregido | Los dos manuales, al día con la aplicación de la 1.0.0 y con «Coordinación» y «Dirección» | Revisados contra el código; sin prueba automática |
+| B3-01 | Corregido | Los PDF de los manuales declaran es-MX, llevan estructura etiquetada y un marcador por sección | Revisado con pypdf al regenerarlos (idioma, estructura y marcadores); sin prueba automática |
+| F3-01 · decisión 15 | Corregido en el SRP · Para el SIA | `body-parser` y `qs` del servicio local, al día y sin avisos; el instructivo le pide al SIA actualizar los suyos | `npm audit --omit=dev` |
+| B9-01 | Resuelto | El SIA dijo sus cabeceras globales; `srp-cabeceras.conf` las repite con la política del SRP en cada ubicación, probado en un nginx real | `auditoria.py` |
+| F6-01 | Para el SIA | La regla para actualizar una capa de `territorio`, por escrito; el instructivo ya trae el recálculo del SRP | — |
+| El paquete 1.0.0 (D337) | Hecho | Sobre `sia-backend` vigente (`git fetch` el 29-10), en el repositorio privado de la entrega con su etiqueta; bajado otra vez de GitHub, 124 de 124 archivos con su suma | `pruebas/ensayo_instalacion.py` |
+
+Verificación: la prueba completa, 1,573 de 1,574 (sólo el Excel conocido); `npm test` 122 de 122; `prueba_conexion.py` 138 de 138 y, con la copia que se entrega, 141 de 141; `auditoria.py` 154 y 0 hallazgos; el ensayo de instalación, 82 de 82; el fragmento, en un nginx real. Al armar el paquete aparecieron y se corrigieron tres cosas más: el manejador de errores detrás del módulo (el backend del SIA lee el JSON antes), el vaciado sin confirmación que salía con 0 y un bloqueo mutuo al editarse dos Administraciones a la vez. Con esto el bloque 6 queda cerrado y, con él, el plan de corrección; queda para el SIA F6-01 y el respaldo de las fotografías.

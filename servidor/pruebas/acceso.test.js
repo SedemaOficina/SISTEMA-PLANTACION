@@ -44,6 +44,17 @@ before(async () => {
   base = 'http://127.0.0.1:' + servidor.address().port + MONTAJE;
 });
 
+// El backend del SIA lee el JSON de todas las peticiones antes del módulo (crearApp hace lo mismo): un cuerpo roto o de
+// más falla ahí, y aun así la respuesta es { codigo, mensaje }, sin la página de error de Express
+test('un cuerpo que no se puede leer o que pasa de 100 KB responde con código y mensaje, aunque falle antes del módulo', async () => {
+  const enviar = cuerpo => fetch(base + '/acceso/entrar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: cuerpo })
+    .then(async r => ({ estado: r.status, tipo: r.headers.get('content-type'), datos: await r.json().catch(() => null) }));
+  const roto = await enviar('{"correo": ');
+  assert.deepEqual([roto.estado, roto.datos?.codigo, typeof roto.datos?.mensaje], [400, 'JSON_INVALIDO', 'string'], JSON.stringify(roto));
+  const grande = await enviar(JSON.stringify({ correo: 'x@ejemplo.local', relleno: 'x'.repeat(120 * 1024) }));
+  assert.deepEqual([grande.estado, grande.datos?.codigo, /json/.test(grande.tipo)], [413, 'DEMASIADO_GRANDE', true], JSON.stringify(grande));
+});
+
 after(async () => {
   servidor && servidor.close();
   grupo && await grupo.end();

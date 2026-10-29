@@ -2423,7 +2423,7 @@ with sync_playwright() as p:
     pg12.evaluate("SRP.CONFIG.MAPA.GPS_AFINAR_MS = 1500"); pg12.click('#btn-ubicacion')
     pg12.wait_for_function("() => SRP.mapa.vigilancia == null && SRP.mapa.origen === 'gps'", timeout=15000)
     fin12 = pg12.evaluate(VISTO12); pg12.evaluate("SRP.CONFIG.MAPA.GPS_AFINAR_MS = 30000")
-    ok('El GPS no mejoró en 2 s. Vaya a un lugar abierto y toque «Actualizar ubicación», o arrastre el punto hasta el árbol.' in fin12 and 'Afinando' not in fin12,
+    ok('El GPS no mejoró en 2 s. Vaya a un lugar abierto y toque «Actualizar ubicación con mi posición», o arrastre el punto hasta el árbol.' in fin12 and 'Afinando' not in fin12,
        'al acabarse el tiempo con la precisión baja, dice qué hacer: %s' % fin12)
     # Tocar el mapa lejos acerca primero; con acercamiento suficiente coloca
     toque=pg12.evaluate("""() => { SRP.mapa.limpiar(); SRP.mapa.mapa.setZoom(12, { animate: false });

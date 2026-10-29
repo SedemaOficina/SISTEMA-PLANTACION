@@ -223,7 +223,10 @@ export function rutasCuentas(pool: pg.Pool, config: ConfigSrp, sesion: RequestHa
     const b = req.body ?? {}, actor = sesionDe(res).usuario, id = String(req.params.id);
     if (!UUID.test(id)) return responder(res, 404, "NO_EXISTE", "Esa cuenta no existe.");
     const resultado = await enTransaccion(pool, async (c) => {
-      const previa = (await c.query<Usuario>("SELECT * FROM srp.usuarios WHERE id = $1 FOR UPDATE", [id])).rows[0];
+      /* NO KEY UPDATE: la edición no cambia el id, y así no detiene las referencias a esta cuenta (quién editó, la
+         bitácora). Con FOR UPDATE, dos Administraciones que se editan una a la otra al mismo tiempo se bloqueaban
+         entre sí y la base abortaba una */
+      const previa = (await c.query<Usuario>("SELECT * FROM srp.usuarios WHERE id = $1 FOR NO KEY UPDATE", [id])).rows[0];
       if (!previa) return null;
       const sedema = b.organizacion_id === SEDEMA;
       const d: Alta = {

@@ -4,6 +4,9 @@
 --
 --   psql -d <base> -v ON_ERROR_STOP=on -f instalar.sql
 --
+-- Si psql recibe el SQL por la entrada estándar, `\ir` no encuentra los archivos: para esa vía está
+-- srp-instalar-por-stdin.sql, que trae estos mismos guiones ya juntos, dentro de BEGIN y COMMIT.
+--
 -- Después siguen los pasos de la cuenta srp_api, al principio de 10-srp-rol-y-grants.sql.
 
 \set ON_ERROR_STOP on

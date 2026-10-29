@@ -366,9 +366,14 @@ def capturas(b):
     pg.click('#btn-iniciar-jornada'); pg.wait_for_timeout(2500)
     cerrar_ventanas(pg)
     tramo(pg, 'p25a-franja-coordinacion', '#franja-jornada', '#franja-jornada')
+    # Las instrucciones, plegadas, como se ven después de la primera vez: así cabe la lista de cabos con «Guardar»
+    pg.evaluate("() => localStorage.setItem(SRP.CONFIG.CLAVE_APOYOS_VISTO, '1')")
     pg.click('#btn-franja-apoyos'); pg.wait_for_selector('#dlg-apoyos[open]'); pg.wait_for_timeout(600)
     ventana(pg, 'p25-cabos-apoyo', '#dlg-apoyos')
-    unir('p25-cabos-apoyo', [(0, 930), (-150, None)])
+    # Hasta el renglón del segundo cabo marcado, entero, y «Guardar» (la captura va al doble de tamaño)
+    hasta = pg.evaluate("""id => { const d = document.getElementById('dlg-apoyos').getBoundingClientRect();
+      return Math.round((document.querySelector('#apoyos-cabos [data-id="' + id + '"]').getBoundingClientRect().bottom - d.top + 12) * 2); }""", CABO['id'])
+    unir('p25-cabos-apoyo', [(0, hasta), (-150, None)])
     cerrar_ventanas(pg)
     pg.wait_for_function("() => SRP.cola.ops.length === 0 && !SRP.envio.enviando", timeout=60000)
     ficha(pg, 'Parque México, lado norte')

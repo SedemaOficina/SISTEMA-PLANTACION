@@ -66,9 +66,10 @@ export async function instalar(c) {
 }
 
 /* El guion de vaciado tras la prueba como lo corre psql con «-v confirmar=…»: sin sus órdenes de psql (las líneas que
-   empiezan con «\») y con la confirmación dada, o ninguna. Un error deja la transacción deshecha */
+   empiezan con «\» y la rama de cuando falta la variable, que psql salta si viene) y con la confirmación dada, o
+   ninguna. Un error deja la transacción deshecha */
 export async function vaciarTrasPrueba(c, confirmar) {
-  const sql = leer('vaciar-tras-prueba.sql').split('\n').filter(l => !l.trim().startsWith('\\')).join('\n')
+  const sql = leer('vaciar-tras-prueba.sql').replace(/^\\else\n[\s\S]*?^\\endif\n/m, '').split('\n').filter(l => !l.trim().startsWith('\\')).join('\n')
     .replace(":'confirmar'", confirmar == null ? 'NULL' : "'" + String(confirmar).replace(/'/g, "''") + "'");
   try {
     return await c.query(sql);

@@ -61,8 +61,9 @@ repositorio:
 | `db/srp/08-srp-cargas.sql` | Los lotes de carga masiva: subiendo (no se ven), completos (se ven) o deshechos (ocultos, con sus árboles eliminados), y `srp.de_carga_oculta`, que dice si una jornada no se ve |
 | `db/srp/09-srp-calles.sql` | La calle de cada árbol sobre `territorio.calles`: `srp.calle`, con la versión vigente de la capa (`srp.version_calles`: la de `territorio.version_capa` y, si el SIA no la registró ahí, la del paquete), el disparador que la pone al recibir el árbol y al corregir su punto, y el procedimiento `srp.recalcular_calles`, para después de instalar la capa, por tandas de 2,000 confirmadas una por una. Sin la capa, el árbol queda por asignar |
 | `db/srp/10-srp-rol-y-grants.sql` | La cuenta `srp_api`, sin contraseña, con sus permisos mínimos y `territorio_lectura`; la versión 1 del esquema. Al final, la verificación para correr como la cuenta: lo que debe funcionar y lo que debe fallar |
-| `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción |
-| `db/srp/vaciar-tras-prueba.sql` | **No es de la instalación.** Se corre una sola vez, después de la prueba en campo con datos ficticios: `psql -d <base> -v ON_ERROR_STOP=on -v confirmar=VACIAR-SRP -f vaciar-tras-prueba.sql`. Sin la confirmación no toca nada. Borra jornadas, árboles, registros de fotografías, folios (vuelven a empezar en 1), duplicados, prioridades, cargas y lo que la bitácora dice de ellos; conserva cuentas, catálogos, parámetros y el registro de entradas; cambia el sello de los datos. La carpeta `SRP_FOTOS_DIR` se vacía aparte. La cuenta del servicio no lo puede correr |
+| `db/srp/instalar.sql` | Corre los anteriores en orden, en una sola transacción, con `\ir`: desde esta carpeta |
+| `db/srp/srp-instalar-por-stdin.sql` | Los mismos guiones ya juntos, en el mismo orden y en una transacción, para psql por la entrada estándar, que es como el SIA aplica el SQL de cada módulo (por esa vía `\ir` no encuentra los archivos). Lleva las siglas en el nombre: el SIA busca cada archivo por su nombre en todas las carpetas de su base, y otro módulo ya tiene uno que se llama como el genérico. **Generado** con `python herramientas/instalar_por_stdin.py`: no se edita, y `pruebas/auditoria.py` y el empaquetador revisan que corresponda a los guiones |
+| `db/srp/vaciar-tras-prueba.sql` | **No es de la instalación.** Se corre una sola vez, después de la prueba en campo con datos ficticios, con psql directo: `psql -d <base> -v ON_ERROR_STOP=on -v confirmar=VACIAR-SRP < vaciar-tras-prueba.sql`. Sin la confirmación no toca nada (es el único guion con una variable). Borra jornadas, árboles, registros de fotografías, folios (vuelven a empezar en 1), duplicados, prioridades, cargas y lo que la bitácora dice de ellos; conserva cuentas, catálogos, parámetros y el registro de entradas; cambia el sello de los datos. La carpeta `SRP_FOTOS_DIR` se vacía aparte. La cuenta del servicio no lo puede correr |
 
 Todos los corre quien administra la base, que queda como dueño de lo que se crea. `02-srp-tablas.sql` sale
 de `datos/esquema.json` con `python herramientas/generar_sql.py`; si el diccionario cambia, se vuelve a
@@ -101,9 +102,9 @@ En este orden, que es el que pide el SIA: un módulo sin sus variables detiene e
 la base y las variables van antes que el código. Un módulo por despliegue.
 
 1. **Respaldo de la base.**
-2. **Guiones**, conectado a la base como quien la administra, desde `db/srp/`:
-   `psql -d <base> -v ON_ERROR_STOP=on -f instalar.sql`. Corre todo en una transacción y se detiene sin
-   tocar nada si el esquema ya estaba instalado.
+2. **Guiones**, conectado a la base como quien la administra, por la entrada estándar:
+   `psql -d <base> -v ON_ERROR_STOP=on < srp-instalar-por-stdin.sql` (o, desde `db/srp/`, `-f instalar.sql`, que
+   instala lo mismo). Corre todo en una transacción y se detiene sin tocar nada si el esquema ya estaba instalado.
 3. **La cuenta:** contraseña de `srp_api` de forma interactiva (`\password srp_api` en psql), para que no
    quede en ningún registro; su entrada cifrada sólo desde el servidor de aplicaciones; y `SRP_DB_USER` y
    `SRP_DB_PASS` en el archivo de entorno del backend.
@@ -121,7 +122,7 @@ la base y las variables van antes que el código. Un módulo por despliegue.
    los vehículos del CSV y la capa propia. Va en una transacción y agrega lo que falte, así que correrlo otra
    vez no cambia nada. Lleva las placas reales: vive sólo en el paquete.
 6. **El código:** `src/modulos/srp/` en `sia-backend`, su conexión en `src/db.ts` y su montaje en
-   `src/index.ts`; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
+   `src/index.ts`, con su manejador de errores detrás; `npm run typecheck`, `npm run build` y el despliegue. Al arrancar, el backend reporta
    el módulo conectado como `srp_api`, sin superusuario.
 7. **El servidor web y la aplicación:** `servidor-web/srp.conf`, que el SIA integra (rutas de disco y
    destino suyos, y `location ^~ /srp/`, para que ninguna regla de expresión regular del `server` se quede con
@@ -143,9 +144,10 @@ transacción y no deja nada a medias, y se vuelve al respaldo del paso 1.
 4. **Las fotografías:** la carpeta de `SRP_FOTOS_DIR` va con la base. Si se restauró el respaldo de antes de
    instalar, se puede retirar.
 
-El paquete (hoy, el de la versión 1.1) lleva todo eso: `app/`, `db/srp/`, `datos/srp-datos-arranque.sql`, `backend/`
-(el diff y los archivos completos), `deploy/`, `servidor-web/`, el manual de la Administración global en
-`manual/`, `VERSION` y su `LEEME.md` con estos pasos, agrupados en cinco. El paquete se arma con
+El paquete (hoy, el de la versión 1.0.0, la primera que se instala) lleva todo eso: `app/`, `db/srp/`,
+`datos/srp-datos-arranque.sql`, `backend/` (el diff y los archivos completos), `deploy/`, `servidor-web/`, los dos
+manuales en `manual/`, `VERSION` y su `LEEME.md` con estos pasos, agrupados en cinco, y con la prueba en campo y el
+vaciado. El paquete se arma con
 `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
 con la suma de cada archivo de todas las carpetas, el ZIP y su `.sha256`. Antes de escribir nada se detiene
 si el paquete trae archivos de trabajo (respaldos, temporales, bitácoras) o si algún archivo parece llevar una
@@ -168,7 +170,10 @@ sus archivos queden byte por byte como en su repositorio.
 
 ## El servicio: acceso, cuentas, catálogos, consultas y recepción
 
-En el SIA lo monta el backend central como los demás módulos: `app.use("/api/srp", crearRutasSrp(poolSrp))`. El
+En el SIA lo monta el backend central como los demás módulos: `app.use("/api/srp", crearRutasSrp(poolSrp), manejarErroresSrp)`.
+El backend del SIA lee el JSON de todas las peticiones antes de los módulos; `manejarErroresSrp`, detrás del módulo como
+el de Categorías, hace que un cuerpo roto o de más de 100 KB también responda `{ codigo, mensaje }`, y `crearApp` lee el
+JSON igual, para que las pruebas lo cubran. El
 navegador lo ve en `/srp/api/`, dentro de la ruta de la aplicación: el servidor web pasa `/srp/api/` a `/api/srp/`, como
 con Categorías, y la cookie va acotada a `/srp/api` (`SRP_RUTA`). Fuera del SIA, `npm run iniciar` lo arranca solo, en
 `SRP_PUERTO` (3100), bajo `/api/srp`, y `pruebas/servir.py` hace la misma traducción. La configuración, toda por

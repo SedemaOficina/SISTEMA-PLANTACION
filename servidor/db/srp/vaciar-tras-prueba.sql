@@ -1,10 +1,11 @@
 -- VACIAR EL SERVIDOR DESPUÉS DE LA PRUEBA EN CAMPO. Se corre UNA vez, cuando la Secretaría terminó de probar con datos
--- ficticios y quiere empezar a operar con el servidor en blanco. Lo corre quien administra la base, desde esta carpeta,
+-- ficticios y quiere empezar a operar con el servidor en blanco. Lo corre quien administra la base, con psql directo,
 -- después de sacar un respaldo:
 --
---   psql -d <base> -v ON_ERROR_STOP=on -v confirmar=VACIAR-SRP -f vaciar-tras-prueba.sql
+--   psql -d <base> -v ON_ERROR_STOP=on -v confirmar=VACIAR-SRP < vaciar-tras-prueba.sql
 --
--- Sin «-v confirmar=VACIAR-SRP» se detiene sin tocar nada. Va en una sola transacción: o se vacía todo o nada.
+-- Sin «-v confirmar=VACIAR-SRP» se detiene sin tocar nada y sale con error, para que nadie lo tome por un vaciado hecho.
+-- Va en una sola transacción: o se vacía todo o nada.
 --
 -- Borra:     las jornadas, los árboles, los registros de sus fotografías, los folios (vuelven a empezar en 1), los
 --            posibles duplicados, las prioridades congeladas, los lotes de carga masiva y, de la bitácora, lo que dice
@@ -19,7 +20,7 @@
 \set ON_ERROR_STOP on
 \if :{?confirmar}
 \else
-  \echo 'No se vació nada. Para vaciar, agregue -v confirmar=VACIAR-SRP'
+  DO $$ BEGIN RAISE EXCEPTION 'No se vació nada: falta -v confirmar=VACIAR-SRP'; END $$;
   \quit
 \endif
 BEGIN;

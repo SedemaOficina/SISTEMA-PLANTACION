@@ -125,8 +125,8 @@ SRP.reportes = {
 
   /* ENCARGADO. Quien captura en campo es responsable de su propio reporte, así que a un cabo no se
      le pregunta ni se le muestra: es él, se guarda y el reporte lo imprime. Quien ve a varias
-     personas —coordinador o administración— sí elige, y sólo entre los cabos que tienen registros
-     ese día: ofrecer el padrón completo sería ofrecer a gente que no estuvo. */
+     personas —la Coordinación o la Administración— sí elige, y sólo entre los cabos que registraron
+     en la jornada: ofrecer el padrón completo sería ofrecer a gente que no estuvo. */
   prepararEncargado(registros, previo) {
     const u = SRP.sesion.usuario;
     const propios = SRP.permisos.de(u).alcance === 'propios';
@@ -136,7 +136,7 @@ SRP.reportes = {
     const ids = SRP.util.paresPersonas(registros.map(r => r.cabo_id));
     const sel = this.el('cie-encargado');
     sel.innerHTML = SRP.util.opciones('Sin especificar', ids);
-    // Con un solo cabo en el día no hay nada que elegir: se propone y se puede cambiar
+    // Con un solo cabo en la jornada no hay nada que elegir: se propone y se puede cambiar
     sel.value = (previo && previo.encargado_id) || (ids.length === 1 ? ids[0][0] : '');
   },
 
