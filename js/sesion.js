@@ -15,6 +15,7 @@ window.SRP = window.SRP || {};
 SRP.sesion = {
   usuario: null,
   temporal: null,   // { cuenta, actual }: entró con una contraseña temporal y todavía no escribe la suya
+  sello: null,      // el sello de los datos del servidor que conoce este teléfono, del almacén
 
   delServidor() { return SRP.CONFIG.AUTENTICACION.PROVEEDOR === 'servidor'; },
 
@@ -159,18 +160,28 @@ SRP.sesion = {
 
   /* EL SELLO DE LOS DATOS DEL SERVIDOR (servidor/src/modulos/srp/sello.ts). Llega al entrar y al confirmar la
      sesión, y viaja con lo que se envía. Cambia cuando el servidor se vacía después de la prueba en campo: lo que
-     guarda este teléfono es de la prueba y se borra, en lugar de reenviarlo al servidor limpio. */
+     guarda este teléfono es de la prueba y se borra, en lugar de reenviarlo al servidor limpio. Se guarda en la misma
+     base que la cola (js/almacen.js): si el navegador pierde una, pierde la otra, y el teléfono no puede quedarse con
+     lo de la prueba sin el sello con que lo capturó. */
   AVISO_VACIADO: 'El servidor se vació después de la prueba: se borró lo que guardaba este teléfono.',
-  selloServidor() { try { return localStorage.getItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR); } catch (e) { return null; } },
+  async cargarSello() {
+    this.sello = await SRP.almacen.leerAjuste('sello_servidor');
+    // Donde lo guardaba la versión anterior: la migración 12 ya lo trajo, y una base nueva no debe volver a tomarlo
+    try { localStorage.removeItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR); } catch (e) { /* sin almacenamiento del navegador */ }
+  },
+  selloServidor() { return this.sello; },
 
   /* Devuelve true si el servidor se vació y se borró lo de este teléfono; la primera vez sólo lo anota. El sello empieza
      con la fecha y la hora: sólo uno más nuevo que el guardado es un vaciado. Uno más viejo es un respaldo de antes del
      vaciado: no se borra nada y se conserva el guardado, así lo pendiente se recibe */
   async revisarSello(sello, recargar) {
     if (!sello) return false;
-    const antes = this.selloServidor();
+    const antes = this.sello;
     if (antes && sello > antes) { await this.servidorVaciado(sello, recargar); return true; }
-    if (!antes) { try { localStorage.setItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR, sello); } catch (e) { /* se anota la próxima vez */ } }
+    if (!antes) {
+      this.sello = sello;
+      try { await SRP.almacen.ponerAjuste('sello_servidor', sello); } catch (e) { /* se anota la próxima vez */ }
+    }
     return false;
   },
 
@@ -180,11 +191,11 @@ SRP.sesion = {
   async servidorVaciado(sello, recargar) {
     if (this._vaciando) return;
     this._vaciando = true;
-    await SRP.almacen.vaciarCapturas();
+    await SRP.almacen.vaciarCapturas(sello);
+    if (sello) this.sello = sello;
     SRP.remoto.vaciar();
     try {
       [SRP.formulario.CLAVE_BORRADOR, SRP.activa.CLAVE_BORRADOR, SRP.reportes.CLAVE_BORRADOR, SRP.activa.CLAVE_EXCESO].forEach(k => localStorage.removeItem(k));
-      if (sello) localStorage.setItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR, sello);
     } catch (e) { /* sin almacenamiento: no había borradores */ }
     if (!recargar) { this._vaciando = false; SRP.util.anunciar(this.AVISO_VACIADO, 'aviso'); return; }
     try { sessionStorage.setItem(SRP.CONFIG.CLAVE_AVISO_VACIADO, '1'); } catch (e) { /* se recarga sin aviso */ }

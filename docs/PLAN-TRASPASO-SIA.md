@@ -101,8 +101,9 @@ Cada fase tiene un criterio de salida; no se pasa a la siguiente sin cumplirlo.
 | **5. Piloto** | Una cuadrilla, una semana, datos reales. Teléfonos iPhone y Android. Revisión diaria de lo recibido contra lo capturado. Antes de empezar, el SIA confirma por escrito el respaldo diario del esquema `srp`, con su restauración de prueba, y el de la carpeta de fotografías. Cada día: la Coordinación descarga la tabla de Supervisión en CSV y las fotografías en ZIP a una carpeta de la Secretaría; nadie termina el día sin que la pastilla diga «Al día»; en iPhone, la aplicación va en la pantalla de inicio (D323) | Oficina de la Secretaría, Reforestación Urbana y SIA | Cero árboles perdidos o duplicados; folios consecutivos por celda; reporte de jornada conforme |
 | **6. Operación** | Alta de cuentas y catálogos reales, vehículos incluidos. Carga del histórico. Monitoreo de disco de fotografías. Archivo del repositorio público | SIA | Todas las cuadrillas capturan en producción; el repositorio de GitHub queda privado y archivado |
 
-Al 29-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho y va en el paquete de la versión 1.0.0, la primera
-que se instala (D337, D346): falta que el SIA lo instale. Después siguen el piloto y la operación.
+Al 31-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho. El SIA instaló la versión 1.0.0 el 30-10-2026 (D337,
+D346), y la 1.0.1 corrige lo que encontró al probarla (D347): falta que la aplique. Después siguen la prueba en campo, el
+vaciado, el piloto y la operación.
 
 ## 5. Qué está listo y qué falta
 
@@ -189,9 +190,7 @@ que se instala (D337, D346): falta que el SIA lo instale. Después siguen el pil
 
 ## 9. Siguiente paso
 
-Terminar el plan de corrección de la auditoría del 27-10-2026 (`docs/AUDITORIA-2026-10-27.md`, sección 11) y armar
-la entrega como versión 1.0.0, la primera que se instala (D337): al SIA no le ha llegado ningún paquete del SRP.
-Después, darle acceso al repositorio privado `srp-sia` con esa entrega y sus instrucciones de instalación, y pedirle
-las respuestas de sus «Preguntas abiertas», entre ellas la del respaldo (pregunta 7). Con el sistema instalado, la
-prueba real con datos ficticios y el vaciado del servidor (D337); con el respaldo confirmado, el piloto (fase 5).
+Que el SIA aplique la versión 1.0.1 (D347): la entrega `entrega-2026-10-31` del repositorio privado `srp-sia`, con la
+sección «Actualizar de la 1.0.0 a la 1.0.1» de su instructivo. Con eso, la prueba real con datos ficticios y el vaciado
+del servidor (D337); con el respaldo de las fotografías y la restauración de prueba confirmados, el piloto (fase 5).
 La pantalla de entradas y la última actividad de cada cuenta van después del piloto (M532).

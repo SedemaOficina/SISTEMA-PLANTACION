@@ -15,6 +15,8 @@
        y el servidor lo reconoce. Lo que se cambie mientras tanto va en otra operación, después.
      · Una fotografía nueva se anota aparte y sube después de su árbol. Sólo sale de la cola cuando el
        servicio confirma esa fotografía: cualquier otra respuesta es como no tener señal.
+     · Cada operación lleva el sello de los datos del servidor que estaba vigente al anotarla, y viaja con él
+       (js/sesion.js): si el servidor se vació después, no entra y el teléfono borra lo que guardaba.
 
    CÓMO SE ENVÍA. En el orden en que se hizo, hasta cien operaciones por vez y nunca dos del mismo registro en
    el mismo envío. Lo que el servidor recibe sale de la cola y su respuesta manda: el folio, el territorio y la
@@ -118,7 +120,8 @@ SRP.cola = {
     const previas = esperan.filter(o => o.tipo !== 'foto');
     nuevas.forEach(o => {
       const conVersion = !previas.length && !this.ALTAS.includes(o.tipo) && o.tipo !== 'foto';
-      Object.assign(o, { tabla, registro_id: id, usuario_id: usuario, version: conVersion ? this.version(tabla, antes) : null, creada: ahora, rechazo: null });
+      Object.assign(o, { tabla, registro_id: id, usuario_id: usuario, version: conVersion ? this.version(tabla, antes) : null, creada: ahora, rechazo: null,
+        sello: SRP.sesion.sello || null });
       const r = almacen.add(o);
       r.onsuccess = () => { o.n = r.result; };
     });
@@ -194,6 +197,8 @@ SRP.cola = {
       for (const o of this.ops) {
         if (o.tipo === 'foto' || o.usuario_id !== u.id || ids.has(o.registro_id) || sobran.has(o)) continue;
         if (o.rechazo || esperan.has(o.registro_id) || (o.version === null && !this.ALTAS.includes(o.tipo))) { esperan.add(o.registro_id); continue; }
+        // Un envío lleva un solo sello: lo anotado con otro va en el que sigue
+        if (lote.length && (o.sello || null) !== (lote[0].o.sello || null)) break;
         // Lo que ya salió sin respuesta viaja otra vez tal como salió: el servidor lo reconoce
         const d = o.enviado || await this.datos(o);
         if (d === null) {
@@ -214,7 +219,7 @@ SRP.cola = {
       for (const o of sobran) await this.borrar(o);
       if (!lote.length) break;
       await this.salen(lote);
-      const r = await SRP.servidor.pedir('POST', '/envios', { operaciones: lote.map(x => x.op) });
+      const r = await SRP.servidor.pedir('POST', '/envios', { operaciones: lote.map(x => x.op) }, { sello: lote[0].o.sello || null });
       const resultados = r.ok && Array.isArray(r.datos.resultados) ? r.datos.resultados : null;
       if (!resultados) { res.cortado = !r.ok && !!r.sinRed; res.error = res.cortado ? null : r.ok ? 'El servidor respondió algo que no se entiende.' : r.mensaje; break; }
       let avanzo = false;
@@ -377,7 +382,7 @@ SRP.cola = {
       const r = await SRP.almacen.unoLocal('plantaciones', o.registro_id);
       const b = r && r.foto_id === o.foto_id && SRP.util.fotoSegura(r.foto_base64) ? await SRP.foto.bytes(r) : null;
       if (!b) { await this.borrar(o); continue; }
-      const x = await SRP.servidor.subir('/fotos/' + o.foto_id, b.datos, b.tipo);
+      const x = await SRP.servidor.subir('/fotos/' + o.foto_id, b.datos, b.tipo, { sello: o.sello || null });
       // Sólo la confirmación del servicio, con el id de la fotografía, la saca de la cola
       if (x.ok && x.datos.id === o.foto_id) { await this.borrar(o); continue; }
       if (x.ok || x.sinRed) { res.cortado = true; break; }

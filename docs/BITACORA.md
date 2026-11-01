@@ -7220,3 +7220,64 @@ instalación. Lo programado va en D346.
 
 **Siguiente paso.** Que Liber le dé acceso al SIA al repositorio privado `srp-sia` y le avise de la etiqueta
 `entrega-2026-10-29`. Con el sistema instalado, la prueba en campo y el vaciado.
+
+## Bloque 267 — El sello del vaciado sin salidas y la actualización a la 1.0.1 (31-10-2026)
+
+**Versión 1.0.1.** El SIA instaló la 1.0.0 el 30-10-2026. Al probarla con el backend corriendo encontró que el sello
+del vaciado tenía una salida, y pidió una 1.0.1 antes de la prueba en campo. Lo programado va en D347.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Un envío sin la cabecera `X-SRP-Sello` después del vaciado | Entraba como recibido (`400 SIN_OPERACIONES` con una lista vacía: el servicio lo procesaba) | `409 SELLO_DISTINTO`, con el sello vigente, igual que uno con el sello de antes. Antes del vaciado, se atiende como siempre |
+| Dónde guarda el teléfono el sello | En el almacenamiento del navegador, aparte de la cola: si se perdía y la cola no, al entrar tomaba el sello nuevo sin compararlo y mandaba lo de la prueba con él | En la misma base que la cola (migración 12); si el navegador pierde una, pierde la otra |
+| Con qué sello viaja cada operación | Con el que conocía el teléfono al enviar | Con el que estaba vigente cuando se capturó. Un envío lleva un solo sello |
+| El vaciado en el teléfono | Borraba la cola y anotaba el sello nuevo por separado | Las dos cosas en una transacción |
+| La base del teléfono | Versión 11 | Versión 12: el almacén `ajustes`, con el sello |
+| El paquete | El de la 1.0.0, para instalar | El de la 1.0.1, que actualiza la 1.0.0 ya instalada: 8 archivos de la aplicación y `sello.ts`; la base, nada |
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/sello.ts`: sin cabecera, se rechaza si el servidor ya se vació (la constancia de
+  `srp.sello.nota` ya no es «Instalación»).
+- `js/almacen.js` (migración 12, el almacén `ajustes`, `vaciarCapturas` con el sello, `leerAjuste` y `ponerAjuste`),
+  `js/sesion.js` (el sello en memoria, del almacén; `cargarSello`), `js/app.js` (lo carga al abrir), `js/cola.js`
+  (cada operación con su sello; un envío, un sello; la fotografía con el suyo), `js/servidor.js` (`opciones.sello`),
+  `js/config.js` (base del teléfono 12).
+- Las pruebas: `servidor/pruebas/acceso.test.js` (sin sello, después del vaciado, no entra),
+  `servidor/pruebas/vaciado.test.js` (deja el sello como estaba), `pruebas/apoyo_servidor.mjs` (el sello con su
+  constancia), `pruebas/prueba_conexion.py` (dos casos nuevos del teléfono), `pruebas/prueba.py` (la migración 12 y la
+  versión 12 de la base) y `pruebas/ensayo_instalacion.py` (sin sello antes y después del vaciado, y `--anterior`, que
+  prueba la actualización).
+- `VERSION`, las 65 marcas de `index.html`, la etapa de `js/config.js`, el README y `docs/MEJORAS.md`.
+- Documentos: el README del servidor (el sello), `docs/PLAN-TRASPASO-SIA.md`, `docs/FASE2-Y-TRASPASO.md`,
+  `docs/ALINEACION-SIA.md`, `docs/DECISIONES.md` (D347) y el seguimiento de `docs/AUDITORIA-2026-10-27.md`.
+- Fuera del repositorio: el paquete de la 1.0.1 en el repositorio privado de la entrega, con la etiqueta
+  `entrega-2026-10-31` y su instructivo con la sección «Actualizar de la 1.0.0 a la 1.0.1»; la guía de proyectos para
+  el SIA (la skill), con el sello sin salidas y cómo se arma una actualización.
+
+**Verificación.**
+- `npm test`: 122 de 122. La del sello revisa además que, después del vaciado, lo que llega sin sello no entre. Antes
+  de corregir respondía `400 SIN_OPERACIONES` (el servicio lo procesaba); ahora, `409 SELLO_DISTINTO`.
+- `pruebas/prueba_conexion.py`: 141 de 141, con tres nuevas: el sello vive en la base del teléfono con la cola y cada
+  operación lleva el suyo; un teléfono que pierde el almacenamiento del navegador y conserva la cola entra después del
+  vaciado, borra lo suyo y no lo manda; y lo capturado con el sello de antes viaja con él aunque el teléfono ya tenga
+  el nuevo, y no entra. Con la copia que se entrega (`--app`), 144 de 144. Antes y después: la misma prueba con la
+  aplicación de la 1.0.0 se detiene en el teléfono que pierde el almacenamiento del navegador: no se entera del vaciado,
+  no borra ni avisa. Al cortarse, la prueba dejó el sello de la simulación en la base local: ahora su limpieza también
+  lo deja como estaba.
+- `pruebas/por_tramos.py` (la prueba completa, 88 tramos): 1,574 de 1,575, 61 min; la única falla es la conocida del
+  Excel de `originales/`. La corrida pasó la medianoche y el tramo 58 se detuvo: el 1 de noviembre «este mes» todavía
+  no tiene jornadas en Supervisión. Con la fecha del 31-10 pasaba; ahora la prueba pasa al mes anterior si el mes en
+  curso está vacío, como ya hacía con el año en enero (`mes_con_datos`). Los tres tramos que usan el mes, otra vez el
+  1 de noviembre: 36 de 36. Antes, seis comprobaciones esperaban la versión 11 de la base del teléfono.
+- `pruebas/auditoria.py`: 154 comprobaciones, 0 hallazgos.
+- El ensayo de instalación con el paquete y su instructivo: 88 de 88, seis nuevas. Sobre lo que dejó la entrega
+  anterior, el diff de la actualización aplica limpio y deja `sia-backend` idéntico a los archivos completos de la
+  1.0.1, y deshecho vuelve a su commit; entre las dos entregas cambian sólo `app` y `backend`; antes del vaciado, lo que
+  llega sin sello se atiende, y después no. Al terminar, la base local quedó idéntica.
+- El diff de la actualización sobre el `main` actual del SIA, que ya trae el SRP con sus 38 archivos idénticos a los de
+  la entrega anterior: aplica limpio, `npm run typecheck` sin errores y `npm run build` con la regla nueva.
+- La entrega, bajada otra vez de GitHub por su etiqueta: 125 de 125 archivos con su suma.
+- GitHub: la corrida del bloque 266 (40948963207), en verde.
+
+**Siguiente paso.** Que el SIA aplique la 1.0.1 (etiqueta `entrega-2026-10-31`, sección «Actualizar de la 1.0.0 a la
+1.0.1»). Con eso, la prueba en campo y el vaciado.

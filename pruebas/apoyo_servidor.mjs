@@ -81,9 +81,10 @@ try {
   } else if (orden === 'sin_pareja') {
     await c.query('DELETE FROM srp.duplicados WHERE id = $1', [d.id]);
   } else if (orden === 'sello') {
-    // Lo que hace el guion de vaciado con el sello (el guion entero se prueba en npm test: aquí borraría todo)
-    if (d.valor) await c.query('UPDATE srp.sello SET valor = $1, desde = now()', [d.valor]);
-    salida = { valor: (await c.query('SELECT valor FROM srp.sello')).rows[0].valor };
+    // Lo que hace el guion de vaciado con el sello y su constancia (el guion entero se prueba en npm test: aquí borraría
+    // todo). Con `nota`, la que se pide: para dejarlo como estaba
+    if (d.valor) await c.query('UPDATE srp.sello SET valor = $1, desde = now(), nota = $2', [d.valor, d.nota || 'Vaciado tras la prueba en campo: prueba de conexión']);
+    salida = (await c.query('SELECT valor, nota FROM srp.sello')).rows[0];
   } else if (orden === 'quitar') {
     await c.query('BEGIN');
     // También las cuentas que dieron de alta en la prueba, desde Usuarios

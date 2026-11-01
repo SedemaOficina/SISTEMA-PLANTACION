@@ -13,8 +13,9 @@ SRP.almacen = {
        · Un cambio en la forma de los datos viaja como migración numerada, nunca como borrado. */
   // Los almacenes que este código da por existentes; se comprueban al abrir
   ALMACENES: ['plantaciones', 'usuarios', 'bitacora', 'jornadas', 'programas', 'areas', 'especies', 'vehiculos', 'instituciones', 'solicitantes'],
-  // Los que no son datos del sistema sino del funcionamiento del teléfono: la cola de envío (js/cola.js)
-  AUXILIARES: ['envios'],
+  // Los que no son datos del sistema sino del funcionamiento del teléfono: la cola de envío (js/cola.js) y el sello de
+  // los datos del servidor (js/sesion.js)
+  AUXILIARES: ['envios', 'ajustes'],
 
   /* LOS SEIS CATÁLOGOS, CADA UNO EN SU TABLA. La pantalla los trata como una familia —la sección
      Catálogos, con una pestaña por cada uno— y en memoria cada renglón lleva `tipo` para saber de cuál
@@ -241,6 +242,22 @@ SRP.almacen = {
       tx.objectStore('plantaciones').openCursor().onsuccess = (e) => {
         const cur = e.target.result; if (!cur) return;
         if (!cur.value.sitio_plantacion) cur.update(Object.assign(cur.value, { sitio_plantacion: 'suelo' }));
+        cur.continue();
+      };
+    },
+    /* 12. EL SELLO DEL SERVIDOR, CON LA COLA. Estaba aparte, en el almacenamiento del navegador: si éste se perdía y la
+       cola no, el teléfono tomaba el sello nuevo sin compararlo y mandaba lo de la prueba al servidor vaciado. Pasa a
+       `ajustes`, en esta misma base, y cada operación de la cola lleva el que estaba vigente al anotarla; las que ya
+       esperaban toman el guardado. Sin sello guardado se quedan sin él: el servidor las rechaza si ya se vació. */
+    12(db, tx) {
+      db.createObjectStore('ajustes', { keyPath: 'clave' });
+      let sello = null;
+      try { sello = localStorage.getItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR); } catch (e) { /* sin almacenamiento del navegador */ }
+      if (!sello) return;
+      tx.objectStore('ajustes').put({ clave: 'sello_servidor', valor: sello });
+      tx.objectStore('envios').openCursor().onsuccess = (e) => {
+        const cur = e.target.result; if (!cur) return;
+        if (!cur.value.sello) cur.update(Object.assign(cur.value, { sello }));
         cur.continue();
       };
     }
@@ -672,10 +689,17 @@ SRP.almacen = {
 
   // El servidor se vació después de la prueba (js/sesion.js): fuera lo capturado y lo pendiente de enviar; las cuentas
   // y los catálogos se quedan
-  async vaciarCapturas() {
-    const a = ['plantaciones', 'jornadas', 'bitacora'].concat(this.AUXILIARES);
-    await this._tx(a, 'readwrite', (tx) => { a.forEach(n => tx.objectStore(n).clear()); });
+  // El servidor se vació: sale lo capturado y la cola, y queda el sello nuevo, todo en una transacción (js/sesion.js)
+  async vaciarCapturas(sello) {
+    const a = ['plantaciones', 'jornadas', 'bitacora', 'envios'];
+    await this._tx(a.concat('ajustes'), 'readwrite', (tx) => {
+      a.forEach(n => tx.objectStore(n).clear());
+      if (sello) tx.objectStore('ajustes').put({ clave: 'sello_servidor', valor: sello });
+    });
   },
+
+  async leerAjuste(clave) { const f = await this.unoLocal('ajustes', clave); return f ? f.valor : null; },
+  ponerAjuste(clave, valor) { return this.ponerLocal('ajustes', { clave, valor }); },
 
   async restablecer() {
     await this._tx(this.ALMACENES, 'readwrite', (tx) => {

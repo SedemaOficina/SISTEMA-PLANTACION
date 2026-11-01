@@ -14,21 +14,24 @@
    servicio ya no la reconoce (SIN_SESION o SESION_…), se avisa a SRP.sesion, que pide volver a entrar sin
    perder lo capturado.
 
-   Lo que se envía lleva el sello de los datos que conoce el teléfono (X-SRP-Sello). Si el servidor se vació
-   después de la prueba, responde SELLO_DISTINTO: no es un rechazo de lo enviado sino que ya no va, y
-   SRP.sesion borra lo que guardaba el teléfono. */
+   Lo que se envía lleva el sello de los datos (X-SRP-Sello): lo de la cola, el que estaba vigente cuando se
+   anotó (js/cola.js); lo demás, el que conoce el teléfono. Si el servidor se vació después de la prueba,
+   responde SELLO_DISTINTO: no es un rechazo de lo enviado sino que ya no va, y SRP.sesion borra lo que
+   guardaba el teléfono. */
 window.SRP = window.SRP || {};
 
 SRP.servidor = {
-  pedir(metodo, ruta, cuerpo) {
-    return this.mandar(metodo, ruta, cuerpo === undefined ? undefined : JSON.stringify(cuerpo), cuerpo === undefined ? null : 'application/json');
+  // `opciones.sello`: el de lo que se envía, si no es el que conoce el teléfono; null, sin sello
+  pedir(metodo, ruta, cuerpo, opciones) {
+    return this.mandar(metodo, ruta, cuerpo === undefined ? undefined : JSON.stringify(cuerpo), cuerpo === undefined ? null : 'application/json', opciones);
   },
 
   // Una fotografía, tal cual: sus bytes y su tipo
-  subir(ruta, datos, tipo) { return this.mandar('PUT', ruta, datos, tipo); },
+  subir(ruta, datos, tipo, opciones) { return this.mandar('PUT', ruta, datos, tipo, opciones); },
 
-  async mandar(metodo, ruta, cuerpo, tipo) {
-    const C = SRP.CONFIG, ctrl = new AbortController(), sello = metodo === 'GET' ? null : SRP.sesion.selloServidor();
+  async mandar(metodo, ruta, cuerpo, tipo, opciones) {
+    const C = SRP.CONFIG, ctrl = new AbortController();
+    const sello = metodo === 'GET' ? null : opciones && 'sello' in opciones ? opciones.sello : SRP.sesion.selloServidor();
     const reloj = setTimeout(() => ctrl.abort(), C.ESPERA_SERVIDOR_MS);
     let r;
     try {

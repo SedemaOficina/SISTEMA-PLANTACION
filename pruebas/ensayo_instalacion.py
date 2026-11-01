@@ -2,7 +2,9 @@
 cada entrega, antes de subirla. Viene de la auditoría del 27-10-2026 y sigue lo que hace el SIA: la base se instala por
 la entrada estándar (srp-instalar-por-stdin.sql); sia-backend, en el commit sobre el que se armó el paquete; la prueba
 de humo pasa por /srp/api, como la traduce el servidor web, y revisa además el sello de los datos, el vaciado tras la
-prueba y que un cuerpo roto o de más responda { codigo, mensaje } detrás del lector global de JSON del SIA.
+prueba y que un cuerpo roto o de más responda { codigo, mensaje } detrás del lector global de JSON del SIA. Con
+--anterior, también la actualización: sobre lo que dejó la entrega anterior, el diff de la actualización debe dejar
+sia-backend igual que esta entrega.
 
 !! BORRA EL ESQUEMA srp DE srp_local (y lo restaura al final). Sólo se corre con --ejecutar cuando nadie más usa la
 !! base: ni las pruebas del servidor, ni la de conexión, ni los programas de los manuales.
@@ -11,7 +13,7 @@ Uso (PYTHONUTF8=1, desde cualquier carpeta):
   python pruebas/ensayo_instalacion.py --paquete <carpeta del paquete> --sia <repo sia-backend, sólo lectura>
          --trabajo <carpeta desechable, nueva en cada corrida> --commit <el de sia-backend que dice el LEEME>
          --modulos <node_modules ya instalado de una copia de sia-backend con el mismo package-lock>
-         [--seco | --ejecutar --confirmo-base-libre] [--solo-restaurar]
+         [--anterior <carpeta del paquete de la entrega anterior>] [--seco | --ejecutar --confirmo-base-libre] [--solo-restaurar]
 
   --seco       (por omisión) no escribe en la base: comprueba el paquete y su manifiesto, toma la huella del esquema srp
                (sólo lectura), prueba que el respaldo se puede hacer (pg_dump del esquema sin datos, a la carpeta de
@@ -22,6 +24,8 @@ Uso (PYTHONUTF8=1, desde cualquier carpeta):
                el navegador, «Revertir» y, SIEMPRE al final (también si algo falla), restaurar el respaldo y comprobar
                que el esquema srp quedó idéntico: conteo y huella de cada tabla, funciones, disparadores y permisos.
   --solo-restaurar  si una corrida anterior se cortó: restaura el respaldo que dejó en --trabajo y compara.
+  --anterior   la entrega que ya está instalada: su backend/srp.diff y, encima, el backend/srp-*-a-*.diff de ésta deben
+               aplicar limpio y dejar sia-backend idéntico a backend/completos/; dice qué carpetas cambian entre las dos.
 
 Idempotente: anota cada paso en <trabajo>/estado.json. Si encuentra un ensayo a medias (srp quitado o instalado de
 prueba sin restaurar), restaura primero. La instalación de prueba nunca se encima a la original: antes de quitar
@@ -31,7 +35,7 @@ Puertos: el backend del SIA en 3124 y la aplicación en 8124.
 No guarda contraseñas en archivos: la de srp_api y la temporal de la primera cuenta viven sólo en memoria; la de
 srp_api se pone al empezar y se quita (PASSWORD NULL) al terminar.
 """
-import argparse, hashlib, json, os, re, secrets, shutil, socket, subprocess, sys, tempfile, time
+import argparse, glob, hashlib, json, os, re, secrets, shutil, socket, subprocess, sys, tempfile, time
 
 BIN = r'C:\Program Files\PostgreSQL\17\bin'
 PSQL, PG_DUMP, PG_RESTORE = (os.path.join(BIN, x + '.exe') for x in ('psql', 'pg_dump', 'pg_restore'))
@@ -44,6 +48,7 @@ a.add_argument('--modulos', required=True)
 a.add_argument('--seco', action='store_true'); a.add_argument('--ejecutar', action='store_true'); a.add_argument('--confirmo-base-libre', action='store_true')
 a.add_argument('--solo-restaurar', action='store_true')
 a.add_argument('--commit', required=True, help='el commit de sia-backend sobre el que se armó el paquete, el que dice su LEEME')
+a.add_argument('--anterior', help='la carpeta del paquete de la entrega que ya está instalada, para probar la actualización')
 A = a.parse_args()
 SECO = not A.ejecutar and not A.solo_restaurar
 if (A.ejecutar or A.solo_restaurar) and not A.confirmo_base_libre:
@@ -202,17 +207,22 @@ def backend(con_build=True):
     base = correr(['git', 'log', '-1', '--format=%h %ad', '--date=short'], cwd=sia)[1].strip()
     info('sia-backend en %s' % base)
     diff = os.path.join(PKG, 'backend', 'srp.diff')
+    comp = os.path.join(PKG, 'backend', 'completos')
+
+    # Los archivos completos del paquete son la base con el diff aplicado
+    def distintos():
+        fuera = []
+        for d, _, fs in os.walk(comp):
+            for f in fs:
+                rel = os.path.relpath(os.path.join(d, f), comp)
+                if not os.path.isfile(os.path.join(sia, rel)) or suma(os.path.join(sia, rel)) != suma(os.path.join(d, f)): fuera.append(rel)
+        return fuera
+    if A.anterior: actualizacion(sia, distintos)
     c, _, e = correr(['git', 'apply', '--check', diff], cwd=sia)
     if not ok(c == 0, 'backend/srp.diff aplica limpio (paso 3.3 del LEEME) %s' % e.strip()[-200:]): return sia, False
     correr(['git', 'apply', diff], cwd=sia)
-    # Los archivos completos del paquete son esa misma base con el diff aplicado
-    comp = os.path.join(PKG, 'backend', 'completos')
-    distintos = []
-    for d, _, fs in os.walk(comp):
-        for f in fs:
-            rel = os.path.relpath(os.path.join(d, f), comp)
-            if not os.path.isfile(os.path.join(sia, rel)) or suma(os.path.join(sia, rel)) != suma(os.path.join(d, f)): distintos.append(rel)
-    ok(not distintos, 'backend/completos/ es idéntico, byte por byte, a sia-backend con el diff aplicado %s' % distintos[:5])
+    fuera = distintos()
+    ok(not fuera, 'backend/completos/ es idéntico, byte por byte, a sia-backend con el diff aplicado %s' % fuera[:5])
     # Las dependencias: las de una copia ya instalada con el mismo package-lock (no se instala nada)
     mods = os.path.abspath(A.modulos)
     # Mismo contenido aunque una copia tenga saltos de Windows
@@ -227,6 +237,33 @@ def backend(con_build=True):
         ok(c == 0 and os.path.isfile(os.path.join(sia, 'dist', 'index.mjs')) and '[SRP]' in open(os.path.join(sia, 'dist', 'index.mjs'), encoding='utf-8', errors='replace').read(),
            'npm run build incluye el módulo en dist/index.mjs')
     return sia, True
+
+
+def actualizacion(sia, distintos):
+    """Lo que hará el SIA sobre lo que ya instaló: el diff de la entrega anterior y, encima, el de la actualización.
+    Al terminar, sia-backend vuelve a su commit."""
+    anterior = os.path.abspath(A.anterior)
+    viejo = os.path.join(anterior, 'backend', 'srp.diff')
+    nuevos = glob.glob(os.path.join(PKG, 'backend', 'srp-*-a-*.diff'))
+    if not ok(len(nuevos) == 1 and os.path.isfile(viejo), 'la entrega anterior trae backend/srp.diff y ésta, un solo diff de actualización %s' % [os.path.basename(x) for x in nuevos]): return
+    nuevo = nuevos[0]
+    c1, _, e1 = correr(['git', 'apply', viejo], cwd=sia)
+    c2, _, e2 = correr(['git', 'apply', '--check', nuevo], cwd=sia) if c1 == 0 else (1, '', '')
+    ok(c1 == 0 and c2 == 0, 'sobre la entrega anterior, backend/%s aplica limpio %s' % (os.path.basename(nuevo), (e1 + e2).strip()[-200:]))
+    if c2 == 0:
+        correr(['git', 'apply', nuevo], cwd=sia)
+        fuera = distintos()
+        ok(not fuera, '… y deja sia-backend idéntico, byte por byte, a backend/completos/ de esta entrega %s' % fuera[:5])
+        correr(['git', 'apply', '-R', nuevo], cwd=sia)
+    if c1 == 0: correr(['git', 'apply', '-R', viejo], cwd=sia)
+    quedan = correr(['git', 'status', '--porcelain', '--untracked-files=all'], cwd=sia)[1].split()
+    ok(not quedan, '… y, deshecho, sia-backend vuelve a su commit %s' % quedan[:5])
+    # Qué carpetas del paquete cambian entre las dos entregas: lo que dice el LEEME que se actualiza
+    cambian = []
+    for carpeta in ('app', 'backend', 'db', 'datos', 'deploy', 'servidor-web', 'manual'):
+        sumas = lambda raiz: {os.path.relpath(os.path.join(d, f), raiz): suma(os.path.join(d, f)) for d, _, fs in os.walk(raiz) for f in fs}
+        if sumas(os.path.join(anterior, carpeta)) != sumas(os.path.join(PKG, carpeta)): cambian.append(carpeta)
+    info('entre la entrega anterior y ésta cambian: %s' % (', '.join(cambian) or 'nada'))
 
 
 def revertir_backend(sia):
@@ -438,6 +475,8 @@ def humo(correo, temporal):
     ok(est == ['recibido', 'recibido'] and fila.get('folio') and fila.get('calle_estado') in ('ok', 'lejos') and fila.get('calle_version'),
        'recibe una jornada y su árbol, con folio y con su calle (estado %s, versión de la capa %s)' % (fila.get('calle_estado'), fila.get('calle_version')))
     s, _ = pedir('GET', '/srp/api/jornadas/' + jid); ok(s == 200, 'GET /jornadas/:id de la jornada recién recibida')
+    s, j = pedir('POST', '/srp/api/envios', cuerpo={'operaciones': []})
+    ok(s == 400 and (j or {}).get('codigo') == 'SIN_OPERACIONES', 'antes del vaciado, lo que llega sin sello se atiende como siempre (%s %s)' % (s, (j or {}).get('codigo')))
     # El vaciado tras la prueba, como lo dice el LEEME
     vaciar = open(os.path.join(PKG, 'db', 'srp', 'vaciar-tras-prueba.sql'), encoding='utf-8').read()
     c, _, e = psql(vaciar)
@@ -450,6 +489,8 @@ def humo(correo, temporal):
     info('constancia: %s' % uno('SELECT nota FROM srp.sello'))
     s, j = pedir('POST', '/srp/api/envios', sello=sello, cuerpo={'operaciones': []})
     ok(s == 409 and (j or {}).get('codigo') == 'SELLO_DISTINTO' and (j or {}).get('sello', '') > sello, 'lo que se envía con el sello de antes del vaciado no entra: 409 SELLO_DISTINTO, con el sello nuevo')
+    s, j = pedir('POST', '/srp/api/envios', cuerpo={'operaciones': []})
+    ok(s == 409 and (j or {}).get('codigo') == 'SELLO_DISTINTO', 'después del vaciado, lo que llega sin sello tampoco entra: 409 SELLO_DISTINTO (%s %s)' % (s, (j or {}).get('codigo')))
     s, j = pedir('GET', '/srp/api/acceso/yo')
     ok(s == 200 and (j or {}).get('sello', '') > sello, 'y la sesión sigue: acceso/yo da el sello nuevo')
 

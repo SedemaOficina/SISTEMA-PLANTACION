@@ -144,8 +144,8 @@ transacción y no deja nada a medias, y se vuelve al respaldo del paso 1.
 4. **Las fotografías:** la carpeta de `SRP_FOTOS_DIR` va con la base. Si se restauró el respaldo de antes de
    instalar, se puede retirar.
 
-El paquete (hoy, el de la versión 1.0.0, la primera que se instala) lleva todo eso: `app/`, `db/srp/`,
-`datos/srp-datos-arranque.sql`, `backend/` (el diff y los archivos completos), `deploy/`, `servidor-web/`, los dos
+El paquete (hoy, el de la versión 1.0.1, que actualiza la 1.0.0 ya instalada) lleva todo eso: `app/`, `db/srp/`,
+`datos/srp-datos-arranque.sql`, `backend/` (el diff completo, el de la actualización y los archivos completos), `deploy/`, `servidor-web/`, los dos
 manuales en `manual/`, `VERSION` y su `LEEME.md` con estos pasos, agrupados en cinco, y con la prueba en campo y el
 vaciado. El paquete se arma con
 `python herramientas/empaquetar.py <carpeta>`: escribe el manifiesto
@@ -290,10 +290,13 @@ quedó recibida —con el renglón como lo guardó el servidor— o rechazada y 
 formularios de la aplicación. Reenviar una operación ya recibida no duplica nada: el id del registro es la
 clave, y la respuesta es la misma.
 
-**El sello de los datos.** `POST /acceso/entrar` y `GET /acceso/yo` responden también el sello de `srp.sello`, y el
-teléfono lo manda en la cabecera `X-SRP-Sello` con todo lo que envía (`src/modulos/srp/sello.ts`). El guion de vaciado
-lo cambia: un envío con el sello de antes se responde `409 SELLO_DISTINTO`, con el vigente, y el teléfono borra lo que
-guardaba en lugar de reenviarlo. Sin cabecera se atiende como siempre; el acceso no se revisa.
+**El sello de los datos.** `POST /acceso/entrar` y `GET /acceso/yo` responden también el sello de `srp.sello`. El
+teléfono lo guarda en la misma base que su cola, y cada operación lleva el que estaba vigente cuando se capturó, en la
+cabecera `X-SRP-Sello` (`src/modulos/srp/sello.ts`). El guion de vaciado lo cambia: un envío con el sello de antes se
+responde `409 SELLO_DISTINTO`, con el vigente, y el teléfono borra lo que guardaba en lugar de reenviarlo. Sin cabecera
+se atiende mientras el servidor no se haya vaciado; después, también `409`: lo que llega sin sello podría ser de la
+prueba. Se sabe que hubo un vaciado porque la constancia de `srp.sello.nota` ya no es «Instalación». El acceso no se
+revisa.
 
 - El servidor no se queda con lo que calcula el teléfono: vuelve a ubicar el punto con `srp.derivar`, y
   pone el autor, la institución, el estado y el programa del árbol, que es el de su jornada.

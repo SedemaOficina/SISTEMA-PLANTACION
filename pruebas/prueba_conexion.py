@@ -361,6 +361,8 @@ VISTA = """async v => { SRP.app.mostrarVista(v); await new Promise(r => setTimeo
 def main():
     subprocess.run('npm run build', cwd=SERVIDOR, shell=True, check=True, capture_output=True)
     apoyo('preparar', {'cuentas': CUENTAS})
+    # El sello de los datos como está: la prueba lo cambia para simular el vaciado y al final lo deja igual, aunque se corte
+    sello_inicial = apoyo('sello', {})
     fotos = tempfile.mkdtemp(prefix='srp-conexion-fotos-')
     entorno = dict(os.environ, SRP_PUERTO=str(PUERTO_API), SRP_COOKIE_SEGURA='no', SRP_ROL='srp_api', SRP_PROXY='1', SRP_FOTOS_DIR=fotos)
     servicio = subprocess.Popen(['node', os.path.join('dist', 'iniciar.js')], cwd=SERVIDOR, env=entorno, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -1441,7 +1443,7 @@ def main():
             pgV = ctxV.new_page(); errV = []; pgV.on('pageerror', lambda e: errV.append(str(e)))
             abrir(pgV); entrar(pgV, APOYO['correo'], CLAVE)
             pgV.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
-            sello0 = apoyo('sello', {})['valor']
+            sello_antes = apoyo('sello', {}); sello0 = sello_antes['valor']
             ok(dentro(pgV) and pgV.evaluate("SRP.sesion.selloServidor()") == sello0, 'al entrar, el teléfono anota el sello de los datos del servidor')
             # Cada envío lleva hasta su tope de peso (80 KB; el backend del SIA corta el JSON en 100 KB): con un tope chico,
             # tres árboles salen en varios envíos y llegan todos
@@ -1483,7 +1485,39 @@ def main():
             pgV.wait_for_function("() => document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
             v2 = pgV.evaluate("async () => [(await SRP.almacen.todosLocales('jornadas')).length, (await SRP.almacen.todos('envios')).length, SRP.sesion.selloServidor(), !!SRP.sesion.usuario]")
             ok(v2 == [0, 0, 'sello-vaciado-2-%s' % CORRIDA, True], 'quien entra después del vaciado con algo guardado lo pierde al entrar, y se le dice: %s' % v2)
-            apoyo('sello', {'valor': sello0})
+            # Cada operación lleva el sello con que se anotó y viaja con él: un teléfono que pierde lo que guarda el navegador
+            # (la sesión, los borradores) y conserva la cola no manda lo de la prueba al servidor vaciado
+            iniciar_jornada(pgV, 'Jornada del teléfono sin navegador'); esperar_cola(pgV)
+            ctxV.set_offline(True)
+            rv3 = registrar(pgV)
+            s3 = pgV.evaluate("() => [SRP.sesion.sello, SRP.cola.ops.length > 0 && SRP.cola.ops.every(o => o.sello === SRP.sesion.sello), localStorage.getItem(SRP.CONFIG.CLAVE_SELLO_SERVIDOR)]")
+            ok(s3[0] == 'sello-vaciado-2-%s' % CORRIDA and s3[1] and s3[2] is None,
+               'el sello vive en la base del teléfono, con la cola, y cada operación lleva el suyo: %s' % s3)
+            apoyo('sello', {'valor': 'sello-vaciado-3-%s' % CORRIDA})
+            pgV.evaluate("() => localStorage.clear()")
+            ctxV.set_offline(False)
+            pgV.reload(); pgV.wait_for_selector('html[data-listo]')
+            entrar(pgV, APOYO['correo'], CLAVE)
+            pgV.wait_for_function("() => document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
+            pgV.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+            v3 = pgV.evaluate("async () => [(await SRP.almacen.todosLocales('plantaciones')).length, (await SRP.almacen.todos('envios')).length, SRP.sesion.selloServidor(), !!SRP.sesion.usuario]")
+            ok(v3 == [0, 0, 'sello-vaciado-3-%s' % CORRIDA, True] and apoyo('leer', {'id': rv3})['arbol'] is None,
+               'quien pierde lo del navegador y conserva la cola entra después del vaciado: se borra lo suyo y no llega al servidor: %s' % v3)
+            # Aunque el teléfono tome el sello nuevo sin borrar —como hacía la versión anterior—, lo anotado con el de antes
+            # viaja con el suyo y no entra
+            iniciar_jornada(pgV, 'Jornada del sello tomado sin comparar'); esperar_cola(pgV)
+            ctxV.set_offline(True)
+            rv4 = registrar(pgV)
+            apoyo('sello', {'valor': 'sello-vaciado-4-%s' % CORRIDA})
+            pgV.evaluate("async () => { SRP.sesion.sello = 'sello-vaciado-4-%s'; await SRP.almacen.ponerAjuste('sello_servidor', SRP.sesion.sello); }" % CORRIDA)
+            ctxV.set_offline(False)
+            pgV.evaluate("() => SRP.envio.enviar({ manual: true })")
+            pgV.wait_for_function("() => !!sessionStorage.getItem('srp_aviso_vaciado') || document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
+            pgV.wait_for_selector('html[data-listo]'); pgV.wait_for_function("() => document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
+            v4 = pgV.evaluate("async () => [(await SRP.almacen.todosLocales('plantaciones')).length, (await SRP.almacen.todos('envios')).length, !!SRP.sesion.usuario]")
+            ok(v4 == [0, 0, True] and apoyo('leer', {'id': rv4})['arbol'] is None,
+               'lo anotado con el sello de antes viaja con el suyo aunque el teléfono ya tenga el nuevo: no entra y se borra: %s' % v4)
+            apoyo('sello', {'valor': sello0, 'nota': sello_antes['nota']})
             ok(not errV, 'sin errores en el teléfono del vaciado: %s' % errV[:2])
             ctxV.close()
 
@@ -1494,6 +1528,7 @@ def main():
         servicio.terminate()
         app.terminate()
         apoyo('quitar', {'ids': [u['id'] for u in CUENTAS]})
+        apoyo('sello', sello_inicial)
         shutil.rmtree(fotos, ignore_errors=True)
     print('\n'.join(resultados))
     fallas = [r for r in resultados if r.startswith('FALLA')]

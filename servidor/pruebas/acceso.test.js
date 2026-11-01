@@ -495,9 +495,9 @@ test('una vez al día, con la primera entrada, se borra el registro de entradas 
   assert.equal(await viejos(), 0);
 });
 
-test('el sello de los datos llega al entrar y al confirmar la sesión, y un envío con el sello de antes de vaciar no entra', async () => {
+test('el sello de los datos llega al entrar y al confirmar la sesión, y un envío con el sello de antes de vaciar, o sin sello, no entra', async () => {
   const a = cliente();
-  const sello = (await admin.query('SELECT valor FROM srp.sello')).rows[0].valor;
+  const { valor: sello, nota } = (await admin.query('SELECT valor, nota FROM srp.sello')).rows[0];
   const e = await a.pedir('POST', '/acceso/entrar', { correo: ADMIN.correo, contrasena: ADMIN.clave });
   assert.equal(e.datos.sello, sello);
   assert.equal((await a.pedir('GET', '/acceso/yo')).datos.sello, sello);
@@ -506,7 +506,7 @@ test('el sello de los datos llega al entrar y al confirmar la sesión, y un env�
       headers: Object.assign({ 'content-type': 'application/json', cookie: a.cookie }, cabecera === undefined ? {} : { 'x-srp-sello': cabecera }) });
     return [r.status, await r.json()];
   };
-  // Con el sello vigente, o sin él (un teléfono que todavía no lo conoce), el envío se atiende como siempre
+  // Con el sello vigente, o sin él mientras el servidor no se haya vaciado, el envío se atiende como siempre
   assert.equal((await enviar(sello))[1].codigo, 'SIN_OPERACIONES');
   assert.equal((await enviar())[1].codigo, 'SIN_OPERACIONES');
   // El servidor se vació: el sello cambió por uno más nuevo. Lo que manda un teléfono con el de antes no entra, y se le
@@ -514,19 +514,24 @@ test('el sello de los datos llega al entrar y al confirmar la sesión, y un env�
   assert.match(sello, /^\d{8}T\d{6}\.\d{6}-[0-9a-f]{8}$/, 'empieza con la fecha y la hora: se ordena en el tiempo');
   const nuevo = (await admin.query('SELECT srp.sello_nuevo() AS v')).rows[0].v;
   assert.ok(nuevo > sello, 'un sello posterior es mayor como texto');
-  await admin.query('UPDATE srp.sello SET valor = $1, desde = now()', [nuevo]);
+  // Como lo deja el guion de vaciado: el sello nuevo y la constancia en lugar de «Instalación»
+  await admin.query("UPDATE srp.sello SET valor = $1, desde = now(), nota = 'Vaciado tras la prueba en campo: prueba del servicio'", [nuevo]);
   try {
     const [estado, datos] = await enviar(sello);
     assert.deepEqual([estado, datos.codigo, datos.sello], [409, 'SELLO_DISTINTO', nuevo]);
+    // Después del vaciado, lo que llega sin sello tampoco entra: podría ser de la prueba
+    const [estado2, datos2] = await enviar();
+    assert.deepEqual([estado2, datos2.codigo, datos2.sello], [409, 'SELLO_DISTINTO', nuevo], 'sin sello, después del vaciado');
+    assert.equal((await enviar(nuevo))[1].codigo, 'SIN_OPERACIONES', 'con el sello nuevo se atiende');
     assert.equal((await a.pedir('GET', '/acceso/yo')).datos.sello, nuevo, 'al confirmar la sesión, el teléfono se entera');
     // Si el servidor vuelve a un respaldo de antes del vaciado, su sello queda más viejo que el del teléfono: lo que éste
     // manda es real y se recibe
-    await admin.query('UPDATE srp.sello SET valor = $1', [sello]);
+    await admin.query('UPDATE srp.sello SET valor = $1, nota = $2', [sello, nota]);
     assert.equal((await enviar(nuevo))[1].codigo, 'SIN_OPERACIONES', 'un teléfono con un sello más nuevo que el del servidor envía como siempre');
     // Salir no envía datos: se atiende aunque el sello sea el de antes
     const salir = await fetch(base + '/acceso/salir', { method: 'POST', headers: { cookie: a.cookie, 'x-srp-sello': sello } });
     assert.equal(salir.status, 200);
   } finally {
-    await admin.query('UPDATE srp.sello SET valor = $1', [sello]);
+    await admin.query('UPDATE srp.sello SET valor = $1, nota = $2', [sello, nota]);
   }
 });

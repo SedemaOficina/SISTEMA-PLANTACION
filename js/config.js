@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 266',
+  ETAPA: 'Bloque 267',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -35,11 +35,11 @@ SRP.CONFIG = {
      después del anterior («2026-09-30b-…» va después de «2026-09-30-…»). */
   SELLO_REINICIO: '2026-09-30b-coordinacion',
   CLAVE_SELLO: 'srp_sello_datos',
-  DB_VERSION: 11,   // 2: tabla jornadas; 3: índice de árboles por jornada; 4: vehículo sólo del catálogo; 5: campos depurados y renombrados; 6: sin marca de prueba ni campos sin uso; 7: capa de colonias definitiva; 8: cada catálogo en su tabla; 9: la solicitud es un programa, sin origen de la jornada; 10: la cola de envío; 11: el sitio de plantación
+  DB_VERSION: 12,   // 2: tabla jornadas; 3: índice de árboles por jornada; 4: vehículo sólo del catálogo; 5: campos depurados y renombrados; 6: sin marca de prueba ni campos sin uso; 7: capa de colonias definitiva; 8: cada catálogo en su tabla; 9: la solicitud es un programa, sin origen de la jornada; 10: la cola de envío; 11: el sitio de plantación; 12: el sello del servidor con la cola
   CLAVE_SESION: 'srp_sesion_usuario_id',
   CLAVE_CONTRASTE: 'srp_contraste',
   CLAVE_APOYOS_VISTO: 'srp_apoyos_instrucciones_vistas',
-  CLAVE_SELLO_SERVIDOR: 'srp_sello_servidor',   // el sello de los datos del servidor (js/sesion.js)
+  CLAVE_SELLO_SERVIDOR: 'srp_sello_servidor',   // donde estaba el sello de los datos del servidor: la migración 12 lo lleva al almacén
   CLAVE_AVISO_VACIADO: 'srp_aviso_vaciado',     // tras recargar por un servidor vaciado, se avisa una vez   // «Cómo funciona una jornada compartida» ya se leyó una vez
   CLAVE_SECUENCIAS_PRUEBA: 'srp_secuencias_folio_prueba',   // secuencias del servidor simulado
   // Envío simulado: lo «recibido» por el servidor de prueba y el interruptor «Simular sin señal»

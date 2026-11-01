@@ -4736,3 +4736,32 @@
     29-10-2026: 22 archivos del módulo, `db.ts` y `index.ts`. Su instructivo es privado (lleva las cuentas iniciales):
     vive en el paquete, no en este repositorio. La entrega va al repositorio privado `srp-sia`, con la etiqueta
     `entrega-2026-10-29`, que Liber pidió crear (repositorio `SedemaOficina/srp-sia`, privado).
+
+- **D347. El sello viaja con cada operación, y sin sello no entra después del vaciado (bloque 267).**
+  31-10-2026. El SIA instaló la 1.0.0 el 30-10-2026 y, al probarla con el backend corriendo, encontró que el sello del
+  vaciado tenía una salida: un envío con el sello de antes se rechazaba (`SELLO_DISTINTO`), pero el mismo envío sin la
+  cabecera `X-SRP-Sello` entraba como recibido. En la aplicación eso podía pasar: el sello se guardaba en el
+  almacenamiento del navegador y la cola en la base del teléfono; si el navegador perdía el primero y conservaba la
+  cola, al entrar el teléfono no tenía sello, tomaba el nuevo sin compararlo y mandaba lo de la prueba con él. El SIA
+  propuso dos cambios, y se hicieron así:
+  · **En el servidor**, una vez hecho el vaciado, lo que llega sin sello se responde `409 SELLO_DISTINTO`, con el
+    vigente, igual que lo que llega con uno viejo. Antes del vaciado se atiende como siempre. El servicio sabe que hubo
+    un vaciado porque la constancia de `srp.sello.nota` ya no es «Instalación», la que pone la instalación: así la base
+    no cambia y la 1.0.0 ya instalada se actualiza sin correr ningún guion. Reemplaza el «sin cabecera se atiende como
+    siempre» de D345.
+  · **En el teléfono**, el sello pasa a la misma base que la cola (migración 12, el almacén `ajustes`), y cada operación
+    lleva el sello vigente al anotarla. Un envío lleva un solo sello: lo anotado con otro va en el envío que sigue. Las
+    operaciones que ya esperaban toman el sello guardado; sin sello guardado se quedan sin él, viajan sin cabecera y el
+    servidor las rechaza si ya se vació. El vaciado borra la cola y pone el sello nuevo en la misma transacción. Al
+    abrir, la aplicación quita el sello que la 1.0.0 dejaba en el navegador, para que una base nueva no lo vuelva a
+    tomar.
+  · **Lo demás, igual:** lo que no viene de la cola (las pantallas de la Administración, la carga masiva) lleva el sello
+    que conoce el teléfono; el acceso no se revisa; un sello más nuevo que el del servidor, el de un respaldo de antes
+    del vaciado, se acepta.
+  · **La entrega de la 1.0.1 es una actualización:** cambian 8 archivos de la aplicación y `src/modulos/srp/sello.ts`; la
+    base, las variables, el servidor web y los datos de arranque, no. El diff de la actualización se armó y se probó
+    sobre el `main` de `sia-backend` que ya trae el SRP, con sus archivos idénticos a los de la entrega anterior. El
+    ensayo de instalación, con `--anterior`, comprueba que el diff de la entrega anterior más el de la actualización
+    dejan `sia-backend` idéntico a los archivos completos de la nueva. Revertir la aplicación sólo sirve antes de que
+    los teléfonos abran la 1.0.1: su base, ya en la versión 12, no la abre la 1.0.0. Va en la etiqueta
+    `entrega-2026-10-31` del repositorio privado `srp-sia`.

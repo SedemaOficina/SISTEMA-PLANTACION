@@ -10,7 +10,7 @@ import { conectar, RAIZ } from './apoyo.js';
 import { vaciarTrasPrueba } from '../bd.js';
 
 const rehacer = () => execFileSync(process.execPath, [path.join(RAIZ, 'servidor', 'cargar.js'), 'rehacer'], { stdio: 'ignore' });
-let c;
+let c, selloAntes;
 
 // Lo que hay en cada tabla que importa al vaciar
 async function conteos() {
@@ -38,8 +38,12 @@ const sello = async () => (await c.query('SELECT valor FROM srp.sello')).rows[0]
 before(async () => {
   c = await conectar();
   if (!Number((await c.query('SELECT count(*) AS n FROM srp.plantaciones')).rows[0].n)) { await c.end(); rehacer(); c = await conectar(); }
+  selloAntes = (await c.query('SELECT valor, desde, nota FROM srp.sello')).rows[0];
 });
 after(async () => {
+  // El sello vuelve a como estaba: después de un vaciado el servicio no atiende lo que llega sin sello, y las pruebas lo
+  // mandan así
+  await c.query('UPDATE srp.sello SET valor = $1, desde = $2, nota = $3', [selloAntes.valor, selloAntes.desde, selloAntes.nota]);
   await c.end();
   rehacer();
 });
