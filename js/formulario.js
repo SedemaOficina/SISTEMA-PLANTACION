@@ -29,9 +29,11 @@ SRP.formulario = {
       e.preventDefault();
       this.enfocar(a.getAttribute('href').slice(1));
     });
-    this.el('foto-archivo').addEventListener('change', (e) => this.cargarFoto(e.target));
+    // «Tomar foto» y «Galería»: dos selectores, la misma carga
+    ['foto-camara', 'foto-archivo'].forEach(id => this.el(id).addEventListener('change', (e) => this.cargarFoto(e.target)));
     this.el('btn-foto-quitar').innerHTML = SRP.ICONOS.svg('basura', 'medio');
-    this.el('icono-foto').innerHTML = SRP.ICONOS.svg('camara', 'grande');
+    this.el('icono-foto-camara').innerHTML = SRP.ICONOS.svg('camara', 'medio');
+    this.el('icono-foto').innerHTML = SRP.ICONOS.svg('imagen', 'medio');
     this.el('btn-foto-quitar').addEventListener('click', () => {
       const f = { datos: this.estado.foto, id: this.estado.fotoId, nombre: this.estado.fotoNombre, bytes: this.estado.fotoBytes, servidor: this.estado.fotoServidor };
       this.ponerFoto(null, null);
@@ -398,10 +400,9 @@ SRP.formulario = {
     } else {
       vista.removeAttribute('src');
     }
-    // La zona de carga dice si va a poner la primera foto o a reemplazar la que hay; con foto
-    // se reduce a un renglón, porque lo importante ya es la ficha de la foto
-    this.el('texto-foto').textContent = ver ? 'Cambiar fotografía' : 'Agregar fotografía';
-    this.el('etq-foto').classList.toggle('con-foto', !!ver);
+    // Con foto, lo importante ya es su ficha: los dos botones quedan para cambiarla y su explicación se oculta
+    ['etq-foto-camara', 'etq-foto'].forEach(id => this.el(id).classList.toggle('con-foto', !!ver));
+    this.el('foto-nota').hidden = !!ver;
     if (SRP.espejo) SRP.espejo.refrescar();
     this.guardarBorrador();
   },
@@ -523,7 +524,10 @@ SRP.formulario = {
       if (regs.length) {
         const cfg = SRP.CONFIG.JORNADA;
         const dist = regs.map(r => ({ r, d: SRP.jornadas.distancia({ lat: v.lat, lng: v.lng }, r) }));
-        const cerca = dist.filter(x => x.d < cfg.DUPLICADO_M).sort((a, b) => a.d - b.d)[0];
+        /* El posible duplicado es de la misma especie, como en la revisión de la jornada: dos especies distintas a pocos
+           metros son dos árboles (prueba en campo del 19-11-2026, donde avisaba entre especies distintas) */
+        const especie = SRP.jornadas.claveEspecie(v);
+        const cerca = dist.filter(x => x.d < cfg.DUPLICADO_M && SRP.jornadas.claveEspecie(x.r) === especie).sort((a, b) => a.d - b.d)[0];
         if (cerca) salida.push({ tipo: 'duplicado', texto: 'Posible duplicado: a ' + cerca.d.toFixed(1) + ' m de ' + SRP.ref.especieDe(cerca.r).comun + ' (' + SRP.folio.texto(cerca.r) + '). Si es otro árbol, guarde; si es el mismo, cancele.' });
         const min = Math.min(...dist.map(x => x.d));
         if (min > cfg.SEPARAR_M) salida.push({ tipo: 'lejos', texto: 'Queda a ' + (min >= 1000 ? (min / 1000).toFixed(1) + ' km' : Math.round(min) + ' m') + ' de los demás árboles de la jornada «' + j.nombre + '». Si es de otro sitio, cambie de jornada.', otros: regs.filter(r => r.lat != null && r.lng != null).map(r => [r.lat, r.lng]) });

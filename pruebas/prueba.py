@@ -622,13 +622,18 @@ with sync_playwright() as p:
     ok(foco==['none','rgb(27, 95, 170)'],'el foco de un campo de texto es borde azul, el mismo color de foco de toda la app: %s' % foco)
 
     from PIL import Image; Image.new('RGB',(2400,1800),(70,110,60)).save(sal('arbol.jpg'),quality=90)
-    ok(pg.locator('input[type=file][accept^=image]').count()==1,'hay un solo selector de fotografía')
+    ok(pg.locator('input[type=file][accept^=image]').count()==2,'hay dos selectores de fotografía: «Tomar foto» y «Galería»')
     alin=pg.evaluate("(() => { const l=document.querySelector('fieldset.campo legend').getBoundingClientRect().left, e=document.querySelector('label[for=campo-especie]').getBoundingClientRect().left; return Math.round(l-e); })()")
     ok(alin==0,'la etiqueta «Fotografía» se alinea con las demás: %s px' % alin)
     nav=pg.evaluate("(() => { const n=document.getElementById('navegacion'); const r=n.getBoundingClientRect(); const b=document.querySelector('.barra-guardar').getBoundingClientRect(); return { fija: getComputedStyle(n).position, abajo: Math.round(innerHeight - r.bottom) <= 1, barra_encima: b.bottom <= r.top + 1 }; })()")
     ok(nav=={'fija':'fixed','abajo':True,'barra_encima':True},'en teléfono las secciones van abajo y la barra de guardar queda encima: %s' % nav)
-    ok(pg.get_attribute('#foto-archivo','capture') is None,'sin «capture»: el teléfono ofrece su propio menú')
-    ok(pg.get_attribute('#foto-archivo','accept')=='image/*,android/allowCamera','pide imágenes y que Chrome en Android ofrezca también la cámara')
+    # Dos botones (prueba en campo del 19-11-2026: en un Android el menú del teléfono sólo abría las fotos guardadas)
+    f_ = pg.evaluate("""() => ['etq-foto-camara', 'etq-foto'].map(id => { const l = document.getElementById(id), i = document.getElementById(l.htmlFor);
+      return [l.textContent.trim(), i.getAttribute('accept'), i.getAttribute('capture'), !!l.querySelector('svg')]; })""")
+    ok(f_==[['Tomar foto', 'image/*', 'environment', True], ['Galería', 'image/*', None, True]] and 'abre la cámara' in pg.inner_text('#foto-nota'),
+       '«Tomar foto» abre la cámara de atrás y «Galería» las fotos guardadas, cada uno con su icono, y una línea dice cuál es cuál: %s' % f_)
+    lado=pg.evaluate("(() => { const a = document.getElementById('etq-foto-camara').getBoundingClientRect(), b = document.getElementById('etq-foto').getBoundingClientRect(); return [Math.round(a.top) === Math.round(b.top), a.height >= 44 && b.height >= 44]; })()")
+    ok(lado==[True, True],'los dos botones van lado a lado y del alto de un botón: %s' % lado)
     pg.evaluate("document.getElementById('aviso').hidden = true")
     pg.set_input_files('#foto-archivo', files=[{'name': 'notas.pdf', 'mimeType': 'application/pdf', 'buffer': b'%PDF-1.4\n' + b'0' * 100}])
     esperar(pg, "() => !document.getElementById('aviso').hidden", 6000)
@@ -638,8 +643,12 @@ with sync_playwright() as p:
     ok(pg.is_hidden('#ficha-foto'),'sin foto no hay ficha de archivo')
     pg.set_input_files('#foto-archivo',sal('arbol.jpg')); pg.wait_for_timeout(900)
     ok(pg.is_visible('#ficha-foto') and pg.inner_text('#foto-nombre')=='arbol.jpg','la ficha dice el nombre del archivo')
-    ok(pg.evaluate("(() => { const z=document.getElementById('etq-foto'); return z.classList.contains('con-foto') && getComputedStyle(z).flexDirection==='row' && z.getBoundingClientRect().height < 70; })()"),
-       'con foto cargada la zona de carga se reduce a un renglón «Cambiar fotografía»')
+    ok(pg.evaluate("(() => { const z=document.getElementById('etq-foto'); return z.classList.contains('con-foto') && document.getElementById('etq-foto-camara').classList.contains('con-foto') && getComputedStyle(z).flexDirection==='row' && z.getBoundingClientRect().height < 70 && document.getElementById('foto-nota').hidden; })()"),
+       'con foto cargada los dos botones quedan en un renglón para cambiarla, sin la línea que los explica')
+    # La cámara carga igual que la galería
+    pg.click('#btn-foto-quitar'); pg.wait_for_timeout(300)
+    pg.set_input_files('#foto-camara',sal('arbol.jpg')); pg.wait_for_timeout(900)
+    ok(pg.is_visible('#ficha-foto') and pg.inner_text('#foto-nombre')=='arbol.jpg','la foto tomada con la cámara se carga como la de la galería')
     ok(any(u in pg.inner_text('#foto-peso') for u in ['KB','MB','B']),'y cuánto pesa ya comprimida: '+pg.inner_text('#foto-peso'))
     dims=pg.evaluate("new Promise(r=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.src=document.getElementById('foto-vista').src})")
     ok(dims[0]<=800 and dims[1]<=800,'la foto se comprime a %sx%s'%tuple(dims))
@@ -658,8 +667,10 @@ with sync_playwright() as p:
        'la fotografía va debajo de los datos, no encima')
     ok(pg.evaluate("getComputedStyle(document.querySelector('.revision-fila dt')).fontWeight")=='700',
        'las etiquetas de la ficha van en negritas')
-    ok(pg.evaluate("SRP.mapa.icono.options.iconSize[0]")<=24,
-       'el pin es discreto (%s px de ancho)' % pg.evaluate("SRP.mapa.icono.options.iconSize[0]"))
+    # Lo que se ve es chico; la caja, del tamaño de un dedo para arrastrarla
+    pin_=pg.evaluate("(() => { const d = document.createElement('div'); d.className = 'pin'; d.innerHTML = SRP.mapa.ICONO_SVG; document.body.appendChild(d); const r = d.querySelector('.pin-halo').getBoundingClientRect(); d.remove(); return [Math.round(r.width), SRP.mapa.icono.options.iconSize[0]]; })()")
+    ok(pin_[0]<=24 and pin_[1]>=44,
+       'el punto del árbol es discreto (la mira mide %s px) y se arrastra con el dedo (caja de %s px)' % tuple(pin_))
     id1=pg.evaluate("SRP.formulario.estado.idPrevisto")
     ok(len(id1)>20 and pg.locator('#revision-lista .revision-id').count()==0 and 'Identificador' not in pg.inner_text('#revision-lista'),'el identificador queda fijado pero no se muestra en la ficha')
     ok(pg.locator('button[data-campo=punto]').count()==1,'sólo las coordenadas remiten al mapa')
@@ -2695,8 +2706,8 @@ with sync_playwright() as p:
         datos: m.identificacion.every(([e, v]) => t.includes(e + ': ' + v.split('\\n')[0])), filas: m.ejemplares.filas.length }; }""")
     ok(mo18['advertencia'] and mo18['gps'] and mo18['nota'] and mo18['datos'] and mo18['filas']==1,'la vista previa pinta el mismo modelo que el PDF, con las advertencias del pie: %s' % mo18)
     # El pin de Nuevo registro toma su color de la hoja: azul de acción
-    pin18=pg18.evaluate("(() => { const d = document.createElement('div'); d.className = 'pin'; d.innerHTML = SRP.mapa.ICONO_SVG; document.body.appendChild(d); const g = getComputedStyle(d.querySelector('.pin-gota')).fill; d.remove(); return g; })()")
-    ok(pin18=='rgb(27, 95, 170)','el marcador del mapa toma su color de la hoja, no del código: %s' % pin18)
+    pin18=pg18.evaluate("(() => { const d = document.createElement('div'); d.className = 'pin'; d.innerHTML = SRP.mapa.ICONO_SVG; document.body.appendChild(d); const g = [getComputedStyle(d.querySelector('.pin-aro')).stroke, getComputedStyle(d.querySelector('.pin-punto')).fill]; d.remove(); return g; })()")
+    ok(pin18==['rgb(27, 95, 170)', 'rgb(27, 95, 170)'],'la mira del mapa toma su color de la hoja, no del código: %s' % pin18)
     ok(not err18,'sin errores en consola: %s' % err18[:2])
     ctx18.close()
 
@@ -5291,6 +5302,17 @@ with sync_playwright() as p:
     pg60.click('#btn-ini-detectar'); pg60.wait_for_timeout(1200)
     pg60.fill('#ini-nombre','Prioritarias B142'); pg60.fill('#ini-fecha', HOY); pg60.select_option('#ini-programa','p-refor'); pg60.fill('#ini-meta','10'); pg60.click('#btn-iniciar-jornada'); pg60.wait_for_timeout(700)
     pg60.click('#btn-ubicacion'); pg60.wait_for_timeout(1500)
+    # El punto del árbol es una mira chica con el punto exacto al centro (prueba en campo del 19-11-2026: el pin estorbaba)
+    m60=pg60.evaluate("""() => { const el = SRP.mapa.marcador.getElement(), r = el.getBoundingClientRect(), m = document.getElementById('mapa').getBoundingClientRect();
+      const p = SRP.mapa.mapa.latLngToContainerPoint([SRP.mapa.lat, SRP.mapa.lng]);
+      return [el.getAttribute('aria-label'), el.hasAttribute('title'), Math.round(r.width), Math.round(r.height),
+        Math.abs(r.left + r.width / 2 - m.left - p.x) < 1.5 && Math.abs(r.top + r.height / 2 - m.top - p.y) < 1.5, !!el.querySelector('.pin-aro')]; }""")
+    ok(m60==['Ubicación del árbol', False, 44, 44, True, True],
+       'el punto del árbol es una mira con el punto exacto al centro, de 44 px para arrastrarla, sin etiqueta flotante y con su nombre para el lector de pantalla: %s' % m60)
+    # Las colonias empiezan apagadas (prueba en campo del 19-11-2026): el botón de capas sigue a la vista para encenderlas
+    i60=pg60.evaluate("[document.querySelectorAll('#mapa path.pri-colonia').length, document.querySelector('#mapa .pri-capas-boton').dataset.activa, String(document.querySelector('#mapa [data-pri=ver]').checked)]")
+    ok(i60==[0, 'false', 'false'], 'al abrir la aplicación, las colonias de la jornada están apagadas en el mapa del árbol: %s' % i60)
+    pg60.evaluate("SRP.prioritarias.alternar()"); pg60.wait_for_timeout(400)
     f60=pg60.evaluate("""() => { const c = document.querySelector('#mapa .pri-capas'); const b = c.querySelector('.pri-capas-boton'); const r = b.getBoundingClientRect(), m = document.getElementById('mapa').getBoundingClientRect();
       return { sobre: r.top >= m.top && r.bottom <= m.bottom && r.right <= m.right && r.left >= m.left, tam: [Math.round(r.width), Math.round(r.height)], simple: !c.querySelector('[data-pri=nivel]') && !!c.querySelector('[data-pri=opacidad]') && c.querySelector('.pri-capas-panel').hidden, activa: [b.dataset.activa, String(c.querySelector('[data-pri=ver]').checked)],
       trazos: document.querySelectorAll('#mapa path.pri-colonia').length, nivel: document.querySelectorAll('#mapa path.pri-nivel-3').length, opacidad: getComputedStyle(document.querySelector('#mapa .pane-prioritarias')).opacity,
@@ -5298,7 +5320,7 @@ with sync_playwright() as p:
       debajo: Number(getComputedStyle(document.querySelector('#mapa .pane-prioritarias')).zIndex) < Number(getComputedStyle(document.querySelector('#mapa .leaflet-marker-pane')).zIndex),
       color: [0, 1, 2, 3, 4].map(n => { const i = document.createElement('i'); i.className = 'pri-muestra pri-nivel-' + n; document.body.appendChild(i); const c = getComputedStyle(i).backgroundColor; i.remove(); return c; }) }; }""")
     ok(f60['trazos']==1 and f60['nivel']==1 and f60['debajo'] and f60['opacidad']=='0.45' and f60['activa']==['true','true'] and f60['color']==['rgb(249, 231, 191)','rgb(244, 197, 110)','rgb(232, 138, 46)','rgb(194, 66, 27)','rgb(127, 29, 18)'],
-       'el mapa del árbol pinta de entrada sólo el polígono de la colonia de la jornada, con el color de su prioridad y debajo del marcador: %s' % [f60['trazos'], f60['activa']])
+       'encendidas, el mapa del árbol pinta sólo el polígono de la colonia de la jornada, con el color de su prioridad y debajo del marcador: %s' % [f60['trazos'], f60['activa']])
     ok(f60['sobre'] and f60['tam'][0]>=44 and f60['tam'][1]>=44 and f60['simple'],'el control es un solo botón de buen tamaño sobre el mapa, con su panel cerrado, con opacidad y sin niveles: %s' % f60['tam'])
     ok(f60['textos']==[False, False, False] and not f60['enPunto'],'Nuevo registro no dice la prioridad como dato del punto ni bajo las coordenadas: %s' % f60['textos'])
     s60=pg60.evaluate("(() => { const s = document.getElementById('mapa-simbologia'); return [!s.hidden, s.textContent.trim(), s.querySelectorAll('.pri-muestra').length, !!s.querySelector('.pri-nivel-3')]; })()")
@@ -5335,7 +5357,11 @@ with sync_playwright() as p:
     pg60.evaluate("SRP.mapa.cambiarBase('satelite')")
     ok(jf60[:4]==[False, True, 1, 0] and 'prioridad alta' in jf60[4].lower(),'la ficha de la jornada dice su prioridad, sin desglose ni prioridad por punto, y su mapa pinta su colonia con el mismo botón: %s' % jf60[4])
     # Supervisión: árboles por nivel de prioridad, en pantalla, en el informe y en la tabla
+    # Al volver a abrir la aplicación empiezan apagadas otra vez, para cualquier perfil; la opacidad elegida se recuerda
+    pg60.evaluate("() => { SRP.prioritarias.estado('campo').opacidad = 0.6; SRP.prioritarias.guardar(); }")
     pg60.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-admin-1'])"); pg60.reload(); pg60.wait_for_timeout(1500)
+    r60=pg60.evaluate("(() => { const e = SRP.prioritarias.estado('campo'); return [e.ver, e.opacidad]; })()")
+    ok(r60==[False, 0.6], 'al volver a abrir la aplicación las colonias empiezan apagadas otra vez, con la opacidad que se eligió: %s' % r60)
     pg60.evaluate("async () => { await SRP.demo.cargar(); }"); pg60.wait_for_timeout(500)
     pg60.evaluate("SRP.app.mostrarVista('supervision')"); pg60.wait_for_timeout(2500)
     abrir_sup(pg60)
@@ -6697,6 +6723,7 @@ with sync_playwright() as p:
     pg82.click('#btn-ini-detectar'); pg82.wait_for_timeout(1200)
     pg82.fill('#ini-nombre', 'Dos colonias B171'); pg82.fill('#ini-fecha', HOY); pg82.select_option('#ini-programa', 'p-refor'); pg82.fill('#ini-meta', '5'); pg82.click('#btn-iniciar-jornada'); pg82.wait_for_timeout(700)
     j82 = pg82.evaluate("SRP.activa.jornada.id")
+    pg82.evaluate("SRP.prioritarias.alternar()")   # las colonias empiezan apagadas: se encienden, como lo haría la persona
     trazos82 = lambda sel: pg82.evaluate("s => document.querySelectorAll(s + ' path.pri-colonia').length", sel)
     def arbol82(lat, lng):
         ctx82.set_geolocation({'latitude': lat, 'longitude': lng, 'accuracy': 5})
@@ -6885,6 +6912,7 @@ with sync_playwright() as p:
     pg85.goto(BASE); pg85.wait_for_timeout(1300)
     entrar_como(pg85, 'u-coord-1'); pg85.wait_for_timeout(900)
     iniciar_jornada(pg85, 'Opacidad B184'); pg85.wait_for_timeout(500)
+    pg85.evaluate("SRP.prioritarias.alternar()")   # las colonias empiezan apagadas: se encienden, como lo haría la persona
     pg85.click('#btn-ubicacion'); pg85.wait_for_timeout(1100)
     pg85.fill('#campo-especie', 'fres'); pg85.wait_for_timeout(200); pg85.dispatch_event('.combo-opcion[data-id="ESP-0029"]', 'mousedown'); pg85.wait_for_timeout(150)
     pg85.click('#form-plantacion button[type=submit]'); pg85.wait_for_timeout(1200)
@@ -8243,6 +8271,17 @@ with sync_playwright() as p:
     s105 = pg105.evaluate("document.getElementById('jornada-siguiente').textContent")
     ok(re.fullmatch(r'Siguiente: registrar (los árboles que faltan|el primer árbol)( \(\d+ de \d+\))?; los registran la Coordinación y sus cabos de apoyo\.', s105) is not None,
        'en una compartida, quien sólo la mira lee que registran la Coordinación y sus cabos de apoyo, no «(lo hace el cabo)»: %s' % s105)
+    # El aviso de posible duplicado al guardar es de la misma especie, como en la revisión de la jornada (prueba en campo
+    # del 19-11-2026: avisaba entre especies distintas plantadas a pocos metros)
+    d105 = pg105.evaluate("""async () => {
+      const j = (await SRP.almacen.todos('jornadas')).find(x => SRP.demo.es(x.id) && x.estatus === 'abierta');
+      SRP.activa.jornada = j; SRP.formulario.estado.editando = null; SRP.formulario.estado.sustitucion = null;
+      const regs = await SRP.activa.registrosDe(j), r = regs.find(x => x.especie_id), usadas = new Set(regs.map(x => x.especie_id));
+      const otra = (await SRP.almacen.todos('especies')).find(e => !usadas.has(e.id));
+      const dup = async (especie_id) => (await SRP.formulario.avisos({ punto_origen: 'manual', lat: r.lat, lng: r.lng, especie_id, especie_otra: '' }))
+        .filter(a => a.tipo === 'duplicado').length;
+      return [await dup(r.especie_id), await dup(otra.id)]; }""")
+    ok(d105 == [1, 0], 'al guardar, el posible duplicado es de la misma especie: otra especie en el mismo punto no avisa: %s' % d105)
     pg105.evaluate("SRP.demo.quitar()")
     ok(not err105, 'sin errores en consola: %s' % err105[:2])
     ctx105.close()

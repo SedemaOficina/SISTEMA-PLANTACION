@@ -641,8 +641,9 @@ fieldset.campo { margin-inline: 0; }
   background: var(--fondo-suave); color: var(--gris); overflow-wrap: anywhere;
 }
 .pin { background: none; border: 0; }
-.pin-gota { fill: var(--acento); stroke: var(--fondo); }
-.pin-centro { fill: var(--fondo); stroke: var(--acento-oscuro); }
+.pin-halo { fill: none; stroke: var(--fondo); }
+.pin-aro { fill: none; stroke: var(--acento); }
+.pin-punto { fill: var(--acento); stroke: var(--fondo); }
 /* Árboles ya registrados en la jornada, sobre el mapa de registro: puntos, no marcadores. El área de
    toque es mayor que el punto que se ve */
 .punto-plantado { display: grid; place-items: center; background: none; border: 0; cursor: pointer; }
@@ -713,7 +714,11 @@ fieldset.campo { margin-inline: 0; }
   color: var(--acento); cursor: pointer; text-align: center; margin-bottom: 0;
 }
 .zona-foto-titulo { font-family: var(--fuente-titulo); font-weight: 600; }
-.zona-foto-ayuda { color: var(--gris); font-size: var(--t-s); }
+/* «Tomar foto» y «Galería», lado a lado y del alto de un botón; debajo, qué abre cada uno */
+.foto-botones { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-2); }
+.campo .foto-botones .zona-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
+.foto-botones .icono-foto svg { width: 20px; height: 20px; }
+.foto-nota { margin: var(--e-1) 0 0; color: var(--gris); font-size: var(--t-s); }
 .ficha-foto {
   display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3);
   padding: var(--e-2); border: 1px solid var(--borde-suave); border-radius: var(--radio); background: var(--fondo-suave);
@@ -1253,7 +1258,6 @@ dialog::backdrop { background: var(--velo-oscuro); }
 .desplegable[open] summary::before { transform: rotate(90deg); }
 .sup-seccion[open] > summary::after { transform: translateY(-25%) rotate(-135deg); }
 .campo .zona-foto.con-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
-.zona-foto.con-foto .zona-foto-ayuda { display: none; }
 .zona-foto.con-foto .icono-foto svg { width: 20px; height: 20px; }
 /* escala de tres tamaños */
 .zona-foto:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
@@ -1401,7 +1405,7 @@ dialog::backdrop { background: var(--velo-oscuro); }
   .campo-punto .campo-triple .campo:nth-child(3) .campo-lectura::before { content: "· "; color: var(--gris); }
   /* La fotografía: una zona del alto de un botón; con foto, la miniatura y sus acciones, sin nombre de archivo */
   .campo .zona-foto { flex-direction: row; gap: var(--e-2); min-height: var(--toque); padding: var(--e-2) var(--e-3); }
-  .zona-foto .zona-foto-ayuda, .ficha-foto-nombre { display: none; }
+  .ficha-foto-nombre { display: none; }
   .zona-foto .icono-foto svg { width: 20px; height: 20px; }
   /* En teléfono las acciones bajan a un segundo renglón para no aplastar la especie y el aviso */
   .punto-jornada { grid-template-columns: 28px minmax(0, 1fr); row-gap: var(--e-1); }

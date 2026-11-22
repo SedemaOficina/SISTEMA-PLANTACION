@@ -4830,3 +4830,25 @@
     ventana del relevo trae la jornada al día antes de elegir y, si el servidor lo rechaza por versión pero en la jornada
     registra el mismo cabo que vio la Coordinación, el relevo sale otra vez solo, una vez, con la versión vigente. Si
     alguien hizo otro relevo mientras tanto, se queda en «Revisar». El servidor no cambia para esto.
+
+- **D350. El duplicado por especie, la mira en lugar del pin, las colonias apagadas al abrir y la foto con dos botones
+  (bloque 270).** 21-11-2026. Tercer bloque de lo que pidió la prueba en campo del 19-11-2026.
+  · **Duplicado al guardar, sólo con la misma especie.** El aviso de la ficha de revisión («Posible duplicado: a 1.2 m
+    de…») comparaba con los árboles de la jornada de cualquier especie, y la revisión de la jornada sólo con los de la
+    misma: dos especies plantadas a 3 m se avisaban al guardar. Ahora los dos usan la misma clave de especie
+    (`SRP.jornadas.claveEspecie`). La distancia sigue siendo el parámetro «Puntos duplicados», que la Administración baja
+    a 3 m desde Parámetros, sin versión nueva.
+  · **El pin era grande, no chico.** El documento decía que el tamaño del pin «dificulta la visibilidad»; se le mostró a
+    Liber una muestra con el pin más grande y aclaró que el equipo lo quería más chico, porque tapa lo que hay debajo al
+    ajustar el punto. Con una segunda muestra eligió la mira: un aro de 16 px con el punto exacto al centro, que tapa casi
+    nada, dentro de una caja de 44 px para arrastrarla con el dedo. Se quitó también el `title` del marcador, que el
+    navegador mostraba como etiqueta flotante «Ubicación del árbol» junto al punto; el nombre queda en `aria-label`.
+  · **Las colonias, apagadas al abrir.** En los mapas de campo (Nuevo registro y la ficha de la jornada), para todos los
+    perfiles, la capa empieza apagada cada vez que se abre la aplicación; si alguien la enciende, sigue encendida hasta
+    cerrarla, y la opacidad elegida se recuerda. El mapa de colonias de Supervisión no cambia: ahí la capa es el mapa
+    mismo y no tiene interruptor; apagarla lo dejaría vacío.
+  · **La foto con dos botones.** En el Cubot KingKong ES el menú del teléfono (`accept="image/*,android/allowCamera"`, del
+    bloque 246) sólo ofrecía las fotos guardadas. Era el caso previsto entonces: dos botones. «Tomar foto» abre la cámara
+    de atrás (`capture="environment"`) y «Galería», las fotos guardadas; una línea debajo dice cuál es cuál. Con una foto
+    cargada, los dos quedan en un renglón para cambiarla y la línea se oculta. El icono de galería no existe en el set de
+    identidad. Liber lo aprobó con muestra.

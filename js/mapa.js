@@ -33,11 +33,14 @@ SRP.mapa = {
     return etiqueta + (origen === 'gps' && precision != null ? ' (±' + Math.round(precision) + ' m)' : '');
   },
 
-  // Icono propio e incrustado: el de Leaflet se descarga de un servidor externo. Sus colores los
-  // pone la hoja (.pin-gota, .pin-centro), no el código
-  ICONO_SVG: '<svg width="24" height="32" viewBox="0 0 36 48" aria-hidden="true">' +
-    '<path class="pin-gota" d="M18 2C9.2 2 2 9.1 2 17.9 2 30 18 46 18 46s16-16 16-28.1C34 9.1 26.8 2 18 2z" stroke-width="2.5"/>' +
-    '<circle class="pin-centro" cx="18" cy="18" r="6.5" stroke-width="3"/></svg>',
+  /* La mira del punto del árbol: un aro chico con el punto exacto al centro, que tapa poco de la imagen al ajustarlo (en
+     la prueba en campo del 19-11-2026 el pin de gota estorbaba). Su caja de 44 px es el área para arrastrarla con el
+     dedo. Icono propio e incrustado: el de Leaflet se descarga de un servidor externo. Sus colores los pone la hoja
+     (.pin-halo, .pin-aro, .pin-punto), no el código */
+  ICONO_SVG: '<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">' +
+    '<circle class="pin-halo" cx="22" cy="22" r="8" stroke-width="5"/>' +
+    '<circle class="pin-aro" cx="22" cy="22" r="8" stroke-width="2.5"/>' +
+    '<circle class="pin-punto" cx="22" cy="22" r="2.4" stroke-width="1.2"/></svg>',
 
   iniciar(alCambiar) {
     this.alCambiar = alCambiar;
@@ -62,8 +65,8 @@ SRP.mapa = {
       });
       capaLeaflet.on('tileload', () => { if (fallas >= 3) { fallas = 0; this.aviso('imagen', null); } });
     } });
-    // La punta del pin marca la coordenada exacta: el anclaje va en ella, no en el centro
-    this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [24, 32], iconAnchor: [12, 31] });
+    // El centro de la mira marca la coordenada exacta: el anclaje va en él
+    this.icono = L.divIcon({ className: 'pin', html: this.ICONO_SVG, iconSize: [44, 44], iconAnchor: [22, 22] });
     this.mapa.on('click', (e) => this.alTocar(e.latlng));
     this.capaPlantados = L.layerGroup().addTo(this.mapa);
     const ver = document.getElementById('btn-plantado-ver');
@@ -334,7 +337,11 @@ SRP.mapa = {
     if (this.mapa) {
       if (!this.marcador) {
         // Siempre por encima de los puntos de los árboles ya registrados
-        this.marcador = L.marker([this.lat, this.lng], { icon: this.icono, draggable: true, keyboard: true, title: 'Ubicación del árbol', zIndexOffset: 1000 }).addTo(this.mapa);
+        /* Sin «title»: el navegador lo mostraba como etiqueta flotante encima de la imagen, junto al punto. El nombre queda
+           para el lector de pantalla */
+        this.marcador = L.marker([this.lat, this.lng], { icon: this.icono, draggable: true, keyboard: true, zIndexOffset: 1000 }).addTo(this.mapa);
+        const elMarcador = this.marcador.getElement();
+        if (elMarcador) elMarcador.setAttribute('aria-label', 'Ubicación del árbol');
         this.marcador.on('dragend', () => {
           const p = this.marcador.getLatLng();
           this.colocar(p.lat, p.lng, 'Punto ajustado.', { origen: 'ajustado' });

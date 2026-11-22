@@ -7367,3 +7367,43 @@ cambian los demás perfiles, al día (M567), y el aviso del relevo (M568).
 
 **Siguiente paso.** El bloque 270: el aviso de duplicado al guardar sólo con la misma especie (M569), el pin (M570), las
 colonias apagadas (M571) y la fotografía con dos botones (M572).
+
+## Bloque 270 — El duplicado por especie, la mira, las colonias apagadas y la foto con dos botones (21-11-2026)
+
+**Versión 1.0.4.** Tercer y último bloque de correcciones de lo que pidió la prueba en campo del 19-11-2026. Lo decidido
+va en D350.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Aviso de posible duplicado al guardar | Con un árbol de cualquier especie a menos de «Puntos duplicados» | Sólo de la misma especie, como la revisión de la jornada |
+| El punto del árbol en el mapa | Pin de gota de 24 × 32 px y la etiqueta flotante «Ubicación del árbol» | Mira de 16 px con el punto exacto al centro, en una caja de 44 px para arrastrarla; sin etiqueta flotante |
+| Las colonias de la jornada en los mapas de campo | Encendidas, y se recordaba si alguien las apagaba | Apagadas al abrir la aplicación; encendidas, siguen hasta cerrarla; la opacidad se recuerda |
+| La fotografía | Un botón, «Agregar fotografía», con el menú del teléfono (en un Cubot sólo abría las fotos) | «Tomar foto» (la cámara de atrás) y «Galería», con una línea que dice cuál es cuál |
+
+**Qué cambió.**
+- `js/formulario.js` (el duplicado con `SRP.jornadas.claveEspecie`; los dos selectores de la foto), `js/mapa.js` (la mira,
+  su anclaje al centro y el nombre en `aria-label`), `js/prioritarias.js` (empiezan apagadas), `js/iconos.js` (el icono
+  `imagen`), `index.html` (los dos botones de la foto) y `css/estilos.css` (la mira, los dos botones y su línea; sin las
+  reglas de la ayuda del botón único).
+- Las pruebas, en `pruebas/prueba.py`: los dos selectores con su `capture`, lado a lado y la cámara que carga como la
+  galería; la mira (color, tamaño, punto al centro, sin `title`); las colonias apagadas al abrir y otra vez al volver a
+  abrir, con la opacidad que se eligió; el duplicado de otra especie que no avisa. Las secciones de dos colonias y de la
+  opacidad encienden la capa primero, como lo haría la persona.
+- `VERSION`, las 65 marcas de `index.html`, la etapa de `js/config.js`, el README, `docs/MEJORAS.md` (M569 a M572 hechas)
+  y `docs/DECISIONES.md` (D350).
+- Fuera del repositorio: las muestras, en `servidor/local/muestras-b270/`: la del pin más grande, que no era lo que
+  pedía el equipo, la del pin más chico y la de la foto.
+
+**Verificación.**
+- `pruebas/por_tramos.py`, los tramos de la foto, el mapa, las colonias y el duplicado (1, 4, 44, 45, 46, 65, 68, 78 y
+  88): 768 de 768. La primera corrida del tramo 1 dio una falla: una comprobación vieja pedía que la caja del pin midiera
+  24 px o menos; ahora revisa que la mira visible lo cumpla y que la caja sea de 44 px para el dedo.
+- `pruebas/prueba_conexion.py`: 148 de 148: la fotografía de cada árbol sigue subiendo por «Galería».
+- `pruebas/auditoria_css.py`: 0 hallazgos (antes de quitarlas, las reglas de la ayuda del botón único quedaban sin uso).
+  `pruebas/auditoria.py`: 154 comprobaciones, 0 hallazgos.
+- La pantalla ya programada, a 360 px: la mira sobre el satélite y la foto sin y con fotografía, sin desborde ni errores.
+- GitHub: la corrida del bloque 269 (44977395607), en verde: 1,579 comprobaciones sin fallas, y el tramo 43, con las esperas
+  nuevas, 12 de 12.
+
+**Siguiente paso.** El bloque 271: los dos manuales al día con lo de los bloques 268 a 270 (M575). El manual del personal
+todavía dice «Agregar fotografía».

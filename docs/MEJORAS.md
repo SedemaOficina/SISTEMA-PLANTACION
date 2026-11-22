@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.3 (Bloque 269)»**.
+En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.4 (Bloque 270)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,10 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M569 | Prueba en campo (19-11-2026) | El aviso de posible duplicado al guardar compara sólo con árboles de la misma especie, como la revisión de la jornada; la distancia («Puntos duplicados») la baja la Administración a 3 m en Parámetros | Alta | 1.0.4 (B270) | En una jornada, registrar otra especie a 1 m de un árbol: no avisa; la misma especie, sí | D350 |
+| M570 | Prueba en campo (19-11-2026) | El punto del árbol en el mapa es una mira chica con el punto exacto al centro, en lugar del pin de gota, para que no tape la imagen al ajustarlo; sin la etiqueta flotante «Ubicación del árbol» | Media | 1.0.4 (B270) | Nuevo registro, tocar «Registrar ubicación del punto» y acercar el mapa | D350 |
+| M571 | Prueba en campo (19-11-2026) | Las colonias de la jornada empiezan apagadas al abrir la aplicación, en los mapas de campo y para todos los perfiles; se encienden con el botón de capas y siguen encendidas hasta cerrarla; la opacidad elegida se recuerda | Media | 1.0.4 (B270) | Nuevo registro, botón de capas: «Colonias de la jornada» sin marcar | D350 |
+| M572 | Prueba en campo (19-11-2026) | Fotografía con dos botones: «Tomar foto» abre la cámara y «Galería», las fotos guardadas; debajo, una línea dice cuál es cuál | Alta | 1.0.4 (B270) | Nuevo registro, Fotografía, en un Android y en un iPhone | D350 |
 | M567 | Prueba en campo (19-11-2026) | Lo que hacen los demás perfiles llega solo: el teléfono pide sólo lo que cambió cada 2 minutos (cabos y Coordinación, con la aplicación a la vista), al volver a la aplicación y con «Actualizar». En Jornadas y Registros, la franja «Al día a las…», «Buscando lo nuevo…» o «Sin señal: lo de los demás, hasta las…» | Alta | 1.0.3 (B269) | Con datos reales, dos teléfonos: la Coordinación hace un relevo y, en a lo más 2 minutos, el teléfono del cabo lo avisa sin volver a entrar | D349 |
 | M568 | Prueba en campo (19-11-2026) | El relevo ya no dice «El servidor no aceptó 1 cambio» cuando la jornada cambió en otra cosa: la ventana la trae al día y, si aun así cambió sin cambiar quién registra, el relevo sale solo con la versión vigente | Alta | 1.0.3 (B269) | Con datos reales: el titular edita la jornada y después la Coordinación hace el relevo | D349 |
 | M565 | Prueba en campo (19-11-2026) | El cabo de apoyo tiene «Registrar árbol» en la ficha de la jornada compartida, como el titular: lo lleva a Nuevo registro con esa jornada activa, aunque tuviera otra abierta | Alta | 1.0.2 (B268) | Con datos de prueba, entrar como Rocío Hernández Demo (cabo de apoyo): Jornadas › la compartida de hoy › «Registrar árbol» | D348 |
@@ -568,10 +572,6 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
-| M569 | Prueba en campo (19-11-2026) | El aviso de posible duplicado al guardar compara sólo con árboles de la misma especie, como la revisión de la jornada | Alta | Pendiente | Bloque 270. La distancia («Puntos duplicados», 3 m) la cambia la Administración en Parámetros, sin versión nueva |
-| M570 | Prueba en campo (19-11-2026) | Pin de ubicación más grande en el mapa de captura | Media | Pendiente | Bloque 270, con muestra |
-| M571 | Prueba en campo (19-11-2026) | La capa de colonias, apagada al abrir cualquier mapa, para todos los perfiles, con la opción de encenderla y su opacidad | Media | Pendiente | Bloque 270 |
-| M572 | Prueba en campo (19-11-2026) | Fotografía con dos botones, «Tomar foto» y «Galería»: en el Cubot KingKong ES el menú del sistema no ofrece la cámara | Alta | Pendiente | Bloque 270, con muestra. Es lo previsto en el bloque 246 si el menú no servía |
 | M573 | Prueba en campo (19-11-2026) | Girar el mapa con dos dedos, con una brújula para volver al norte | Media | Pendiente | Segunda etapa (1.1.0) |
 | M574 | Prueba en campo (19-11-2026) | Mapa base de mayor resolución y con más acercamiento | Media | Pendiente | Segunda etapa. Espera saber si el SIA tiene una ortofoto de la Ciudad y si se acepta un proveedor con clave y costo; ver M168 |
 | M575 | Prueba en campo (19-11-2026) | Los dos manuales al día con lo de la prueba en campo: botón y color de las jornadas asignadas, «Actualizar», pin, colonias, fotografía, Puntos duplicados en 3 m, y en el capítulo del GPS los modelos con baja precisión en la prueba | Alta | Pendiente | Bloque 271, antes de la entrega; las capturas, con la versión de la entrega |

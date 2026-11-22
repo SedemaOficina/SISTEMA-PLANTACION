@@ -313,7 +313,7 @@ versión se escribe en un solo lugar del código.
 **El archivo `VERSION`, en la raíz, lleva el mismo número** (lo pide la guía del SIA, sección 8); la prueba
 falla si no coincide con la marca. Ese número se ve siempre en la franja fija de arriba. Hasta la 0.9.78 decía
 «Versión de prueba 0.9.N»; desde la versión 1 dice «Versión» y el número de `VERSION`. Al armar el paquete para el SIA,
-la numeración volvió a empezar en la 1.0.0, la primera que se instala (hoy, «Versión 1.0.3»).
+la numeración volvió a empezar en la 1.0.0, la primera que se instala (hoy, «Versión 1.0.4»).
 
 **Las pruebas de GitHub, en verde.** Cada subida corre la prueba completa en GitHub (`.github/workflows/pruebas.yml`;
 el indicador de arriba dice cómo salió la última). Antes de cerrar un bloque se revisa que la corrida del commit

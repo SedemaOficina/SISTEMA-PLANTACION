@@ -122,16 +122,19 @@ SRP.prioritarias = {
 
   /* LO QUE SE VE DE LA CAPA. Por grupo de mapas —«campo»: Nuevo registro y la ficha de la jornada;
      «supervision»: el mapa de colonias de Supervisión—: si la capa está encendida y, en Supervisión,
-     qué niveles se ven y con cuánta opacidad. Se recuerda en el dispositivo. */
+     qué niveles se ven y con cuánta opacidad. Los niveles y la opacidad se recuerdan en el dispositivo. */
   estados: null,
-  // En campo se ve el polígono de la colonia de la jornada; quien no lo quiere lo apaga con su botón
-  inicial(grupo) { return { ver: true, niveles: { 0: true, 1: true, 2: true, 3: true, 4: true }, opacidad: grupo === 'supervision' ? 0.9 : 0.45 }; },
+  /* En campo, el polígono de la colonia de la jornada empieza apagado cada vez que se abre la aplicación, para todos los
+     perfiles: estorbaba al ajustar el punto (prueba en campo del 19-11-2026). Se enciende con su botón y sigue encendido
+     mientras la aplicación esté abierta. El mapa de Supervisión es la capa misma: no tiene interruptor */
+  inicial(grupo) { return { ver: false, niveles: { 0: true, 1: true, 2: true, 3: true, 4: true }, opacidad: grupo === 'supervision' ? 0.9 : 0.45 }; },
   estado(grupo) {
     if (!this.estados) {
       this.estados = {};
       let g = null;
       try { g = localStorage.getItem(this.CLAVE); } catch (e) { /* sin almacenamiento: vale para esta sesión */ }
       if (g) { try { this.estados = JSON.parse(g) || {}; } catch (e) { this.estados = {}; } }
+      Object.values(this.estados).forEach(e => { if (e && typeof e === 'object') e.ver = false; });
     }
     const e = this.estados[grupo] = Object.assign(this.inicial(grupo), this.estados[grupo] || {});
     e.niveles = Object.assign(this.inicial(grupo).niveles, e.niveles || {});

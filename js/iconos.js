@@ -84,6 +84,8 @@ SRP.ICONOS = {
   filtros: '<path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>',
   // Subir al inicio de la página: la flecha del botón flotante
   subir: '<path fill="currentColor" d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/>',
+  // Las fotos guardadas en el teléfono, junto a «Tomar foto»: no existe en el set
+  imagen: '<path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V5h14v14zm-5.04-6.71-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/>',
 
   /* MENÚ DE ACCIONES DE UN RENGLÓN. En lugar de tres o cuatro botones por renglón, una
      tuerca que despliega las acciones. Cada opción conserva su data-accion y data-id, así que
