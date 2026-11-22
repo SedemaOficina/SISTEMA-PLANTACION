@@ -7443,3 +7443,48 @@ enseñaba 4 m de arranque en «Puntos duplicados»; Liber eligió dejar 3 m en e
 
 **Siguiente paso.** El bloque 272: la entrega de la 1.0.5 al SIA, como actualización de la 1.0.1 (la aplicación,
 `consultas.ts` y `parametros.ts`; la base no cambia), con su ensayo de instalación y los manuales nuevos.
+
+## Bloque 272 — La entrega 1.0.5 al SIA, que actualiza la 1.0.1 (22-11-2026)
+
+**Versión 1.0.5, sin cambios en la aplicación.** La entrega de lo que pidió la prueba en campo, como actualización de la
+1.0.1 que el SIA aplicó el 03-11-2026. Lo decidido va en D352.
+
+| Qué | 1.0.1 (instalada) | 1.0.5 (esta entrega) |
+|---|---|---|
+| La aplicación | La 1.0.1 | 12 archivos distintos: la búsqueda de lo nuevo, el relevo, el cabo de apoyo, la mira, las colonias, la foto y los 3 m |
+| `sia-backend` | El módulo de la 1.0.1 (`8654381`) | `consultas.ts` y `parametros.ts`, por `backend/srp-1.0.1-a-1.0.5.diff` |
+| La base, variables, servidor web, datos de arranque | — | Nada |
+| `manual/` | Los de la 1.0.0 | Los de la 1.0.5 |
+
+**Qué cambió.**
+- Fuera de este repositorio: la entrega en `C:/sia-rev/tmp/b272/srp-sia-1.0.5` (125 archivos, con su manifiesto, su ZIP
+  y su suma) y su instructivo, con «Actualizar de la 1.0.1 a la 1.0.5» al principio; los guiones con que se armó
+  (`armar_backend.py`, `armar_actualizacion.py`, `parche_leeme.py`), en la misma carpeta; el correo para el SIA, en
+  `servidor/local/borradores/correo-1.0.5.md`.
+- `pruebas/prueba.py`: la lista de Parámetros con datos de prueba esperaba «4 m» (lo encontró la corrida de GitHub del
+  bloque 271).
+- `docs/PLAN-TRASPASO-SIA.md`, `docs/FASE2-Y-TRASPASO.md`, `docs/ALINEACION-SIA.md` y `servidor/README.md`, al día con la
+  entrega; `docs/DECISIONES.md` (D352).
+
+**Verificación.**
+- El ensayo de instalación con el paquete y su instructivo (`pruebas/ensayo_instalacion.py --anterior` con la entrega
+  1.0.1): 88 de 88. Sobre la entrega anterior, el diff de la actualización aplica limpio y deja `sia-backend` idéntico,
+  byte por byte, a los archivos completos de ésta, y deshecho vuelve a su commit; entre las dos entregas cambian sólo
+  `app/`, `backend/` y `manual/`. Al terminar, la base local quedó idéntica.
+- El diff de la actualización sobre el `main` actual del SIA (`038ff09`): aplica limpio, toca sólo sus dos archivos,
+  `npm run typecheck` sin errores y `npm run build` termina.
+- `pruebas/prueba_conexion.py --app` con la aplicación del paquete: 151 de 151.
+- El empaquetador: 125 archivos en el manifiesto, sin nada de prueba ni nada que parezca un secreto; los dos avisos ya
+  revisados de entregas anteriores.
+- La entrega en `srp-sia` (commit `950e10c`, etiqueta `entrega-2026-11-22`), bajada otra vez de GitHub por su etiqueta:
+  125 de 125 archivos con su suma, idéntica a la carpeta del paquete.
+- `pruebas/por_tramos.py`, la prueba completa (88 tramos): 1,583 de 1,584; la única falla es la conocida del Excel de
+  `originales/`. El tramo 88 se detuvo porque el servidor local de la aplicación se apagó a media corrida; solo, 14 de 14.
+- GitHub: la corrida del bloque 271 (44991575186) salió en rojo: 937 comprobaciones, 5 fallas. Una era de la lista de
+  Parámetros, que esperaba 4 m: corregida. Las otras, en el tramo 1 (la ventana de revisión no se abrió a tiempo y el
+  tramo se detuvo) y en el 44 (la paginación), pasan aquí con el mismo código (647 de 647 y 25 de 25, también en la prueba completa): la corrida de esta subida lo
+  confirmará.
+
+**Siguiente paso.** Que Liber mande el correo al SIA (la entrega ya está en `srp-sia`, etiqueta `entrega-2026-11-22`).
+Con la 1.0.5 instalada, otra prueba corta en campo y el vaciado. Después, la segunda etapa (1.1.0): girar el mapa y el
+mapa base (M573, M574).

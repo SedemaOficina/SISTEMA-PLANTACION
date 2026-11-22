@@ -78,7 +78,7 @@ cuentas viven en `srp`; altas, bajas y restablecimientos los hace la Administrac
    `sia-backend` del 21-10-2026. Ninguna se envió: la primera que se instala es la 1.0.0 (29-10-2026, D337 y D346),
    con todo lo anterior y las correcciones de la auditoría del 27-10-2026, sobre el último commit de `main` de
    `sia-backend` ese día. El SIA la instaló el 30-10-2026; la 1.0.1 (31-10-2026, D347) la actualiza con lo que encontró
-   al probarla.
+   al probarla, y la 1.0.5 (22-11-2026, D352), con lo que pidió la prueba en campo.
 3. **El acceso con los formatos del SIA.** Ya hechos (bloque 206): contraseña con scrypt N=16384, r=8,
    p=1, en base64url; testigo de sesión de 32 bytes con su resumen sha256 en hexadecimal; la cookie
    `sia_srp_sesion`; y, en la fase 2, la primera cuenta con un guion que sólo imprime el SQL. Hechos en el

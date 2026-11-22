@@ -4493,7 +4493,7 @@ with sync_playwright() as p:
     # Parámetros: los valores que usa el sistema, sólo para consulta
     pg50.click('.cfg-tarjeta[data-ir=parametros]'); pg50.wait_for_timeout(500)
     p50=pg50.eval_on_selector_all('#cfg-parametros .cfg-cifra','l=>l.map(d=>d.textContent)')
-    ok(p50==['4 m','150 m','500 m','Hasta ±10 m','Hasta ±30 m','100 m','15 s','17:00 h','60 s','800 × 600 px','10 en teléfono · 25 en computadora'] and pg50.locator('#vista-parametros input, #vista-parametros select, #vista-parametros textarea').count()==0,
+    ok(p50==['3 m','150 m','500 m','Hasta ±10 m','Hasta ±30 m','100 m','15 s','17:00 h','60 s','800 × 600 px','10 en teléfono · 25 en computadora'] and pg50.locator('#vista-parametros input, #vista-parametros select, #vista-parametros textarea').count()==0,
        'Parámetros muestra los valores que usa el sistema, sin campos para cambiarlos: %s' % p50)
     # Registro de cambios: una edición de catálogo y una desactivación de cuenta
     pg50.evaluate("""async () => { SRP.app.mostrarVista('catalogos'); await new Promise(r => setTimeout(r, 300));

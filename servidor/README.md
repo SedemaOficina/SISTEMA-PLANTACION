@@ -144,7 +144,7 @@ transacción y no deja nada a medias, y se vuelve al respaldo del paso 1.
 4. **Las fotografías:** la carpeta de `SRP_FOTOS_DIR` va con la base. Si se restauró el respaldo de antes de
    instalar, se puede retirar.
 
-El paquete (hoy, el de la versión 1.0.1, que actualiza la 1.0.0 ya instalada) lleva todo eso: `app/`, `db/srp/`,
+El paquete (hoy, el de la versión 1.0.5, que actualiza la 1.0.1 ya instalada) lleva todo eso: `app/`, `db/srp/`,
 `datos/srp-datos-arranque.sql`, `backend/` (el diff completo, el de la actualización y los archivos completos), `deploy/`, `servidor-web/`, los dos
 manuales en `manual/`, `VERSION` y su `LEEME.md` con estos pasos, agrupados en cinco, y con la prueba en campo y el
 vaciado. El paquete se arma con

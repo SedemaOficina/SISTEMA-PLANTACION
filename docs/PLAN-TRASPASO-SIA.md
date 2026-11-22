@@ -101,9 +101,10 @@ Cada fase tiene un criterio de salida; no se pasa a la siguiente sin cumplirlo.
 | **5. Piloto** | Una cuadrilla, una semana, datos reales. Teléfonos iPhone y Android. Revisión diaria de lo recibido contra lo capturado. Antes de empezar, el SIA confirma por escrito el respaldo diario del esquema `srp`, con su restauración de prueba, y el de la carpeta de fotografías. Cada día: la Coordinación descarga la tabla de Supervisión en CSV y las fotografías en ZIP a una carpeta de la Secretaría; nadie termina el día sin que la pastilla diga «Al día»; en iPhone, la aplicación va en la pantalla de inicio (D323) | Oficina de la Secretaría, Reforestación Urbana y SIA | Cero árboles perdidos o duplicados; folios consecutivos por celda; reporte de jornada conforme |
 | **6. Operación** | Alta de cuentas y catálogos reales, vehículos incluidos. Carga del histórico. Monitoreo de disco de fotografías. Archivo del repositorio público | SIA | Todas las cuadrillas capturan en producción; el repositorio de GitHub queda privado y archivado |
 
-Al 31-10-2026, lo que toca al SRP de las fases 2 a 4 está hecho. El SIA instaló la versión 1.0.0 el 30-10-2026 (D337,
-D346), y la 1.0.1 corrige lo que encontró al probarla (D347): falta que la aplique. Después siguen la prueba en campo, el
-vaciado, el piloto y la operación.
+Al 22-11-2026, lo que toca al SRP de las fases 2 a 4 está hecho. El SIA instaló la versión 1.0.0 el 30-10-2026 (D337,
+D346) y aplicó la 1.0.1 el 03-11-2026 (D347). La primera prueba en campo fue el 19-11-2026, y la 1.0.5 trae lo que pidió
+el equipo (D348 a D351, `docs/PRUEBA-CAMPO-2026-11-19.md`): falta que el SIA la aplique. Después siguen el vaciado, el
+piloto y la operación.
 
 ## 5. Qué está listo y qué falta
 
@@ -190,7 +191,8 @@ vaciado, el piloto y la operación.
 
 ## 9. Siguiente paso
 
-Que el SIA aplique la versión 1.0.1 (D347): la entrega `entrega-2026-10-31` del repositorio privado `srp-sia`, con la
-sección «Actualizar de la 1.0.0 a la 1.0.1» de su instructivo. Con eso, la prueba real con datos ficticios y el vaciado
-del servidor (D337); con el respaldo de las fotografías y la restauración de prueba confirmados, el piloto (fase 5).
+Que el SIA aplique la versión 1.0.5 (D352): la entrega `entrega-2026-11-22` del repositorio privado `srp-sia`, con la
+sección «Actualizar de la 1.0.1 a la 1.0.5» de su instructivo. Con eso, otra prueba corta en campo y el vaciado del
+servidor (D337); con el respaldo de las fotografías y la restauración de prueba confirmados, el piloto (fase 5). Girar el
+mapa y un mapa base de mayor resolución van en la 1.1.0 (M573, M574).
 La pantalla de entradas y la última actividad de cada cuenta van después del piloto (M532).

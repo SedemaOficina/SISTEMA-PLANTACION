@@ -4873,3 +4873,20 @@
     personas, y qué bloque atendió cada observación.
   · La guía «Teléfono listo para el GPS» (documento de Claude Docs, fuera del repositorio) no cambió: sus ajustes son los
     mismos; lo nuevo de la prueba va en la sección 2 del manual.
+
+- **D352. La entrega 1.0.5 al SIA: una actualización de la 1.0.1 (bloque 272).** 22-11-2026.
+  · **Qué lleva.** La aplicación (12 archivos distintos de la 1.0.1), dos archivos del módulo (`consultas.ts`, con
+    `?cambios=`, y `parametros.ts`, con los 3 m) y los dos manuales de la 1.0.5. La base, las variables, el servidor web y
+    los datos de arranque no cambian. Antes de armarla se confirmó que el `main` de `sia-backend` (después de `git
+    fetch`, en `038ff09`) trae el módulo de la 1.0.1 con sus 22 archivos y que sólo esos dos difieren de los del proyecto.
+  · **Cómo se armó**, como la 1.0.1: la entrega anterior sacada de su etiqueta (`entrega-2026-10-31`) como base; la
+    instalación completa (`backend/srp.diff` y `backend/completos/`) sobre `7cf93cc`, el commit anterior al SRP; la
+    actualización (`backend/srp-1.0.1-a-1.0.5.diff`) sobre el `main` vigente, donde aplica limpio y compila; la aplicación
+    con `herramientas/preparar_produccion.py`; el manifiesto, el ZIP y su suma con `herramientas/empaquetar.py`.
+  · **El instructivo** abre con «Actualizar de la 1.0.1 a la 1.0.5»: qué trae, qué cambia, los pasos, cómo comprobarlo
+    («Al día a las…» en Jornadas) y cómo revertir. Dice que el orden no importa: la aplicación nueva con el backend de
+    antes no recibe la marca y no busca cada 2 minutos; la de antes con el backend nuevo funciona como hoy. La base del
+    teléfono no cambió de versión (12), así que revertir la aplicación no deja teléfonos sin abrir. Del salto de número:
+    entre la 1.0.1 y la 1.0.5 no hubo entregas; los de en medio fueron versiones de prueba del proyecto.
+  · **Va a la etiqueta `entrega-2026-11-22`** del repositorio privado `srp-sia`. El correo para el SIA queda redactado
+    en `servidor/local/borradores/` (privado); lo manda Liber.
