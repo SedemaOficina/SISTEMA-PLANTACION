@@ -4797,3 +4797,36 @@
   · **El plan:** 268 a 270 corrigen lo que estorba en campo (M565 a M572), 271 pone al día los dos manuales (M575) y 272
     arma la entrega para el SIA. Después, girar el mapa y el mapa base (M573, M574), en la 1.1.0. Cada bloque sube la
     versión, así que la entrega llevará la del último.
+
+- **D349. Lo de los demás, al día cada 2 minutos pidiendo sólo lo que cambió; el relevo, con la jornada al día (bloque
+  269).** 21-11-2026.
+  · **Por qué sólo lo nuevo.** Hoy el teléfono baja todo lo enviado al entrar o al abrir la aplicación, y nada más. En la
+    base local cada árbol pesa unos 1.25 KB tal como lo manda el servidor: bajar todo cada 2 minutos serían unos 11 MB
+    por vez para una institución con 8,681 árboles (más de 300 MB por hora) y 1.6 MB para un cabo con 1,322. Se le
+    presentaron a Liber dos caminos y eligió «sólo lo nuevo, cada 2 minutos»; el otro era actualizar sólo al volver a la
+    aplicación y con un botón, bajando todo.
+  · **En el servidor**, `GET /jornadas` y `GET /plantaciones` aceptan `?cambios=<marca>` y traen sólo lo que la bitácora
+    anota desde esa marca, con el índice que la bitácora ya tenía (entidad, fecha). Cada respuesta trae su `marca`: un
+    minuto antes de la consulta, con la hora de la base, para no perder lo que otra transacción ya anotó y aún no
+    termina. De una jornada con un relevo o un cambio de cabos de apoyo llegan también sus árboles, porque quien la
+    recibe empieza a verlos. La primera página de `/jornadas` dice `eliminadas` y `completo`: una carga masiva se completa
+    o se deshace sin anotar cada árbol, y entonces se trae todo. La base no cambia: viaja sólo `consultas.ts`.
+  · **En el teléfono** (`js/remoto.js`), se busca lo nuevo cada `ACTUALIZAR_MS` (2 minutos) para cabos y Coordinación
+    con la aplicación a la vista; para todos, al volver a la aplicación después de 30 s, al tocar «Actualizar» y al
+    volver la señal si la vez anterior falló. La Administración y la Dirección ven todo y para ellas no corre el reloj,
+    como se acordó en D348. Con una marca de más de 6 horas, o si el servidor dice `completo`, se trae todo sin quitar de
+    la vista lo que había; un servidor que no da marca deja el reloj apagado. Lo que llega dispara los avisos de relevo y
+    de jornada compartida y vuelve a pintar Jornadas (la lista, o la ficha abierta sin cerrarla ni seguir la revisión de
+    puntos) y Registros (en la misma página); con una ventana abierta espera a la siguiente vez. Supervisión y
+    Fotografías se arman al abrirlas.
+  · **La franja**, aprobada con muestra, arriba de la lista de Jornadas y de Registros: «Al día a las 12:40» con
+    «Actualizar»; «Buscando lo nuevo…»; «Sin señal: lo de los demás, hasta las 12:40», en ámbar. El botón dice al
+    terminar si llegó algo.
+  · **Lo que se dice al personal:** con señal, lo que uno guarda sale en segundos (sin señal, se reintenta cada minuto) y
+    los demás lo ven en a lo más 2 minutos, o al tocar «Actualizar». Va en los manuales (M575).
+  · **El relevo.** La causa del aviso: el relevo viajaba con la versión de la jornada que el teléfono de la Coordinación
+    trajo al entrar; si su titular la cambió después, el servidor lo rechazaba por versión vieja, y «Revisar › Enviar
+    otra vez» lo mandaba con la vigente: por eso al final sí llegaba. Se reprodujo contra el servidor local. Ahora la
+    ventana del relevo trae la jornada al día antes de elegir y, si el servidor lo rechaza por versión pero en la jornada
+    registra el mismo cabo que vio la Coordinación, el relevo sale otra vez solo, una vez, con la versión vigente. Si
+    alguien hizo otro relevo mientras tanto, se queda en «Revisar». El servidor no cambia para esto.

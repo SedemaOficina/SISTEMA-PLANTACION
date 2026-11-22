@@ -15,39 +15,64 @@ import { enTransaccion } from "./transaccion";
    Lo de un lote de carga masiva que todavía sube o que se deshizo no se ve (cargas.ts).
 
    Por páginas, en orden de identificador: `?despues=<id del último recibido>&limite=<n>` (500 por omisión,
-   hasta 2000). La respuesta trae { filas, siguiente }: `siguiente` es el `despues` de la página que sigue,
-   o null al terminar. Las filas llevan los campos de las tablas del teléfono, con las fechas como texto
-   ISO 8601 en UTC; la fotografía no viaja en la lista. */
+   hasta 2000). La respuesta trae { filas, siguiente, marca }: `siguiente` es el `despues` de la página que
+   sigue, o null al terminar. Las filas llevan los campos de las tablas del teléfono, con las fechas como texto
+   ISO 8601 en UTC; la fotografía no viaja en la lista.
+
+   SÓLO LO QUE CAMBIÓ: `?cambios=<marca>` trae sólo lo que la bitácora (bitacora.ts) anota desde esa marca, que es
+   la que dio la consulta anterior. Así el teléfono se pone al día cada pocos minutos sin volver a bajar todo. La
+   marca es un minuto antes de la consulta, para no perder lo que otra transacción ya anotó y todavía no termina:
+   lo de ese minuto llega dos veces, y el teléfono lo reemplaza. Con `cambios`:
+     · /plantaciones trae también todos los árboles de las jornadas con un relevo o un cambio de cabos de apoyo,
+       porque quien la recibe empieza a ver los de los demás;
+     · la primera página de /jornadas dice además `eliminadas`, las jornadas que se borraron, y `completo`, si
+       hubo una carga masiva —que se completa o se deshace sin anotar cada árbol— y hay que volver a traer todo. */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const MARCA = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$/;
 const LIMITE = 500;
 const LIMITE_MAXIMO = 2000;
 
 interface Pagina {
   despues: string | null;
   limite: number;
+  cambios: string | null;
 }
 
 function paginaDe(req: Request): Pagina | string {
-  const { despues, limite } = req.query;
+  const { despues, limite, cambios } = req.query;
   if (despues !== undefined && (typeof despues !== "string" || !UUID.test(despues))) return "«despues» debe ser el identificador del último renglón recibido.";
   if (limite !== undefined && (typeof limite !== "string" || !/^\d{1,5}$/.test(limite) || Number(limite) < 1)) return "«limite» debe ser un número entero positivo.";
-  return { despues: despues ?? null, limite: Math.min(limite ? Number(limite) : LIMITE, LIMITE_MAXIMO) };
+  if (cambios !== undefined && (typeof cambios !== "string" || !MARCA.test(cambios) || Number.isNaN(Date.parse(cambios)))) return "«cambios» debe ser la marca que dio la consulta anterior.";
+  return { despues: despues ?? null, limite: Math.min(limite ? Number(limite) : LIMITE, LIMITE_MAXIMO), cambios: cambios ?? null };
 }
 
-// Una página de la tabla con la condición de alcance; `quitar`, las columnas que no viajan en la lista
-async function listar(pool: pg.Pool, tabla: string, condicion: string, p: Parametros, pagina: Pagina, quitar: string[] = []) {
+/* Los identificadores de esa entidad que la bitácora anota desde la marca; `acciones`, sólo las de esas acciones. Las
+   jornadas y los árboles se anotan con su identificador; se descarta lo que no lo sea, para no fallar al convertirlo */
+function enBitacora(entidad: "jornada" | "plantacion", marca: string, p: Parametros, acciones: string[] = []): string {
+  return `(SELECT b.entidad_id::uuid FROM srp.bitacora b WHERE b.entidad = '${entidad}' AND b.fecha > ${p.agregar(marca)}::timestamptz` +
+    (acciones.length ? ` AND b.accion IN (${acciones.map((a) => `'${a}'`).join(", ")})` : "") +
+    ` AND b.entidad_id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')`;
+}
+
+/* Una página de la tabla con la condición de alcance; `quitar`, las columnas que no viajan en la lista; `mas`, lo que
+   se agrega a la respuesta, en la misma transacción */
+async function listar(pool: pg.Pool, tabla: string, condicion: string, p: Parametros, pagina: Pagina, quitar: string[] = [],
+  mas?: (c: pg.PoolClient) => Promise<Record<string, unknown>>) {
   const sinColumnas = quitar.map((c) => ` - '${c}'`).join("");
   const desde = pagina.despues ? ` AND x.id > ${p.agregar(pagina.despues)}::uuid` : "";
   const sql = `SELECT to_jsonb(x)${sinColumnas} AS fila FROM srp.${tabla} x WHERE ${condicion}${desde} ORDER BY x.id LIMIT ${p.agregar(pagina.limite + 1)}`;
-  const filas = await enTransaccion(pool, async (c) => {
+  const { filas, marca, agregado } = await enTransaccion(pool, async (c) => {
     // Las fechas salen en UTC, sea cual sea la zona de la base
     await c.query("SET LOCAL TIME ZONE 'UTC'");
-    return (await c.query<{ fila: { id: string } }>(sql, p.valores)).rows.map((r) => r.fila);
+    // Con la hora de la base, la misma de la bitácora
+    const marca = (await c.query<{ m: string }>(`SELECT to_char(clock_timestamp() - interval '1 minute', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS m`)).rows[0].m;
+    const filas = (await c.query<{ fila: { id: string } }>(sql, p.valores)).rows.map((r) => r.fila);
+    return { filas, marca, agregado: mas ? await mas(c) : {} };
   });
   const hayMas = filas.length > pagina.limite;
   if (hayMas) filas.pop();
-  return { filas, siguiente: hayMas ? filas[filas.length - 1].id : null };
+  return { filas, siguiente: hayMas ? filas[filas.length - 1].id : null, marca, ...agregado };
 }
 
 export function rutasConsultas(pool: pg.Pool, sesion: RequestHandler): Router {
@@ -56,8 +81,15 @@ export function rutasConsultas(pool: pg.Pool, sesion: RequestHandler): Router {
   r.get("/jornadas", sesion, async (req: Request, res: Response) => {
     const pagina = paginaDe(req);
     if (typeof pagina === "string") return responder(res, 400, "CONSULTA_INVALIDA", pagina);
-    const p = new Parametros();
-    res.json(await listar(pool, "jornadas", alcanceSql(sesionDe(res).usuario, "jornadas", "x", p) + " AND NOT srp.de_carga_oculta(x.carga_id)", p, pagina));
+    const p = new Parametros(), m = pagina.cambios;
+    const condicion = alcanceSql(sesionDe(res).usuario, "jornadas", "x", p) + " AND NOT srp.de_carga_oculta(x.carga_id)" +
+      (m ? ` AND x.id IN ${enBitacora("jornada", m, p)}` : "");
+    const mas = m && !pagina.despues ? async (c: pg.PoolClient) => ({
+      eliminadas: (await c.query<{ id: string }>(
+        "SELECT DISTINCT entidad_id AS id FROM srp.bitacora WHERE entidad = 'jornada' AND accion = 'ELIMINADO' AND fecha > $1::timestamptz", [m])).rows.map((x) => x.id),
+      completo: (await c.query<{ hay: boolean }>("SELECT EXISTS (SELECT 1 FROM srp.bitacora WHERE entidad = 'carga' AND fecha > $1::timestamptz) AS hay", [m])).rows[0].hay,
+    }) : undefined;
+    res.json(await listar(pool, "jornadas", condicion, p, pagina, [], mas));
   });
 
   r.get("/jornadas/:id", sesion, async (req: Request, res: Response) => {
@@ -82,9 +114,10 @@ export function rutasConsultas(pool: pg.Pool, sesion: RequestHandler): Router {
   r.get("/plantaciones", sesion, async (req: Request, res: Response) => {
     const pagina = paginaDe(req);
     if (typeof pagina === "string") return responder(res, 400, "CONSULTA_INVALIDA", pagina);
-    const p = new Parametros();
+    const p = new Parametros(), m = pagina.cambios;
     const visible = " AND NOT EXISTS (SELECT 1 FROM srp.jornadas jc WHERE jc.id = x.jornada_id AND srp.de_carga_oculta(jc.carga_id))";
-    res.json(await listar(pool, "plantaciones", veArbolSql(sesionDe(res).usuario, "x", p) + visible, p, pagina, ["foto_base64"]));
+    const cambio = m ? ` AND (x.id IN ${enBitacora("plantacion", m, p)} OR x.jornada_id IN ${enBitacora("jornada", m, p, ["RELEVO", "APOYO"])})` : "";
+    res.json(await listar(pool, "plantaciones", veArbolSql(sesionDe(res).usuario, "x", p) + visible + cambio, p, pagina, ["foto_base64"]));
   });
 
   return r;

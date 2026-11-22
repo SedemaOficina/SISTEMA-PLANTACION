@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.2 (Bloque 268)»**.
+En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.3 (Bloque 269)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M567 | Prueba en campo (19-11-2026) | Lo que hacen los demás perfiles llega solo: el teléfono pide sólo lo que cambió cada 2 minutos (cabos y Coordinación, con la aplicación a la vista), al volver a la aplicación y con «Actualizar». En Jornadas y Registros, la franja «Al día a las…», «Buscando lo nuevo…» o «Sin señal: lo de los demás, hasta las…» | Alta | 1.0.3 (B269) | Con datos reales, dos teléfonos: la Coordinación hace un relevo y, en a lo más 2 minutos, el teléfono del cabo lo avisa sin volver a entrar | D349 |
+| M568 | Prueba en campo (19-11-2026) | El relevo ya no dice «El servidor no aceptó 1 cambio» cuando la jornada cambió en otra cosa: la ventana la trae al día y, si aun así cambió sin cambiar quién registra, el relevo sale solo con la versión vigente | Alta | 1.0.3 (B269) | Con datos reales: el titular edita la jornada y después la Coordinación hace el relevo | D349 |
 | M565 | Prueba en campo (19-11-2026) | El cabo de apoyo tiene «Registrar árbol» en la ficha de la jornada compartida, como el titular: lo lleva a Nuevo registro con esa jornada activa, aunque tuviera otra abierta | Alta | 1.0.2 (B268) | Con datos de prueba, entrar como Rocío Hernández Demo (cabo de apoyo): Jornadas › la compartida de hoy › «Registrar árbol» | D348 |
 | M566 | Prueba en campo (19-11-2026) | En la lista de Jornadas, la jornada abierta que le pasaron a quien entró va con franja y fondo verde azulado y dice qué es: «Relevo: ahora registra usted» o «Compartida: usted es cabo de apoyo» | Media | 1.0.2 (B268) | Con datos de prueba, entrar como Rocío Hernández Demo (compartida) o Marisol Pérez Demo (relevo): Jornadas | D348 |
 | M564 | Revisión del manual | Usuarios: la nota de «Eliminar» ya no habla de «cabos a su cargo»: «Una cuenta con árboles o jornadas, o que ya entró al sistema, no se elimina: se desactiva» | Baja | 1.4.2 (B255) | Configuración › Usuarios, al pie de la lista | D338 |
@@ -566,8 +568,6 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
-| M567 | Prueba en campo (19-11-2026) | Lo que cambian los demás perfiles, al día: el teléfono lo vuelve a pedir al volver a la aplicación y cada 2 minutos mientras está abierta (la Administración, sólo al volver y con el botón); botón «Actualizar» y «Actualizado a las…» | Alta | Pendiente | Bloque 269, con muestra. Hoy sólo se baja al entrar o al abrir la aplicación (D348) |
-| M568 | Prueba en campo (19-11-2026) | El aviso «El servidor no aceptó 1 cambio» al hacer un relevo desde la Coordinación, aunque el relevo sí llegó al cabo: reproducirlo con conexión lenta o cortada y corregir su causa | Alta | Pendiente | Bloque 269 |
 | M569 | Prueba en campo (19-11-2026) | El aviso de posible duplicado al guardar compara sólo con árboles de la misma especie, como la revisión de la jornada | Alta | Pendiente | Bloque 270. La distancia («Puntos duplicados», 3 m) la cambia la Administración en Parámetros, sin versión nueva |
 | M570 | Prueba en campo (19-11-2026) | Pin de ubicación más grande en el mapa de captura | Media | Pendiente | Bloque 270, con muestra |
 | M571 | Prueba en campo (19-11-2026) | La capa de colonias, apagada al abrir cualquier mapa, para todos los perfiles, con la opción de encenderla y su opacidad | Media | Pendiente | Bloque 270 |

@@ -207,9 +207,9 @@ variables de entorno, está explicada en `src/modulos/srp/config.ts`. Las respue
 | `PUT /parametros/:clave` | Cambia un parámetro para todos los teléfonos | Administración global |
 | `GET /duplicados` | La bandeja de posibles duplicados entre instituciones, por páginas | Administración global |
 | `POST /duplicados/revision` | Marca parejas como el mismo árbol o árboles distintos | Administración global |
-| `GET /jornadas` | Las jornadas de su alcance, por páginas | Con sesión |
+| `GET /jornadas` | Las jornadas de su alcance, por páginas; con `?cambios=<marca>`, sólo las que cambiaron | Con sesión |
 | `GET /jornadas/:id` | Una jornada de su alcance con los árboles que ve de ella, para tenerla al día sin traer todo | Con sesión |
-| `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía | Con sesión |
+| `GET /plantaciones` | Los árboles de su alcance, por páginas, sin la fotografía; con `?cambios=<marca>`, sólo los que cambiaron | Con sesión |
 | `GET /plantaciones/:id/historial` | Lo que se le hizo a un árbol, en orden; de otro árbol, como si no existiera | Quien ve el árbol |
 | `PUT /cargas/:id/tandas/:n` | Una tanda de un lote de carga masiva, hasta 400 árboles con las jornadas que estrena; todo o nada. Una carga a la vez | Administración global |
 | `POST /cargas/:id/completa` | El lote llegó entero: desde ahora se ve | Administración global |
@@ -454,6 +454,13 @@ Las consultas aplican el alcance en la base, sin traer todo a memoria. Van por p
 identificador: `?despues=<id del último>&limite=<n>` (500 por omisión, hasta 2000), y la respuesta dice
 desde dónde sigue (`siguiente`), o `null` al terminar. Las filas llevan los campos del teléfono, con las
 fechas en texto ISO 8601 en UTC; la fotografía tendrá su propia ruta.
+
+Cada respuesta trae además su `marca`. Con `?cambios=<marca>`, `/jornadas` y `/plantaciones` traen sólo lo que
+la bitácora anota desde esa marca: así el teléfono se pone al día cada dos minutos sin volver a bajar todo. La
+marca es un minuto antes de la consulta, con la hora de la base, para no perder lo que otra transacción ya
+anotó y todavía no termina. Con `cambios`, `/plantaciones` trae también los árboles de las jornadas con un
+relevo o un cambio de cabos de apoyo, y la primera página de `/jornadas` dice `eliminadas` (las jornadas que se
+borraron) y `completo` (hubo una carga masiva y hay que traer todo).
 
 ## Cargar datos
 

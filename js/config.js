@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 268',
+  ETAPA: 'Bloque 269',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -47,6 +47,7 @@ SRP.CONFIG = {
   CLAVE_SIN_SENAL_PRUEBA: 'srp_sin_senal_prueba',
   DEMORA_ENVIO_PRUEBA_MS: 1200,     // lo que tarda el «envío», para que se vea «Enviando…»
   REINTENTO_ENVIO_MS: 60000,        // reintento mientras haya pendientes
+  ACTUALIZAR_MS: 120000,            // con datos reales, cada cuánto se busca lo que hicieron los demás (js/remoto.js)
   HORA_CIERRE_JORNADA: 17,          // desde esta hora, lo de hoy sin enviar ya es atraso
   MINUTOS_ENVIO_ATORADO: 30,        // con conexión, lo que no sale en este tiempo pone la pastilla en rojo
   // Las fechas: el programa empezó en octubre de 2024 y ninguna jornada ni árbol es de antes; en campo, una fecha

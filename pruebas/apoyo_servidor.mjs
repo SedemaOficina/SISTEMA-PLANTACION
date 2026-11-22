@@ -7,6 +7,7 @@
      node pruebas/apoyo_servidor.mjs sesiones   { id }          cuántas tiene abiertas y cuántas cerradas
      node pruebas/apoyo_servidor.mjs parametro  { clave, valor, id }   un parámetro cambiado por esa cuenta
      node pruebas/apoyo_servidor.mjs tocar      { id, comentarios, por }   otra persona (`por`) cambia un árbol en el servidor
+     node pruebas/apoyo_servidor.mjs tocar_jornada { id, comentarios, por }   otra persona cambia una jornada en el servidor
      node pruebas/apoyo_servidor.mjs leer       { id }          cómo tiene el servidor un árbol o una jornada
      node pruebas/apoyo_servidor.mjs apoyos     { id }          de una jornada compartida: su estado, sus cabos de apoyo y quién registró sus árboles
      node pruebas/apoyo_servidor.mjs catalogo   { tabla, clave }       cómo tiene el servidor un valor de catálogo
@@ -56,9 +57,11 @@ try {
       ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, editado_por_id = EXCLUDED.editado_por_id`, [d.clave, d.valor, d.id]);
   } else if (orden === 'tocar') {
     await c.query("UPDATE srp.plantaciones SET comentarios = $2, editado_por_id = $3, fecha_ultima_edicion = date_trunc('milliseconds', now()) WHERE id = $1", [d.id, d.comentarios, d.por]);
+  } else if (orden === 'tocar_jornada') {
+    await c.query("UPDATE srp.jornadas SET comentarios = $2, editado_por_id = $3, fecha_ultima_edicion = date_trunc('milliseconds', now()) WHERE id = $1", [d.id, d.comentarios, d.por]);
   } else if (orden === 'leer') {
     const a = (await c.query('SELECT folio, comentarios, estatus, foto_id, jornada_id FROM srp.plantaciones WHERE id = $1', [d.id])).rows[0];
-    const j = (await c.query('SELECT estatus, reporte_en IS NOT NULL AS reporte, nombre FROM srp.jornadas WHERE id = $1', [d.id])).rows[0];
+    const j = (await c.query('SELECT estatus, reporte_en IS NOT NULL AS reporte, nombre, relevo_id FROM srp.jornadas WHERE id = $1', [d.id])).rows[0];
     const f = a && a.foto_id ? (await c.query('SELECT count(*)::int AS n FROM srp.fotografias WHERE id = $1', [a.foto_id])).rows[0].n : 0;
     salida = { arbol: a || null, jornada: j || null, fotos: f };
   } else if (orden === 'apoyos') {

@@ -7318,3 +7318,52 @@ los bloques que siguen y las respuestas de Liber van en D348.
 
 **Siguiente paso.** Que la Administración baje «Puntos duplicados» a 3 m en Parámetros. Después, el bloque 269: lo que
 cambian los demás perfiles, al día (M567), y el aviso del relevo (M568).
+
+## Bloque 269 — Lo de los demás, al día cada 2 minutos, y el relevo sin «El servidor no aceptó» (21-11-2026)
+
+**Versión 1.0.3.** Segundo bloque de lo que pidió la prueba en campo del 19-11-2026. Lo decidido va en D349.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| Lo que hacen los demás perfiles | Se bajaba sólo al entrar o al abrir la aplicación | Llega solo: cada 2 minutos para cabos y Coordinación, al volver a la aplicación y con «Actualizar» |
+| Cuánto baja cada vez | Todo lo enviado del alcance (1.25 KB por árbol: unos 11 MB para una institución de 8,681 árboles) | Sólo lo que la bitácora anota desde la vez anterior: unos cuantos bytes si no hay nada nuevo |
+| A qué hora está lo que se ve | No se decía | Franja en Jornadas y Registros: «Al día a las…», «Buscando lo nuevo…» o «Sin señal: lo de los demás, hasta las…» |
+| Un relevo cuando la jornada cambió después de que el teléfono de la Coordinación la trajo | El servidor lo rechazaba por versión vieja: «El servidor no aceptó 1 cambio»; con «Revisar › Enviar otra vez» llegaba | La ventana lo trae al día y, si aun así cambió sin cambiar quién registra, el relevo sale solo con la versión vigente |
+
+**Qué cambió.**
+- `servidor/src/modulos/srp/consultas.ts`: `?cambios=<marca>` en `/jornadas` y `/plantaciones`, la `marca` en cada respuesta,
+  los árboles de las jornadas con relevo o cabos de apoyo, `eliminadas` y `completo`. La base no cambia.
+- `js/remoto.js`: la marca, `novedades()` (sólo lo que cambió), `cargar({ silencioso })`, el reloj y los demás disparos
+  (`vigilar`), lo que se repinta sin mover a nadie y la franja (`pintarAlDia`). `js/config.js` (`ACTUALIZAR_MS`), `js/app.js`
+  (arranca el reloj), `js/jornadas.js` (`conLoNuevo`; la ventana del relevo trae la jornada al día), `js/cola.js` (el relevo
+  guarda quién registraba y se reenvía una vez si sigue igual), `index.html` y `css/estilos.css` (la franja).
+- Las pruebas: `servidor/pruebas/recepcion.test.js` (sólo lo que cambió), `pruebas/prueba_conexion.py` (el relevo con la
+  jornada cambiada antes y con la ventana abierta; lo de la Coordinación llega al cabo sin volver a entrar, «Actualizar» y
+  sin señal; el reloj alargado en la prueba, para que un aviso no llegue solo a media corrida), `pruebas/apoyo_servidor.mjs`
+  (`tocar_jornada`; `leer` dice el relevo) y `pruebas/prueba.py` (la sustitución del tramo 43, sin esperas fijas).
+- Lo que encontró la prueba al programarlo: lo del último minuto llega dos veces, porque la marca se adelanta un minuto,
+  y «Actualizar» decía «ya se ve lo nuevo» sin que hubiera nada. Ahora cuenta como nuevo, y repinta, sólo lo que es
+  distinto de lo que el teléfono ya tiene.
+- `servidor/README.md` (las consultas con `cambios`), `docs/MEJORAS.md` (M567 y M568 hechas) y `docs/DECISIONES.md` (D349).
+- Fuera del repositorio: la muestra aprobada, en `servidor/local/muestras-b269/`.
+
+**Verificación.**
+- `npm test`: 123 de 123, con la nueva de sólo lo que cambió. La primera corrida de las de recepción dejó en verde las 33
+  pruebas pero falló al limpiar: en la base local la llave «cambiada por» de las credenciales se revisaba antes que la
+  que las borra en cascada, porque se había vuelto a crear en otro orden. Una instalación nueva, como la del SIA, las
+  crea en el orden correcto; `npm test` reinstaló el esquema y quedó bien.
+- `pruebas/prueba_conexion.py`: 148 de 148, con seis nuevas: los dos relevos con la jornada cambiada (antes de abrir la
+  ventana y con ella abierta), lo de la Coordinación que llega al cabo pidiendo sólo lo que cambió (dos consultas con
+  `cambios`) y con el aviso del relevo, «Actualizar» sin nada nuevo y sin señal, y la jornada del relevo cerrada para lo
+  que sigue. Antes y después: con la 1.0.2, los dos relevos quedan rechazados con `VERSION_VIEJA`.
+- `pruebas/por_tramos.py`, los tramos de jornadas, relevo, compartida y Registros (37, 42, 43, 76, 80, 84, 85, 86 y 88): 115
+  de 115.
+- `pruebas/auditoria_css.py`: 0 hallazgos. `pruebas/auditoria.py`: 154 comprobaciones, 0 hallazgos.
+- GitHub: la corrida del bloque 268 (44970851478) salió en rojo, 1,567 comprobaciones con 1 falla: en el tramo 43, al
+  sustituir un árbol plantado hoy, la ventana de la sustitución no se abrió (texto vacío y el tramo detenido). No toca
+  lo que cambió en el 268 y aquí pasa 12 de 12, también a la misma hora (19:43 en la Ciudad). La comprobación esperaba
+  tiempos fijos (1.8 s tras recargar y 1.5 s tras abrir Registros); ahora espera a que terminen los avisos de entrada y
+  a que haya un árbol que sustituir.
+
+**Siguiente paso.** El bloque 270: el aviso de duplicado al guardar sólo con la misma especie (M569), el pin (M570), las
+colonias apagadas (M571) y la fotografía con dos botones (M572).

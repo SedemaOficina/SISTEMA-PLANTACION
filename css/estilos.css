@@ -565,6 +565,12 @@ fieldset.campo { margin-inline: 0; }
   background: var(--editar-fondo); border: 1px solid var(--borde-suave); border-left: 4px solid var(--editar-borde); }
 .franja-remoto-rotulo { margin: 0 0 var(--e-1); font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--editar); }
 .franja-remoto-texto { margin: 0; }
+/* Con datos reales: a qué hora se trajo lo que hicieron los demás, y «Actualizar». Sin señal, el texto en ámbar */
+.al-dia { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); max-width: var(--ancho-max-tabla); margin: 0 0 var(--e-3);
+  padding: var(--e-2) var(--e-3); border-radius: var(--radio-filtro); background: var(--fondo-suave); }
+.al-dia-texto { display: inline-flex; align-items: center; gap: var(--e-2); margin: 0; font-size: var(--t-s); color: var(--gris); }
+.al-dia[data-estado="sin-senal"] .al-dia-texto { color: var(--editar); font-weight: 500; }
+.al-dia-boton { flex: none; }
 .franja-jornada-rotulo { flex: 1 1 100%; margin: 0 0 calc(var(--e-1) * -1); font-family: var(--fuente-titulo); font-size: var(--t-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
 .franja-jornada .franja-jornada-titulo strong { font-size: var(--t-l); font-family: var(--fuente-titulo); }
 /* Dentro del panel, el último guardado: tarjeta blanca con su verde */

@@ -5260,9 +5260,11 @@ with sync_playwright() as p:
     ok(0<u1[0]<tu59 and u1[1] and len(u2[0])>=2 and u2[1] and u2[2] and alc59 and u3<=u1[0],'Usuarios filtra por perfil y por institución; la lista de instituciones va agrupada por tipo, en un solo control: %s de %s, %s · %s' % (u1[0], tu59, u3, u2[0]))
     pg59.select_option('#usr-filtro-perfil',''); pg59.select_option('#usr-filtro-org',''); pg59.wait_for_timeout(300)
     # Sustituir un árbol plantado hoy: no hay otro día que elegir, y se dice
-    pg59.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg59.reload(); pg59.wait_for_timeout(1800)
+    # Sin esperas fijas: en GitHub (21-11-2026) la lista aún no estaba y la ventana no se abrió
+    pg59.evaluate("SRP.sesion.iniciar(SRP.ref.usuarioPorId['u-cabo-1'])"); pg59.reload(); pg59.wait_for_selector('html[data-listo]'); aceptar_avisos(pg59)
     if pg59.is_visible('#dlg-confirmar'): pg59.click('#btn-confirmar-si'); pg59.wait_for_timeout(300)
-    pg59.evaluate("SRP.app.mostrarVista('registros')"); pg59.wait_for_timeout(1500)
+    pg59.evaluate("SRP.app.mostrarVista('registros')")
+    pg59.wait_for_function("() => (SRP.registros.visibles || []).some(x => x.estatus === 'activo' && !x.sustituido_por_id)", timeout=20000)
     h59=pg59.evaluate("""async () => { const r = Object.assign({}, SRP.registros.visibles.find(x => x.estatus === 'activo' && !x.sustituido_por_id), { fecha_plantacion: SRP.util.fechaHoy() });
       await SRP.registros.sustituir(r); const f = document.getElementById('sustituir-fecha');
       return [f.value === SRP.util.fechaHoy(), document.getElementById('caja-sustituir-fecha').hidden, document.getElementById('sustituir-fecha-fija').hidden, document.getElementById('sustituir-fecha-fija').textContent]; }""")

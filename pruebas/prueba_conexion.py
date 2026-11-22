@@ -28,7 +28,9 @@ masiva: el archivo sube al servidor por tandas, los árboles vuelven con folio y
 quita de la vista, el mismo archivo se puede volver a cargar y sin conexión no se carga nada; y Usuarios: el alta
 da una contraseña temporal que se ve una vez y con la que la cuenta nueva entra a escribir una propia, editar,
 «Restablecer contraseña», desactivar, eliminar una cuenta sin uso —que el Registro de cambios sigue nombrando
-por su correo—, y sin conexión nada cambia.
+por su correo—, y sin conexión nada cambia; y el relevo de una jornada que cambió en el servidor después de que el
+teléfono la trajo, que llega sin «El servidor no aceptó»; y lo que hace la Coordinación, que llega al cabo sin volver
+a entrar, pidiendo sólo lo que cambió, con la franja «Al día» y «Actualizar».
 
 Uso, desde la carpeta del proyecto (con la base local cargada):  python pruebas/prueba_conexion.py [--app <carpeta>]
 Con --app corre sobre la copia que se publica en el SIA (herramientas/preparar_produccion.py), que ya viene con
@@ -94,10 +96,13 @@ def esperar_puerto(puerto, segundos=30):
 
 # La aplicación como irá al SIA: con datos reales. La copia para el SIA ya viene así
 def config_real(route):
+    """La aplicación con datos reales. El reloj que busca lo nuevo cada dos minutos se alarga: un aviso de relevo que
+    llegara solo a media prueba taparía los botones. La prueba que lo revisa pide lo nuevo ella misma."""
     r = route.fetch()
     texto = r.text()
     assert ('ES_FICTICIO: false,' if COPIA else 'ES_FICTICIO: true,') in texto
-    route.fulfill(response=r, body=texto.replace('ES_FICTICIO: true,', 'ES_FICTICIO: false,'))
+    assert 'ACTUALIZAR_MS: 120000,' in texto
+    route.fulfill(response=r, body=texto.replace('ES_FICTICIO: true,', 'ES_FICTICIO: false,').replace('ACTUALIZAR_MS: 120000,', 'ACTUALIZAR_MS: 36000000,'))
 
 
 def abrir(pg):
@@ -526,7 +531,7 @@ def main():
             esperar_remoto(pg)
             jid = iniciar_jornada(pg, 'Jornada del envío real')
             esperar_cola(pg)
-            ok(apoyo('leer', {'id': jid})['jornada'] == {'estatus': 'abierta', 'reporte': False, 'nombre': 'Jornada del envío real'} and pg.evaluate(LOCAL, jid)['jornada'],
+            ok(apoyo('leer', {'id': jid})['jornada'] == {'estatus': 'abierta', 'reporte': False, 'nombre': 'Jornada del envío real', 'relevo_id': None} and pg.evaluate(LOCAL, jid)['jornada'],
                'la jornada iniciada en la pantalla llega al servidor y se queda en el teléfono, porque está abierta')
             a1 = registrar(pg, foto)
             esperar_cola(pg)
@@ -605,7 +610,7 @@ def main():
             srv = apoyo('leer', {'id': jid})['jornada']
             loc = pg.evaluate("""async ([j, a1, a2]) => ({ jornada: !!(await SRP.almacen.unoLocal('jornadas', j)), a1: !!(await SRP.almacen.unoLocal('plantaciones', a1)),
               a2: !!(await SRP.almacen.unoLocal('plantaciones', a2)), seVe: !!(await SRP.almacen.uno('plantaciones', a1)) })""", [jid, a1, a2])
-            ok(srv == {'estatus': 'cerrada', 'reporte': True, 'nombre': 'Jornada del envío real'} and loc == {'jornada': False, 'a1': False, 'a2': True, 'seVe': True},
+            ok(srv == {'estatus': 'cerrada', 'reporte': True, 'nombre': 'Jornada del envío real', 'relevo_id': None} and loc == {'jornada': False, 'a1': False, 'a2': True, 'seVe': True},
                'cerrada y con su reporte, la jornada sale del teléfono con lo recibido, y se sigue viendo como enviado; el árbol con un cambio rechazado se queda: %s' % loc)
 
             # El historial de un árbol que ya salió del teléfono lo cuenta el servidor
@@ -1452,6 +1457,59 @@ def main():
             ctxN.close(); ctxB.close()
             ok(not errC and not errA, 'sin errores en los dos teléfonos: %s' % (errC + errA)[:2])
             ctxC.close(); ctxA.close()
+
+            # El relevo con el servidor, con la jornada cambiada después de que el teléfono de la Coordinación la trajo (prueba
+            # en campo del 19-11-2026: «El servidor no aceptó 1 cambio», aunque el relevo llegaba). La ventana del relevo la
+            # trae al día; y si cambia mientras la ventana está abierta, sin cambiar quién registra, el relevo sale igual
+            ctxT, pgT, errT = telefono_de(CABO)
+            jr = iniciar_jornada(pgT, 'Jornada del relevo con el servidor'); esperar_cola(pgT)
+            ctxR, pgR, errR = telefono_de(COORD)
+            def relevar(destino, tocar_antes, tocar_abierta):
+                if tocar_antes: apoyo('tocar_jornada', {'id': jr, 'comentarios': tocar_antes, 'por': CABO['id']})
+                pgR.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jr); pgR.wait_for_timeout(1200)
+                pgR.click('#btn-jornada-relevo'); pgR.wait_for_selector('#dlg-relevo[open]'); pgR.wait_for_timeout(800)
+                if tocar_abierta: apoyo('tocar_jornada', {'id': jr, 'comentarios': tocar_abierta, 'por': CABO['id']})
+                pgR.select_option('#relevo-quien', destino); pgR.click('#btn-relevo-hacer')
+                # La cola queda vacía, o con lo que el servidor no aceptó
+                pgR.wait_for_function("() => !SRP.envio.enviando && SRP.cola.ops.every(o => o.rechazo)", timeout=30000); pgR.wait_for_timeout(300)
+                return [pgR.evaluate("() => SRP.cola.rechazadas().map(o => o.rechazo.codigo)"), apoyo('leer', {'id': jr})['jornada']['relevo_id']]
+            r1 = relevar(APOYO['id'], 'La editó su titular antes de abrir el relevo', None)
+            ok(r1 == [[], APOYO['id']], 'el relevo de una jornada que su titular cambió después de que la Coordinación la trajo llega sin «El servidor no aceptó»: %s' % r1)
+            r2 = relevar(CABO['id'], None, 'La editó su titular con la ventana del relevo abierta')
+            ok(r2 == [[], None], 'y si cambia con la ventana abierta, sin cambiar quién registra, el relevo que se la devuelve al titular también llega: %s' % r2)
+            # Lo que hace la Coordinación llega al teléfono del cabo sin volver a entrar: se pide sólo lo que cambió desde la
+            # vez anterior y el cabo lee el aviso del relevo. «Actualizar» y la falta de señal se dicen en la franja
+            pedidos = []
+            pgT.on('request', lambda r: pedidos.append(r.url) if '/srp/api/jornadas' in r.url or '/srp/api/plantaciones' in r.url else None)
+            pgT.evaluate("() => document.querySelectorAll('dialog[open]').forEach(d => d.close())")
+            pgT.evaluate("SRP.app.mostrarVista('jornadas')"); pgT.wait_for_timeout(800)
+            franja = pgT.evaluate("() => { const c = document.getElementById('jornadas-al-dia'); return [c.hidden, c.dataset.estado, c.querySelector('.al-dia-texto').textContent]; }")
+            r3 = relevar(APOYO['id'], None, None)
+            pgT.evaluate("() => { SRP.remoto.novedades('reloj'); }")
+            pgT.wait_for_function("id => !SRP.remoto.buscando && (document.getElementById('dlg-confirmar').open || (SRP.remoto.uno('jornadas', id) || {}).relevo_id)", arg=jr, timeout=30000)
+            titulo = pgT.evaluate("() => document.getElementById('dlg-confirmar').open ? document.getElementById('dlg-confirmar-titulo').textContent : null")
+            if titulo: pgT.click('#btn-confirmar-si'); pgT.wait_for_timeout(500)
+            llego = pgT.evaluate("id => (SRP.remoto.uno('jornadas', id) || {}).relevo_id", jr)
+            solo = [u for u in pedidos if 'cambios=' in u]
+            ok(franja[0] is False and franja[1] == 'al-dia' and franja[2].startswith('Al día a las') and r3 == [[], APOYO['id']] and llego == APOYO['id']
+               and titulo == 'Relevo de cabo' and len(solo) == 2 and pgR.evaluate("SRP.remoto.automatico()"),
+               'lo que hace la Coordinación llega al cabo sin volver a entrar, pidiendo sólo lo que cambió, con el aviso del relevo: %s' % [franja, titulo, llego == APOYO['id'], len(solo)])
+            pgT.click('#jornadas-al-dia .al-dia-boton')
+            pgT.wait_for_function("() => !SRP.remoto.buscando && document.getElementById('aviso').textContent.includes('Al día')", timeout=30000)
+            boton = pgT.evaluate(AVISO)
+            ctxT.set_offline(True)
+            pgT.click('#jornadas-al-dia .al-dia-boton')
+            pgT.wait_for_function("() => document.getElementById('jornadas-al-dia').dataset.estado === 'sin-senal'", timeout=30000)
+            sin = pgT.evaluate("document.querySelector('#jornadas-al-dia .al-dia-texto').textContent")
+            ctxT.set_offline(False)
+            ok('no hay nada nuevo' in boton and sin.startswith('Sin señal: lo de los demás, hasta las'),
+               '«Actualizar» dice si llegó algo, y sin señal la franja dice hasta qué hora está lo de los demás: %s' % [boton, sin])
+            # La jornada del relevo se cierra: abierta, el aviso del relevo le saldría al cabo de apoyo al entrar más adelante
+            pgR.evaluate("async id => { const j = await SRP.almacen.uno('jornadas', id); await SRP.activa.cambiarEstatus(j, 'cerrada'); }", jr)
+            esperar_cola(pgR)
+            ok(apoyo('leer', {'id': jr})['jornada']['estatus'] == 'cerrada', 'la jornada del relevo queda cerrada para lo que sigue')
+            ok(not errT and not errR, 'sin errores en los teléfonos del relevo: %s' % (errT + errR)[:2])
+            ctxT.close(); ctxR.close()
 
             # El servidor se vacía después de la prueba: cambia su sello. El teléfono que manda con el de antes borra lo suyo
             # y lo dice; lo que tenía pendiente no llega al servidor limpio. Y quien entra después, igual

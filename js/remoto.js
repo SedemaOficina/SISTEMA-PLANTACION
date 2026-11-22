@@ -79,31 +79,154 @@ SRP.remoto = {
 
   /* ---------- Lo enviado, en memoria ---------- */
 
-  // Todas las páginas de una consulta del servidor
-  async todo(ruta) {
-    const filas = [];
-    let despues = null;
+  /* Todas las páginas de una consulta del servidor. `cambios`: la marca de la vez anterior, para traer sólo lo que
+     cambió desde entonces. De la primera página se toman la marca para la vez siguiente y, con `cambios`, las
+     jornadas eliminadas y si hay que traer todo (servidor/src/modulos/srp/consultas.ts) */
+  async todo(ruta, cambios) {
+    const filas = [], extra = cambios ? '&cambios=' + encodeURIComponent(cambios) : '';
+    let despues = null, primera = null;
     do {
-      const r = await SRP.servidor.pedir('GET', ruta + '?limite=' + this.PAGINA + (despues ? '&despues=' + encodeURIComponent(despues) : ''));
+      const r = await SRP.servidor.pedir('GET', ruta + '?limite=' + this.PAGINA + extra + (despues ? '&despues=' + encodeURIComponent(despues) : ''));
       if (!r.ok) return r;
+      primera = primera || r.datos;
       filas.push(...r.datos.filas);
       despues = r.datos.siguiente;
     } while (despues);
-    return { ok: true, filas };
+    return { ok: true, filas, marca: primera.marca || null, eliminadas: primera.eliminadas || [], completo: !!primera.completo };
   },
 
-  // Trae las jornadas y los árboles del alcance de quien entró; dos llamadas seguidas no traen dos veces
-  async cargar() {
-    if (!this.activo() || !SRP.sesion.usuario || this.estado === 'cargando') return;
-    this.cambiar('cargando');
+  /* Trae las jornadas y los árboles del alcance de quien entró; dos llamadas seguidas no traen dos veces. `silencioso`,
+     con lo enviado ya a la vista: lo de antes se sigue viendo mientras llega y, si no llega, se queda */
+  async cargar(o = {}) {
+    if (!this.activo() || !SRP.sesion.usuario || this.estado === 'cargando' || this.buscando) return;
+    const silencioso = !!o.silencioso && this.estado === 'listo';
+    if (silencioso) { this.buscando = true; this.pintarAlDia(); } else this.cambiar('cargando');
     const j = await this.todo('/jornadas');
     const p = j.ok ? await this.todo('/plantaciones') : j;
+    this.buscando = false;
     if (!SRP.sesion.usuario) { this.vaciar(); return; }   // cerró sesión mientras llegaba
-    if (!j.ok || !p.ok) { this.cambiar((j.ok ? p : j).sinRed ? 'sin-senal' : 'error'); return; }
+    if (!j.ok || !p.ok) {
+      if (silencioso) { this.fallo = true; this.pintarAlDia(); return; }
+      this.cambiar((j.ok ? p : j).sinRed ? 'sin-senal' : 'error'); return;
+    }
     this.jornadas = new Map(j.filas.map(f => [f.id, f]));
     this.plantaciones = new Map(p.filas.map(f => [f.id, f]));
+    this.puestoAlDia(j.marca);
     await this.tomarLocales();
-    this.cambiar('listo');
+    if (silencioso) await this.llegoLoNuevo(); else this.cambiar('listo');
+  },
+
+  /* ---------- Lo enviado, al día ----------
+     Mientras la aplicación está abierta, lo que hacen los demás llega solo: cada ACTUALIZAR_MS para quien registra o
+     coordina, al volver a la aplicación para todos y al tocar «Actualizar». Se pide sólo lo que cambió desde la vez
+     anterior, con la marca que dio el servidor: unos cuantos bytes si no hay nada nuevo. La Administración y la
+     Dirección ven todo, y para ellas no corre el reloj: al volver y con el botón. */
+  marca: null,        // la del servidor, para la siguiente vez (null: el servidor no la da, o todavía no se trae nada)
+  alDiaEn: null,      // cuándo se trajo lo nuevo por última vez, para decirlo
+  buscando: false,
+  fallo: false,       // la última vez no hubo respuesta: lo de los demás se ve hasta alDiaEn
+  repintarPendiente: false,
+  MARCA_VIEJA_MS: 6 * 3600000,   // una marca de hace más se deja: se trae todo
+  VOLVER_MS: 30000,              // al volver a la aplicación se busca lo nuevo si pasó al menos esto
+
+  puestoAlDia(marca) {
+    this.marca = marca || null;
+    this.alDiaEn = SRP.util.ahoraISO();
+    this.fallo = false;
+  },
+
+  // El reloj corre para quien ve lo suyo o lo de su institución; quien ve todo, al volver y con el botón
+  automatico() {
+    const u = SRP.sesion.usuario;
+    return !!u && ['propios', 'institucion'].includes(SRP.permisos.de(u).alcance);
+  },
+
+  /* Lo que cambió desde la última vez. `motivo`: 'reloj', 'volver', 'senal' o 'boton'. Sin marca —un servidor que no
+     la da— sólo el botón y la vuelta traen todo; con una marca muy vieja, también se trae todo */
+  async novedades(motivo) {
+    if (!this.activo() || !SRP.sesion.usuario || this.estado !== 'listo' || this.buscando) return;
+    if (!this.marca || Date.now() - Date.parse(this.marca) > this.MARCA_VIEJA_MS) {
+      if (motivo === 'reloj' && !this.marca) return;
+      await this.cargar({ silencioso: true });
+      if (motivo === 'boton') this.decirResultado(true);
+      return;
+    }
+    this.buscando = true; this.pintarAlDia();
+    const j = await this.todo('/jornadas', this.marca);
+    const p = j.ok ? await this.todo('/plantaciones', this.marca) : j;
+    this.buscando = false;
+    if (!SRP.sesion.usuario) return;
+    if (!j.ok || !p.ok) {
+      this.fallo = true; this.pintarAlDia();
+      if (motivo === 'boton') SRP.util.anunciar(j.sinRed || p.sinRed ? 'Sin señal: no se pudo buscar lo nuevo. Se intentará otra vez.' : 'El servidor no respondió. Intente en unos minutos.', 'aviso');
+      return;
+    }
+    // Una carga masiva que se completó o se deshizo no anota cada árbol: se trae todo
+    if (j.completo) { this.buscando = false; this.marca = null; await this.cargar({ silencioso: true }); if (motivo === 'boton') this.decirResultado(true); return; }
+    // Lo del último minuto llega dos veces (la marca se adelanta un minuto): cuenta como nuevo sólo lo que es distinto
+    const distinta = (mapa, f) => { const a = mapa.get(f.id); return !a || JSON.stringify(a) !== JSON.stringify(f); };
+    const jornadas = j.filas.filter(f => distinta(this.jornadas, f)), arboles = p.filas.filter(f => distinta(this.plantaciones, f));
+    const eliminadas = j.eliminadas.filter(id => this.jornadas.has(id));
+    const nuevas = jornadas.length + arboles.length + eliminadas.length;
+    jornadas.forEach(f => this.jornadas.set(f.id, f));
+    eliminadas.forEach(id => this.jornadas.delete(id));
+    arboles.forEach(f => this.plantaciones.set(f.id, f));
+    this.puestoAlDia(j.marca || this.marca);
+    if (nuevas) {
+      await this.tomarLocales(jornadas.map(f => f.id));
+      await this.llegoLoNuevo();
+    } else {
+      this.pintarAlDia();
+      if (this.repintarPendiente) await this.repintar();
+    }
+    if (motivo === 'boton') this.decirResultado(nuevas > 0);
+  },
+
+  decirResultado(hubo) { SRP.util.anunciar(hubo ? 'Al día: ya se ve lo nuevo.' : 'Al día: no hay nada nuevo.', 'exito'); },
+
+  // Con lo que llegó: los avisos de relevo y de jornada compartida, y lo que se ve vuelve a pintarse
+  async llegoLoNuevo() {
+    this.pintarAlDia();
+    if (SRP.sesion.usuario && SRP.activa) await SRP.activa.alLlegarLoEnviado();
+    await this.repintar();
+  },
+
+  /* Jornadas y Registros vuelven a pintarse sin mover a quien los usa: en la misma página, con la ficha abierta si lo
+     estaba. Con una ventana abierta, esperan a la siguiente vez. Supervisión y Fotografías se arman al abrirlas */
+  async repintar() {
+    const v = SRP.app && SRP.app.vista;
+    if (!['jornadas', 'registros'].includes(v)) { this.repintarPendiente = false; return; }
+    if (document.querySelector('dialog[open]')) { this.repintarPendiente = true; return; }
+    this.repintarPendiente = false;
+    if (v === 'jornadas') await SRP.jornadas.conLoNuevo();
+    else await SRP.registros.preparar();
+  },
+
+  vigilar() {
+    setInterval(() => { if (!document.hidden && this.automatico()) this.novedades('reloj'); }, SRP.CONFIG.ACTUALIZAR_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && this.alDiaEn && Date.now() - Date.parse(this.alDiaEn) > this.VOLVER_MS) this.novedades('volver');
+    });
+    window.addEventListener('online', () => { if (this.fallo) this.novedades('senal'); });
+    document.querySelectorAll('.al-dia-boton').forEach(b => b.addEventListener('click', () => this.novedades('boton')));
+  },
+
+  // La franja de Registros y Jornadas: a qué hora se trajo lo de los demás, y «Actualizar»
+  pintarAlDia() {
+    const ver = this.activo() && !!SRP.sesion.usuario && this.estado === 'listo' && !!this.alDiaEn;
+    const estado = this.buscando ? 'buscando' : this.fallo ? 'sin-senal' : 'al-dia';
+    const hora = this.alDiaEn ? SRP.envio.hora(this.alDiaEn) : '';
+    const icono = { buscando: 'regenerar', 'sin-senal': 'sinSenal', 'al-dia': 'reloj' }[estado];
+    const texto = { buscando: 'Buscando lo nuevo…', 'sin-senal': 'Sin señal: lo de los demás, hasta las ' + hora, 'al-dia': 'Al día a las ' + hora }[estado];
+    document.querySelectorAll('.al-dia').forEach(caja => {
+      caja.hidden = !ver;
+      if (!ver) return;
+      caja.dataset.estado = estado;
+      caja.querySelector('.al-dia-texto').innerHTML = SRP.ICONOS.svg(icono, 'chico') + '<span>' + SRP.util.escapar(texto) + '</span>';
+      const b = caja.querySelector('.al-dia-boton');
+      b.innerHTML = SRP.ICONOS.svg('regenerar', 'chico') + '<span>Actualizar</span>';
+      b.disabled = this.buscando;
+    });
   },
 
   /* Una jornada que el teléfono guarda y que nada suyo espera envío toma la del servidor: otros pudieron cambiarla
@@ -143,6 +266,7 @@ SRP.remoto = {
     this.jornadas = new Map();
     this.plantaciones = new Map();
     this.estado = 'sin-cargar';
+    Object.assign(this, { marca: null, alDiaEn: null, buscando: false, fallo: false, repintarPendiente: false });
     this.pintar();
   },
 
@@ -204,5 +328,6 @@ SRP.remoto = {
       aviso.querySelector('.vacio-titulo').textContent = cargando ? 'Trayendo lo enviado del servidor…' : sinSenal ? 'Sin señal' : 'No se pudo traer lo enviado';
       aviso.querySelector('.vacio-texto').textContent = cargando ? '' : sinSenal ? texto : 'El servidor no respondió. Inténtelo más tarde.';
     });
+    this.pintarAlDia();
   }
 };

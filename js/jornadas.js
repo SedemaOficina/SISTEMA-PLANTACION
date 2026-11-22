@@ -1350,6 +1350,18 @@ SRP.jornadas = {
     await this.seguirRevision();
   },
 
+  /* Con lo nuevo del servidor (js/remoto.js): la lista, o la ficha abierta, con lo que cambió. No mueve a quien la usa:
+     no cierra la ficha aunque la jornada salga del filtro, ni sigue la revisión de puntos */
+  async conLoNuevo() {
+    if (SRP.app.vista !== 'jornadas') return;
+    if (!this.actual) { await this.pintarLista(); return; }
+    await this.pintarLista(true);
+    const j = this.lista.find(x => x.clave === this.actual);
+    if (!j) return;
+    this.jornada = j;
+    await this.pintarDetalle(false);
+  },
+
   /* ---------- Salidas ---------- */
 
   async registrarFaltante() {
@@ -1382,8 +1394,15 @@ SRP.jornadas = {
     return titular.concat(cabos.map(x => [x.id, SRP.util.nombreCompleto(x)]));
   },
 
-  abrirRelevo() {
-    const c = this.guardada; if (!c || !SRP.permisos.exigir('jornada.relevo', c)) return;
+  async abrirRelevo() {
+    let c = this.guardada; if (!c || !SRP.permisos.exigir('jornada.relevo', c)) return;
+    /* Con datos reales, la jornada al día antes de elegir: otros pudieron cambiarla —otro relevo, su titular— desde que
+       el teléfono la trajo. Si algo suyo espera envío, manda lo del teléfono */
+    if (SRP.remoto.activo() && !SRP.cola.de(c.id).length) {
+      const f = await SRP.remoto.alDia(c.id);
+      if (f) { c = f; this.guardada = f; }
+      if (!SRP.permisos.exigir('jornada.relevo', c)) return;
+    }
     const actual = SRP.activa.capturista(c);
     const opciones = this.candidatosRelevo(c);
     this.el('dlg-relevo-texto').textContent = 'Hoy registra en «' + c.nombre + '» ' + SRP.ref.nombreUsuario(actual) +

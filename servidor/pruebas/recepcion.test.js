@@ -803,3 +803,37 @@ test('lo raro que llega por la API no da error interno: una precisión imposible
   assert.deepEqual([a.estado, a.fila.gps_precision_m, a.fila.comentarios], ['recibido', null, 'connulo'], JSON.stringify(a));
   assert.ok(Date.parse(a.fila.fecha_registro) <= Date.now() + 60000, 'la hora del futuro se cambió por la del servidor: ' + a.fila.fecha_registro);
 });
+
+test('sólo lo que cambió: con la marca de la consulta anterior llega lo que la bitácora anota desde entonces, con los árboles de una jornada recibida en relevo y las jornadas eliminadas', async () => {
+  const cabo = await telefono(CABO), coord = await telefono(COORD), otro = await telefono(CABO3);
+  // Cada consulta trae su marca, un minuto antes de la consulta. La prueba toma «ahora» para no contar lo de antes
+  const marca = (await cabo.pedir('/jornadas?limite=1')).datos.marca;
+  assert.match(marca, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  assert.match((await cabo.pedir('/plantaciones?limite=1')).datos.marca, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  const ahora = () => new Date(Date.now() - 5).toISOString();
+  const desde = new Date(Date.parse(marca) + 60_000).toISOString();
+  // Nada cambió: llega vacío, sin jornadas eliminadas y sin pedir que se traiga todo
+  const v = (await cabo.pedir('/jornadas?cambios=' + desde)).datos;
+  assert.deepEqual([v.filas, v.eliminadas, v.completo], [[], [], false]);
+  // Una jornada y su árbol nuevos llegan, y no lo de antes
+  const J = jornada(), A = arbol(J.id);
+  const rj = await cabo.una('jornada.crear', J);
+  assert.equal((await cabo.una('registro.crear', A)).estado, 'recibido');
+  assert.deepEqual((await cabo.pedir('/jornadas?cambios=' + desde)).datos.filas.map((f) => f.id), [J.id]);
+  assert.deepEqual((await cabo.pedir('/plantaciones?cambios=' + desde)).datos.filas.map((f) => f.id), [A.id]);
+  // El cabo que recibe la jornada en relevo empieza a ver el árbol del titular: llega con la jornada
+  const tras = ahora();
+  assert.equal((await coord.una('jornada.relevo', { id: J.id, version: rj.version, cabo_id: CABO3.id })).estado, 'recibido');
+  assert.deepEqual((await otro.pedir('/jornadas?cambios=' + tras)).datos.filas.map((f) => [f.id, f.relevo_id]), [[J.id, CABO3.id]]);
+  assert.deepEqual((await otro.pedir('/plantaciones?cambios=' + tras)).datos.filas.map((f) => f.id), [A.id]);
+  // Una jornada vacía que se elimina se dice aparte: ya no está para mandarla
+  const E = jornada();
+  const re = await cabo.una('jornada.crear', E);
+  const antes = ahora();
+  assert.equal((await cabo.una('jornada.eliminar', { id: E.id, version: re.version })).estado, 'recibido');
+  const x = (await cabo.pedir('/jornadas?cambios=' + antes)).datos;
+  assert.deepEqual([x.filas, x.eliminadas], [[], [E.id]]);
+  // Una marca que no lo es se rechaza con su motivo
+  const mal = await cabo.pedir('/jornadas?cambios=ayer');
+  assert.deepEqual([mal.estado, mal.datos.codigo], [400, 'CONSULTA_INVALIDA']);
+});

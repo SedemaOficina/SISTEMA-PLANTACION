@@ -78,6 +78,8 @@ SRP.app = {
     SRP.sesion.avisarVaciado();
     // Con datos reales, al volver la señal se confirma la sesión y se trae lo enviado que faltaba
     window.addEventListener('online', () => { if (SRP.sesion.usuario && !SRP.remoto.listo()) SRP.sesion.confirmar(); });
+    // Con datos reales, lo que hacen los demás llega solo mientras la aplicación está abierta
+    SRP.remoto.vigilar();
     SRP.jornadas.iniciar();
     SRP.galeria.iniciar();
     SRP.supervision.iniciar();   // Supervisión y Mi avance

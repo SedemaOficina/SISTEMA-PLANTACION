@@ -107,7 +107,7 @@ SRP.cola = {
     // De una jornada compartida viaja lo que cambió en sus cabos de apoyo, no la lista entera; de «Terminar mi parte»,
     // desde cuándo estaba el cabo, como lo conocía el teléfono
     if (!this.EDICIONES.includes(tipo)) nuevas.push(Object.assign({ tipo }, tipo === 'jornada.compartir' ? this.cambiosDeApoyo(antes, despues)
-      : tipo === 'jornada.terminar' ? this.desdeConocido(antes) : {}));
+      : tipo === 'jornada.terminar' ? this.desdeConocido(antes) : tipo === 'jornada.relevo' ? { de: antes ? antes.relevo_id || antes.cabo_id : null } : {}));
     // Con su alta o con otra edición esperando, la edición viaja con ésa; si ésa ya salió sin respuesta, va aparte
     else if (!esperan.some(o => !o.enviado && (this.ALTAS.includes(o.tipo) || o.tipo === tipo))) nuevas.push({ tipo, antes: antes || null });
     if (tabla === 'plantaciones' && despues && despues.foto_id && SRP.util.fotoSegura(despues.foto_base64) && (!antes || antes.foto_id !== despues.foto_id)) {
@@ -249,6 +249,16 @@ SRP.cola = {
           await this.rechazada(o, x);
           res.rechazados++;
           avanzo = true;
+        } else if (this.relevoVigente(o, x)) {
+          /* La jornada cambió en otra cosa desde que el teléfono la trajo —su titular la editó, por ejemplo— y quien
+             registra en ella sigue siendo quien vio la Coordinación: el relevo vale igual y sale otra vez, con la versión
+             vigente. Una vez: si vuelve a pasar, se queda en «Revisar» (prueba en campo del 19-11-2026) */
+          o.version = this.version('jornadas', x.fila);
+          o.reintentado = true;
+          o.enviado = null;
+          SRP.remoto.jornadas.set(x.fila.id, x.fila);
+          await this.guardar(o);
+          avanzo = true;
         } else if (x && x.codigo === 'JORNADA_ELIMINADA') {
           eliminadas.add(o.tabla === 'jornadas' ? o.registro_id : ((await SRP.almacen.unoLocal('plantaciones', o.registro_id)) || {}).jornada_id);
           if (o.tabla === 'plantaciones') { await this.rechazada(o, x); res.rechazados++; }
@@ -282,6 +292,13 @@ SRP.cola = {
     if (!o.enviado) return;
     o.enviado = null;
     await this.guardar(o);
+  },
+
+  /* Un relevo que el servidor no aceptó por versión vieja, con la jornada como la tiene el servidor, y en ella registra
+     el mismo cabo que cuando se pidió: nadie más hizo otro relevo entre tanto */
+  relevoVigente(o, x) {
+    if (!x || x.codigo !== 'VERSION_VIEJA' || o.tipo !== 'jornada.relevo' || o.reintentado || !x.fila || !o.de) return false;
+    return (x.fila.relevo_id || x.fila.cabo_id) === o.de && x.fila.estatus === 'abierta';
   },
 
   // La que sigue de un registro, que esperaba la versión de ésta, la toma. Se guarda antes de soltar ésta
