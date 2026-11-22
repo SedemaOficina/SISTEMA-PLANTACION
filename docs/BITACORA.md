@@ -7281,3 +7281,40 @@ del vaciado tenía una salida, y pidió una 1.0.1 antes de la prueba en campo. L
 
 **Siguiente paso.** Que el SIA aplique la 1.0.1 (etiqueta `entrega-2026-10-31`, sección «Actualizar de la 1.0.0 a la
 1.0.1»). Con eso, la prueba en campo y el vaciado.
+
+## Bloque 268 — El cabo de apoyo registra desde la ficha; las jornadas que le pasaron, en otro color (21-11-2026)
+
+**Versión 1.0.2.** El SIA aplicó la 1.0.1 el 03-11-2026, y el 19-11-2026 el equipo hizo la primera prueba en campo con
+la aplicación conectada a su servidor: 14 teléfonos y 93 registros. Este es el primer bloque de lo que pidió. El plan de
+los bloques que siguen y las respuestas de Liber van en D348.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| «Registrar árbol» en la ficha de una compartida, para su cabo de apoyo | No estaba; el siguiente paso decía «los registran la Coordinación y sus cabos de apoyo». Con otra jornada abierta, Nuevo registro se quedaba en ella | Está mientras la jornada está abierta, y lo lleva a Nuevo registro con la compartida activa |
+| La jornada que le pasaron a quien entró (relevo o cabo de apoyo), en la lista de Jornadas | Igual que las demás | Franja y fondo verde azulado y, arriba, «Relevo: ahora registra usted» o «Compartida: usted es cabo de apoyo» |
+| La prueba del vaciado en `pruebas/prueba_conexion.py` | Se detenía: al volver la señal la aplicación envía sola, encuentra el vaciado y recarga la página mientras la prueba pedía otro envío | Acepta esa recarga; cualquier otro error la sigue deteniendo |
+
+**Qué cambió.**
+- `js/jornadas.js`: en la ficha, quien registra incluye al cabo de apoyo vigente de la jornada abierta; en la lista, la
+  marca `data-asignada` y la etiqueta, también en la etiqueta para lectores de pantalla.
+- `css/estilos.css`: `--asignada` y `--asignada-fondo`, con el tono del modo sol, y las reglas de la tarjeta y la etiqueta.
+- Las pruebas: `pruebas/prueba.py` (ctx105: el cabo de apoyo tiene el botón y lo lleva a registrar; la lista marca la
+  compartida y el relevo, y la Coordinación no ve marcada la suya; el siguiente paso lo lee quien sólo mira) y
+  `pruebas/prueba_conexion.py` (el botón, con el servidor; `enviar_ante_vaciado` en los dos envíos tras el vaciado).
+- `VERSION`, las 65 marcas de `index.html`, la etapa de `js/config.js`, el README y `docs/MEJORAS.md` (M565 y M566
+  hechas; M567 a M575, lo que sigue del plan).
+- `docs/DECISIONES.md` (D348).
+- Fuera del repositorio: la muestra aprobada, en `servidor/local/muestras-b268/`.
+
+**Verificación.**
+- `pruebas/por_tramos.py`, los tramos de jornadas, relevo y compartida (37, 42, 76, 80, 84, 85, 86 y 88): 103 de 103.
+  Antes y después: el tramo 88 con la ficha de la 1.0.1 se detiene donde espera el botón.
+- `pruebas/prueba_conexion.py`: 142 de 142, con la nueva del botón del cabo de apoyo. Antes de corregir la prueba del
+  vaciado se detuvo dos veces en el mismo envío; la aplicación hacía lo correcto.
+- `pruebas/auditoria_css.py`: 0 hallazgos. `pruebas/auditoria.py`: 154 comprobaciones, 0 hallazgos.
+- La lista ya programada, a 360 px, en modo normal y en modo sol: las dos jornadas marcadas, sin desborde ni errores.
+- Sin la prueba completa de 88 tramos: la corre GitHub con la subida, y se corre aquí antes de la entrega.
+- GitHub: la corrida del bloque 267 (41282776595), en verde.
+
+**Siguiente paso.** Que la Administración baje «Puntos duplicados» a 3 m en Parámetros. Después, el bloque 269: lo que
+cambian los demás perfiles, al día (M567), y el aviso del relevo (M568).

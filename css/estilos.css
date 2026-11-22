@@ -76,6 +76,8 @@
   /* Colonias prioritarias: la paleta del modelo de priorización, de la prioridad muy baja (p0) a la muy alta (p4) */
   --p0: #F9E7BF; --p1: #F4C56E; --p2: #E88A2E; --p3: #C2421B; --p4: #7F1D12;
   --sustituto-fondo: #F1EAF8;
+  --asignada: #0B6E63;         /* jornada que le pasaron a quien entró (relevo, cabo de apoyo): 5.4:1 sobre su fondo */
+  --asignada-fondo: #E4F4F1;
   --neutro-borde: #9AA3AB;     /* apoyo: contorno gris */
   --neutro-fondo: #F1F3F5;
   --foco: #1B5FAA;             /* un solo color de foco, el de la acción */
@@ -131,6 +133,7 @@
   --fondo-suave: #EEF1F4;
   --neutro-borde: #3A3B3D;
   --editar-borde: #8A4B00;
+  --asignada: #08574E;         /* 7.4:1 sobre su fondo */
   --texto-guia: #4A4C4E;       /* textos guía: oscuros pero distinguibles de lo escrito */
 }
 
@@ -412,6 +415,10 @@ fieldset.campo { margin-inline: 0; }
 .lista-jornadas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-3); }
 /* Ficha de jornada: nombre → cuándo → estado → dónde → cuánto → quién */
 .jornada-boton { display: grid; gap: var(--e-2); width: 100%; text-align: left; padding: var(--e-3) var(--e-4); border: 1px solid var(--borde-suave); border-radius: var(--radio-filtro); background: var(--fondo); color: inherit; font: inherit; cursor: pointer; }
+/* La jornada que le pasaron a quien entró —en relevo, o compartida donde es cabo de apoyo—: franja y fondo de otro
+   color y, arriba, qué es, para hallarla pronto en la lista */
+.jornada[data-asignada] .jornada-boton { border-color: var(--asignada); border-left: 6px solid var(--asignada); background: var(--asignada-fondo); }
+.insignia-asignada { display: inline-flex; align-items: center; gap: var(--e-1); font-size: var(--t-s); font-weight: 700; color: var(--asignada); }
 .jornada-cab { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: var(--e-3); align-items: start; }
 .jornada-titulo-caja, .jornada-datos { min-width: 0; display: grid; gap: 2px; }
 .jornada-sitio { font-family: var(--fuente-titulo); font-weight: 700; font-size: var(--t-l); line-height: 1.2; overflow-wrap: anywhere; }

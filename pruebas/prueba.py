@@ -8204,19 +8204,44 @@ with sync_playwright() as p:
     ok(len(b105) == 1 and nombre105 in b105[0] and z105 == [0, True],
        'el buscador deja a la vista los cabos con ese nombre, sin importar acentos («oscar» halla a Óscar), y sin coincidencias dice «Ningún cabo con ese nombre.»: %s' % b105[:3])
     pg105.click('#btn-apoyos-cerrar'); pg105.wait_for_function("() => !document.getElementById('dlg-apoyos').open")
-    # El cabo de apoyo: en la ficha, el siguiente paso dice quiénes registran; «Terminar mi parte» dice lo que de verdad pasa
+    # El cabo de apoyo: en la ficha tiene «Registrar árbol», como el titular, aunque su jornada activa sea otra (en la
+    # prueba en campo del 19-11-2026 no lo tenía y no hallaba cómo registrar); «Terminar mi parte» dice lo que de verdad pasa
     como105('u-demo-c3')
-    pg105.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jid105)
-    pg105.wait_for_function("() => !document.getElementById('jornada-siguiente').hidden && document.getElementById('jornada-siguiente').textContent.length > 0", timeout=20000)
-    s105 = pg105.evaluate("document.getElementById('jornada-siguiente').textContent")
-    ok(re.fullmatch(r'Siguiente: registrar (los árboles que faltan|el primer árbol)( \(\d+ de \d+\))?; los registran la Coordinación y sus cabos de apoyo\.', s105) is not None,
-       'en una compartida, el siguiente paso dice que registran la Coordinación y sus cabos de apoyo, no «(lo hace el cabo)»: %s' % s105)
+    pg105.evaluate("async id => { SRP.activa.jornada = null; SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jid105)
+    pg105.wait_for_function("() => !document.getElementById('btn-jornada-faltante').hidden", timeout=20000)
+    f105 = pg105.evaluate("() => [document.getElementById('btn-jornada-faltante').textContent.trim(), document.getElementById('jornada-siguiente').hidden]")
+    ok(f105 == ['Registrar árbol', True], 'en una compartida, el cabo de apoyo tiene «Registrar árbol» en la ficha, como el titular: %s' % f105)
+    pg105.click('#btn-jornada-faltante'); pg105.wait_for_timeout(700)
+    r105 = pg105.evaluate("() => [SRP.app.vista, SRP.activa.jornada && SRP.activa.jornada.id]")
+    ok(r105 == ['registrar', jid105], '«Registrar árbol» lo lleva a Nuevo registro con la compartida como jornada activa: %s' % r105)
+    # En su lista de Jornadas, la compartida donde es cabo de apoyo va en otro color y dice qué es
+    ASIGNADAS105 = """async () => { SRP.app.mostrarVista('jornadas'); SRP.jornadas.aplicarAtajo('todas'); await SRP.jornadas.pintarLista();
+      return [...document.querySelectorAll('#lista-jornadas li[data-asignada]')].map(li => [li.dataset.asignada, (SRP.jornadas.lista.find(x => x.clave === li.dataset.clave) || {}).id,
+        li.querySelector('.insignia-asignada').textContent, getComputedStyle(li.querySelector('.jornada-boton')).borderLeftWidth,
+        li.querySelector('.jornada-boton').getAttribute('aria-label').split('. ')[0]]); }"""
+    a105 = pg105.evaluate(ASIGNADAS105)
+    ok(a105 == [['compartida', jid105, 'Compartida: usted es cabo de apoyo', '6px', 'Compartida: usted es cabo de apoyo']],
+       'en la lista de Jornadas, la compartida donde es cabo de apoyo va con franja de color y dice «Compartida: usted es cabo de apoyo»: %s' % a105)
     pg105.evaluate("async id => { SRP.app.mostrarVista('registrar'); SRP.activa.jornada = await SRP.almacen.uno('jornadas', id); await SRP.activa.preparar(); SRP.activa.terminarParte(); }", jid105)
     pg105.wait_for_selector('#dlg-confirmar[open]')
     t105 = pg105.evaluate("document.getElementById('dlg-confirmar').innerText")
     pg105.click('#btn-confirmar-no'); pg105.wait_for_function("() => !document.getElementById('dlg-confirmar').open")
     ok('Ya no podrá registrar en ella; la seguirá viendo en Jornadas.' in t105 and 'sale de su lista' not in t105, '«Terminar mi parte» dice que ya no podrá registrar y que la seguirá viendo en Jornadas')
-    como105('u-admin-1'); pg105.evaluate("SRP.demo.quitar()")
+    # La del relevo de hoy, marcada para quien la recibió; la Coordinación que abrió la compartida no ve nada marcado
+    como105('u-demo-c1')
+    m105 = [[x[0], x[2]] for x in pg105.evaluate(ASIGNADAS105)]
+    como105('u-demo-k1')
+    k105 = pg105.evaluate(ASIGNADAS105)
+    ok(m105 == [['relevo', 'Relevo: ahora registra usted']] and k105 == [],
+       'la jornada que recibió en relevo va marcada «Relevo: ahora registra usted»; la Coordinación no ve marcada la compartida que abrió: %s' % [m105, k105])
+    # Quien sólo la mira lee en el siguiente paso quiénes registran
+    como105('u-admin-1')
+    pg105.evaluate("async id => { SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jid105)
+    pg105.wait_for_function("() => !document.getElementById('jornada-siguiente').hidden && document.getElementById('jornada-siguiente').textContent.length > 0", timeout=20000)
+    s105 = pg105.evaluate("document.getElementById('jornada-siguiente').textContent")
+    ok(re.fullmatch(r'Siguiente: registrar (los árboles que faltan|el primer árbol)( \(\d+ de \d+\))?; los registran la Coordinación y sus cabos de apoyo\.', s105) is not None,
+       'en una compartida, quien sólo la mira lee que registran la Coordinación y sus cabos de apoyo, no «(lo hace el cabo)»: %s' % s105)
+    pg105.evaluate("SRP.demo.quitar()")
     ok(not err105, 'sin errores en consola: %s' % err105[:2])
     ctx105.close()
 

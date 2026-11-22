@@ -186,6 +186,17 @@ def esperar_cola(pg, quedan=0, espera=30000):
     pg.wait_for_timeout(300)
 
 
+def enviar_ante_vaciado(pg):
+    """Pide el envío justo al volver la señal, con el servidor ya vaciado. La aplicación también envía sola al volver la
+    señal: si ese envío encuentra el vaciado primero, borra lo del teléfono y recarga la página a media orden. Esa
+    recarga es lo esperado; cualquier otro error, no."""
+    try:
+        pg.evaluate("() => SRP.envio.enviar({ manual: true })")
+    except Exception as e:
+        if 'Execution context was destroyed' not in str(e):
+            raise
+
+
 def esperar_remoto(pg, estados=('listo',), espera=90000):
     pg.wait_for_function("e => e.includes(SRP.remoto.estado)", arg=list(estados), timeout=espera)
 
@@ -1361,6 +1372,12 @@ def main():
             if aviso: pgA.click('#btn-confirmar-si'); pgA.wait_for_timeout(400)
             activa = pgA.evaluate("() => SRP.activa.jornada && SRP.activa.jornada.id")
             ok(aviso == 'Jornada compartida' and activa == jc, 'el cabo de apoyo, al entrar, lee el aviso y la jornada compartida queda activa: %s' % [aviso, activa == jc])
+            # En la ficha de la compartida tiene «Registrar árbol» aunque su jornada activa sea otra (prueba en campo del 19-11-2026)
+            pgA.evaluate("async id => { SRP.activa.jornada = null; SRP.app.mostrarVista('jornadas'); await SRP.jornadas.abrir(id); }", jc); pgA.wait_for_timeout(1200)
+            boton = pgA.is_visible('#btn-jornada-faltante')
+            if boton: pgA.click('#btn-jornada-faltante'); pgA.wait_for_timeout(700)
+            ficha = pgA.evaluate("() => [SRP.app.vista, SRP.activa.jornada && SRP.activa.jornada.id]")
+            ok(boton and ficha[0] == 'registrar' and ficha[1] == jc, 'el cabo de apoyo tiene «Registrar árbol» en la ficha de la compartida y lo lleva a registrar en ella: %s' % [boton, ficha[0], ficha[1] == jc])
             registrar(pgA)
             esperar_cola(pgA)
             pgA.evaluate("SRP.app.mostrarVista('registrar')"); pgA.wait_for_timeout(500)
@@ -1465,7 +1482,7 @@ def main():
             rv = registrar(pgV)
             apoyo('sello', {'valor': 'sello-vaciado-%s' % CORRIDA})
             ctxV.set_offline(False)
-            pgV.evaluate("() => SRP.envio.enviar({ manual: true })")
+            enviar_ante_vaciado(pgV)
             pgV.wait_for_function("() => !!sessionStorage.getItem('srp_aviso_vaciado') || document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
             pgV.wait_for_selector('html[data-listo]'); pgV.wait_for_function("() => document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
             v1 = pgV.evaluate("""async () => ({ aviso: document.getElementById('aviso').textContent, arboles: (await SRP.almacen.todosLocales('plantaciones')).length,
@@ -1511,7 +1528,7 @@ def main():
             apoyo('sello', {'valor': 'sello-vaciado-4-%s' % CORRIDA})
             pgV.evaluate("async () => { SRP.sesion.sello = 'sello-vaciado-4-%s'; await SRP.almacen.ponerAjuste('sello_servidor', SRP.sesion.sello); }" % CORRIDA)
             ctxV.set_offline(False)
-            pgV.evaluate("() => SRP.envio.enviar({ manual: true })")
+            enviar_ante_vaciado(pgV)
             pgV.wait_for_function("() => !!sessionStorage.getItem('srp_aviso_vaciado') || document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
             pgV.wait_for_selector('html[data-listo]'); pgV.wait_for_function("() => document.getElementById('aviso').textContent.includes('se vació')", timeout=30000)
             v4 = pgV.evaluate("async () => [(await SRP.almacen.todosLocales('plantaciones')).length, (await SRP.almacen.todos('envios')).length, !!SRP.sesion.usuario]")

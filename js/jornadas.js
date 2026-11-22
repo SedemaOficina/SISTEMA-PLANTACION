@@ -644,6 +644,10 @@ SRP.jornadas = {
       const generado = (guardada || j.dato || {}).reporte_en;
       const relevo = guardada && guardada.relevo_id && guardada.relevo_id !== j.cabo_id ? guardada.relevo_id : '';
       const compartida = this.compartida(guardada);
+      /* La jornada abierta que le pasaron a quien entró: en relevo, o compartida donde es cabo de apoyo. Va en otro
+         color y dice qué es, para que la halle pronto entre las suyas */
+      const asignada = !abierta || !guardada ? null : relevo === u.id ? { tipo: 'relevo', icono: 'intercambio', texto: 'Relevo: ahora registra usted' }
+        : SRP.permisos.apoyoVigente(guardada, u.id) ? { tipo: 'compartida', icono: 'usuarios', texto: 'Compartida: usted es cabo de apoyo' } : null;
       const lugar = this.lugarDe(j);
       const ubic = (j.dato && j.dato.ubicacion) || '';
       const programa = (guardada || j.dato || {}).programa_id;
@@ -661,8 +665,10 @@ SRP.jornadas = {
       if (sustituciones) marcas.push(marca('sust', 'intercambio', sustituciones + (sustituciones === 1 ? ' sustitución' : ' sustituciones')));
       if (!abierta && n && !generado) marcas.push(marca('rev', 'reportes', 'Sin reporte todavía', 'insignia-reporte'));
       // Orden de la tarjeta: nombre → cuándo → cuánto → estado → dónde → programa y quién → lo que falta atender
-      html.push('<li class="jornada" data-clave="' + esc(j.clave) + '"><button type="button" class="jornada-boton" aria-label="Revisar la jornada ' +
+      html.push('<li class="jornada" data-clave="' + esc(j.clave) + '"' + (asignada ? ' data-asignada="' + asignada.tipo + '"' : '') + '><button type="button" class="jornada-boton" aria-label="' +
+        (asignada ? esc(asignada.texto) + '. ' : '') + 'Revisar la jornada ' +
         esc(this.nombreSitio(j)) + ' del ' + esc(SRP.util.formatearFecha(j.fecha)) + ', ' + (abierta ? 'abierta' : esc(this.textoCierre(guardada, true))) + ', ' + n + (n === 1 ? ' árbol' : ' árboles') + (sustituciones ? ', ' + sustituciones + (sustituciones === 1 ? ' sustitución' : ' sustituciones') : '') + ', ' + esc(est.texto) + '">' +
+        (asignada ? '<span class="insignia-asignada">' + SRP.ICONOS.svg(asignada.icono, 'chico') + '<span>' + esc(asignada.texto) + '</span></span>' : '') +
         '<span class="jornada-cab"><span class="jornada-titulo-caja"><span class="jornada-sitio">' + esc(this.nombreSitio(j)) + '</span>' +
         '<span class="jornada-dia">' + (cuando ? '<b>' + cuando + '</b> · ' : '') + '<span class="jornada-fecha">' + esc(fecha) + '</span>' +
         (j.total > 1 ? ' <span class="jornada-ndn">Jornada ' + j.n + ' de ' + j.total + '</span>' : '') + '</span></span>' + this.miniatura(j, avisos, (guardada && guardada.puntos_revisados) || []) + '</span>' +
@@ -784,8 +790,9 @@ SRP.jornadas = {
       (this.compartida(guardada) ? '<span class="ficha-renglon">' + esc(this.textoApoyos(guardada)) + '</span>' : '');
     this.el('jornada-comentarios').hidden = !guardada.comentarios;
     this.el('jornada-comentarios').textContent = guardada.comentarios || '';
-    // Cerrar o reabrir la jornada desde su revisión: quien registra en ella (el titular o el cabo del relevo)
-    const propia = SRP.activa.capturista(guardada) === u.id;
+    /* Quien registra en ella: el titular o el cabo del relevo, que además la cierra o la reabre, y el cabo de apoyo
+       vigente mientras está abierta. Al cabo de apoyo le falta «Registrar árbol» en la ficha si no se cuenta aquí */
+    const propia = SRP.activa.capturista(guardada) === u.id || (guardada.estatus === 'abierta' && SRP.permisos.apoyoVigente(guardada, u.id));
     // Cerrar/reabrir, editar: quien registra en ella o quien la alcanza (coordinador de ese cabo, administrador).
     // Eliminar, sólo vacía —sin árboles, ni eliminados— y también para el coordinador
     const puedeJornada = SRP.permisos.puede('jornada.editar', guardada);

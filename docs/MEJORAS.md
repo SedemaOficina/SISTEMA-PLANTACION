@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.1 (Bloque 267)»**.
+En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.2 (Bloque 268)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M565 | Prueba en campo (19-11-2026) | El cabo de apoyo tiene «Registrar árbol» en la ficha de la jornada compartida, como el titular: lo lleva a Nuevo registro con esa jornada activa, aunque tuviera otra abierta | Alta | 1.0.2 (B268) | Con datos de prueba, entrar como Rocío Hernández Demo (cabo de apoyo): Jornadas › la compartida de hoy › «Registrar árbol» | D348 |
+| M566 | Prueba en campo (19-11-2026) | En la lista de Jornadas, la jornada abierta que le pasaron a quien entró va con franja y fondo verde azulado y dice qué es: «Relevo: ahora registra usted» o «Compartida: usted es cabo de apoyo» | Media | 1.0.2 (B268) | Con datos de prueba, entrar como Rocío Hernández Demo (compartida) o Marisol Pérez Demo (relevo): Jornadas | D348 |
 | M564 | Revisión del manual | Usuarios: la nota de «Eliminar» ya no habla de «cabos a su cargo»: «Una cuenta con árboles o jornadas, o que ya entró al sistema, no se elimina: se desactiva» | Baja | 1.4.2 (B255) | Configuración › Usuarios, al pie de la lista | D338 |
 | M555 | Liber | Manual del personal en PDF, en lenguaje común: lo que es para todos (cada perfil, el teléfono listo para el GPS, entrar, la pantalla, sin señal) y un capítulo para cabos, otro para coordinación y otro para dirección, con 31 capturas de la aplicación con datos reales y personas de ejemplo, y el membrete del Gobierno de la Ciudad, la Secretaría, el SIA y Reforestación Urbana. El manual de la Administración, al día con la 1.4 y con el mismo membrete | Alta | Manuales (B254) | docs/manual/Manual-Personal-SRP.pdf y Manual-Administracion-SRP.pdf | D336 |
 | M562 | Liber | Datos de prueba al día: 39 jornadas compartidas y 21 relevos, con una compartida (coordina Estela Ramírez) y un relevo (de Julián a Marisol) abiertos hoy; ninguna cuenta guarda coordinadores | Media | 1.4.1 (B253) | Datos de prueba › Volver a cargar; entrar como Rocío Hernández Demo: aviso de jornada compartida | D335 |
@@ -564,6 +566,15 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 
 | # | Origen | Mejora | Prioridad | Estado | Nota |
 |---|---|---|---|---|---|
+| M567 | Prueba en campo (19-11-2026) | Lo que cambian los demás perfiles, al día: el teléfono lo vuelve a pedir al volver a la aplicación y cada 2 minutos mientras está abierta (la Administración, sólo al volver y con el botón); botón «Actualizar» y «Actualizado a las…» | Alta | Pendiente | Bloque 269, con muestra. Hoy sólo se baja al entrar o al abrir la aplicación (D348) |
+| M568 | Prueba en campo (19-11-2026) | El aviso «El servidor no aceptó 1 cambio» al hacer un relevo desde la Coordinación, aunque el relevo sí llegó al cabo: reproducirlo con conexión lenta o cortada y corregir su causa | Alta | Pendiente | Bloque 269 |
+| M569 | Prueba en campo (19-11-2026) | El aviso de posible duplicado al guardar compara sólo con árboles de la misma especie, como la revisión de la jornada | Alta | Pendiente | Bloque 270. La distancia («Puntos duplicados», 3 m) la cambia la Administración en Parámetros, sin versión nueva |
+| M570 | Prueba en campo (19-11-2026) | Pin de ubicación más grande en el mapa de captura | Media | Pendiente | Bloque 270, con muestra |
+| M571 | Prueba en campo (19-11-2026) | La capa de colonias, apagada al abrir cualquier mapa, para todos los perfiles, con la opción de encenderla y su opacidad | Media | Pendiente | Bloque 270 |
+| M572 | Prueba en campo (19-11-2026) | Fotografía con dos botones, «Tomar foto» y «Galería»: en el Cubot KingKong ES el menú del sistema no ofrece la cámara | Alta | Pendiente | Bloque 270, con muestra. Es lo previsto en el bloque 246 si el menú no servía |
+| M573 | Prueba en campo (19-11-2026) | Girar el mapa con dos dedos, con una brújula para volver al norte | Media | Pendiente | Segunda etapa (1.1.0) |
+| M574 | Prueba en campo (19-11-2026) | Mapa base de mayor resolución y con más acercamiento | Media | Pendiente | Segunda etapa. Espera saber si el SIA tiene una ortofoto de la Ciudad y si se acepta un proveedor con clave y costo; ver M168 |
+| M575 | Prueba en campo (19-11-2026) | Los dos manuales al día con lo de la prueba en campo: botón y color de las jornadas asignadas, «Actualizar», pin, colonias, fotografía, Puntos duplicados en 3 m, y en el capítulo del GPS los modelos con baja precisión en la prueba | Alta | Pendiente | Bloque 271, antes de la entrega; las capturas, con la versión de la entrega |
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | En curso | Desde la 1.0.5 (B240, D320) las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit |

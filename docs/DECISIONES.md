@@ -4765,3 +4765,35 @@
     dejan `sia-backend` idéntico a los archivos completos de la nueva. Revertir la aplicación sólo sirve antes de que
     los teléfonos abran la 1.0.1: su base, ya en la versión 12, no la abre la 1.0.0. Va en la etiqueta
     `entrega-2026-10-31` del repositorio privado `srp-sia`.
+
+- **D348. Lo que pidió la prueba en campo del 19-11-2026; el cabo de apoyo registra desde la ficha (bloque 268).**
+  21-11-2026. Primera prueba en campo con la 1.0.1 instalada en el SIA: 14 teléfonos y 93 registros. Liber pasó el
+  documento de observaciones del equipo, se le presentó un plan y respondió sus preguntas.
+  · **El cabo de apoyo no podía registrar en la jornada compartida.** La ficha de la jornada mostraba «Registrar árbol»
+    sólo al titular y al cabo del relevo; al cabo de apoyo le decía «los registran la Coordinación y sus cabos de
+    apoyo». Si ya tenía una jornada propia abierta, Nuevo registro se quedaba en ella y sólo «Cambiar jornada» llevaba a
+    la compartida: nadie lo encontró. En Android no hubo manera en ningún teléfono; en iPhone, saliendo y volviendo a
+    entrar a Nuevo registro. Ahora la ficha tiene «Registrar árbol» también para el cabo de apoyo vigente, mientras la
+    jornada está abierta, y lo lleva a Nuevo registro con la compartida como jornada activa. El botón ya lo permitía; lo
+    que faltaba era mostrarlo. Una prueba daba por bueno lo anterior: ahora esa frase la lee quien sólo mira la jornada.
+  · **La jornada que le pasaron a quien entró, en otro color.** Liber eligió con muestra la opción A: franja y fondo
+    verde azulado (`--asignada`, 5.4:1; en modo sol, 7.4:1) y arriba de la tarjeta «Relevo: ahora registra usted» o
+    «Compartida: usted es cabo de apoyo», que también lee el lector de pantalla. Sólo las abiertas. La Coordinación que
+    abrió la compartida no la ve marcada.
+  · **Las respuestas de Liber para lo que sigue:**
+    - El relevo sí llegó al cabo; el aviso «El servidor no aceptó 1 cambio» pudo ser de otro cambio o de la conexión. Se
+      reproduce en el bloque 269.
+    - Los avisos de posible duplicado que salían eran el de guardar y el de la revisión al cerrar. Los dos usan «Puntos
+      duplicados», un parámetro que la Administración baja a 3 m en Parámetros, sin versión nueva. El de guardar
+      comparaba con cualquier especie: pasará a comparar sólo con la misma, como la revisión. El aviso del servidor entre
+      jornadas no salió.
+    - La capa de colonias, apagada al abrir cualquier mapa y para todos los perfiles, con la opción de encenderla.
+    - Hoy el teléfono baja lo que cambian los demás sólo al entrar o al abrir la aplicación. Pasará a pedirlo cada 2
+      minutos para cabos y Coordinación mientras la aplicación está abierta, y para la Administración, que baja más de
+      17 mil árboles, al volver a la aplicación y con un botón.
+    - El mapa base, pendiente: falta saber si el SIA tiene una ortofoto de la Ciudad y si se acepta un proveedor con
+      clave y costo.
+    - En el manual, los teléfonos se nombran sólo como «modelos con baja precisión en la prueba».
+  · **El plan:** 268 a 270 corrigen lo que estorba en campo (M565 a M572), 271 pone al día los dos manuales (M575) y 272
+    arma la entrega para el SIA. Después, girar el mapa y el mapa base (M573, M574), en la 1.1.0. Cada bloque sube la
+    versión, así que la entrega llevará la del último.
