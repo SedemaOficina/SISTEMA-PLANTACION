@@ -31,7 +31,7 @@ const PAGINAS = [10, 25, 50, 100];
 
 // Los rangos cuidan que un valor no deje al sistema sin sentido: una distancia de cero, un GPS que no espera
 export const PARAMETROS: Parametro[] = [
-  { clave: "JORNADA.DUPLICADO_M", titulo: "Puntos duplicados", unidad: "m", porOmision: 4, minimo: 1, maximo: 50 },
+  { clave: "JORNADA.DUPLICADO_M", titulo: "Puntos duplicados", unidad: "m", porOmision: 3, minimo: 1, maximo: 50 },
   { clave: "JORNADA.FUERA_M", titulo: "Punto lejos de la jornada", unidad: "m", porOmision: 150, minimo: 10, maximo: 5000 },
   { clave: "JORNADA.SEPARAR_M", titulo: "Sitios separados", unidad: "m", porOmision: 500, minimo: 50, maximo: 20000 },
   { clave: "MAPA.PRECISION_BUENA_M", titulo: "Precisión buena", unidad: "m", porOmision: 10, minimo: 1, maximo: 100 },

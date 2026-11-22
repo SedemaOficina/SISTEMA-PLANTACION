@@ -7407,3 +7407,39 @@ va en D350.
 
 **Siguiente paso.** El bloque 271: los dos manuales al día con lo de los bloques 268 a 270 (M575). El manual del personal
 todavía dice «Agregar fotografía».
+
+## Bloque 271 — Los manuales al día con la prueba en campo, y «Puntos duplicados» en 3 m (21-11-2026)
+
+**Versión 1.0.5.** Los dos manuales quedan al día con lo de los bloques 268 a 270. Al hacerlo, la captura de Parámetros
+enseñaba 4 m de arranque en «Puntos duplicados»; Liber eligió dejar 3 m en el código. Lo decidido va en D351.
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| «Puntos duplicados» de arranque | 4 m | 3 m, en la aplicación y en el servidor; si la Administración ya lo cambió, se queda su valor |
+| Manual del personal | El de la 1.0.0, con «Agregar fotografía», el pin, las colonias encendidas y el aviso del relevo «al entrar» | El de la 1.0.5, 38 páginas: GPS y modelos con baja precisión en la prueba, «Al día» y cuánto tarda, la mira, las colonias apagadas, la foto con dos botones, el duplicado por especie, el cabo de apoyo con su color y «Registrar árbol» (dos capturas nuevas) |
+| Manual de la Administración | El de la 1.0.0 | El de la 1.0.5, 24 páginas: «Puntos duplicados» en 3 m, la franja «Al día» y cuánto tarda lo de otra persona |
+| Registro de la prueba en campo | No había | `docs/PRUEBA-CAMPO-2026-11-19.md`: la precisión por teléfono y qué bloque atendió cada observación |
+
+**Qué cambió.**
+- `js/config.js` y `servidor/src/modulos/srp/parametros.ts`: `JORNADA.DUPLICADO_M` en 3.
+- `docs/manual/manual-personal.html` (secciones 2, 4, 7, 10, 14 y 18) y `docs/manual/manual-administracion.html` (7, 8,
+  11 y 12); `herramientas/manual_personal.py` toma dos capturas nuevas del cabo de apoyo (`p32-jornadas-apoyo`,
+  `p33-registrar-apoyo`). Las demás capturas de los dos manuales se tomaron otra vez con la 1.0.5, y los dos PDF se
+  armaron de nuevo.
+- Las pruebas que daban por hecho los 4 m: `pruebas/prueba.py`, `pruebas/prueba_conexion.py`,
+  `servidor/pruebas/parametros.test.js` y `servidor/pruebas/duplicados.test.js` (el árbol que cae dentro del piso, a
+  2 m en lugar de 3).
+- `servidor/README.md` (el piso de 3 m), `docs/PRUEBA-CAMPO-2026-11-19.md`, `VERSION`, las 65 marcas de `index.html`, la
+  etapa de `js/config.js`, el README, `docs/MEJORAS.md` (M575 y M576 hechas) y `docs/DECISIONES.md` (D351).
+
+**Verificación.**
+- `npm test`: 123 de 123. La primera corrida dio 2 fallas, de las pruebas que esperaban los 4 m; corregidas.
+- `pruebas/por_tramos.py`, los tramos del recorrido principal y del duplicado (1 y 2): 674 de 674.
+- `pruebas/prueba_conexion.py`: 148 de 148 (la primera corrida, 1 falla: Parámetros esperaba «El de arranque es 4 m»).
+- Los dos PDF, página por página: las portadas dicen «Versión del sistema: 1.0.5» y la fecha; las capturas enseñan la
+  mira, los dos botones de la foto, «Al día a las…» en Registros y Jornadas, y Parámetros con «Puntos duplicados 3 m» y
+  «El de arranque es 3»; ninguna enseña placas ni cuentas que no sean de ejemplo.
+- GitHub: la corrida del bloque 270 (44983419596), en verde: 1,584 comprobaciones sin fallas.
+
+**Siguiente paso.** El bloque 272: la entrega de la 1.0.5 al SIA, como actualización de la 1.0.1 (la aplicación,
+`consultas.ts` y `parametros.ts`; la base no cambia), con su ensayo de instalación y los manuales nuevos.

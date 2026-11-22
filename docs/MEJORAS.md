@@ -5,7 +5,7 @@ El detalle de lo hecho está en DECISIONES (Dnn) y BITACORA.
 
 ## Versión que debe verse en el teléfono
 
-En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.4 (Bloque 270)»**.
+En la franja fija de arriba de cualquier pantalla: **«Versión 1.0.5 (Bloque 271)»**.
 Desde la 0.6.81 basta abrir o recargar la app una vez para ver lo publicado (D161). Si aparece una
 anterior, GitHub no termina de publicar: esperar un par de minutos y volver a abrirla.
 
@@ -500,6 +500,8 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 | M503 | Paso 4d | «No se pudo enviar», en rojo, en la tarjeta del árbol y en la de la jornada, y en la franja «Guardado» | Media | 0.9.69 (B224) | Registros, Jornadas y Nuevo registro, con datos reales | D304 |
 | M504 | Paso 4d | Ventana «Cambios que el servidor no aceptó»: de qué registro es cada cambio, qué se cambió, por qué y qué hacer | Alta | 0.9.69 (B224) | Franja › Revisar | D304 |
 | M505 | Prueba de conexión | Al volver a la entrada se cierra cualquier ventana que hubiera quedado abierta | Media | 0.9.69 (B224) | Sesión vencida con una ventana abierta | D304 |
+| M575 | Prueba en campo (19-11-2026) | Los dos manuales al día con la 1.0.5: en el del personal, los modelos con baja precisión en la prueba, «Al día» y cuánto tarda lo de los demás (a lo más 2 minutos), la mira, las colonias apagadas, los dos botones de la foto, el duplicado por especie, y la compartida y el relevo con su color y «Registrar árbol» (dos capturas nuevas); en el de la Administración, «Puntos duplicados» en 3 m y «Actualizar» | Alta | 1.0.5 (B271) | `docs/manual/Manual-Personal-SRP.pdf` y `docs/manual/Manual-Administracion-SRP.pdf` | D351 |
+| M576 | Prueba en campo (19-11-2026) | «Puntos duplicados» arranca en 3 m (eran 4 m), en la aplicación y en el servidor; si la Administración ya lo cambió, se queda su valor | Alta | 1.0.5 (B271) | Configuración › Parámetros › Puntos duplicados: 3 m, el de arranque | D351 |
 | M569 | Prueba en campo (19-11-2026) | El aviso de posible duplicado al guardar compara sólo con árboles de la misma especie, como la revisión de la jornada; la distancia («Puntos duplicados») la baja la Administración a 3 m en Parámetros | Alta | 1.0.4 (B270) | En una jornada, registrar otra especie a 1 m de un árbol: no avisa; la misma especie, sí | D350 |
 | M570 | Prueba en campo (19-11-2026) | El punto del árbol en el mapa es una mira chica con el punto exacto al centro, en lugar del pin de gota, para que no tape la imagen al ajustarlo; sin la etiqueta flotante «Ubicación del árbol» | Media | 1.0.4 (B270) | Nuevo registro, tocar «Registrar ubicación del punto» y acercar el mapa | D350 |
 | M571 | Prueba en campo (19-11-2026) | Las colonias de la jornada empiezan apagadas al abrir la aplicación, en los mapas de campo y para todos los perfiles; se encienden con el botón de capas y siguen encendidas hasta cerrarla; la opacidad elegida se recuerda | Media | 1.0.4 (B270) | Nuevo registro, botón de capas: «Colonias de la jornada» sin marcar | D350 |
@@ -574,7 +576,6 @@ anterior, GitHub no termina de publicar: esperar un par de minutos y volver a ab
 |---|---|---|---|---|---|
 | M573 | Prueba en campo (19-11-2026) | Girar el mapa con dos dedos, con una brújula para volver al norte | Media | Pendiente | Segunda etapa (1.1.0) |
 | M574 | Prueba en campo (19-11-2026) | Mapa base de mayor resolución y con más acercamiento | Media | Pendiente | Segunda etapa. Espera saber si el SIA tiene una ortofoto de la Ciudad y si se acepta un proveedor con clave y costo; ver M168 |
-| M575 | Prueba en campo (19-11-2026) | Los dos manuales al día con lo de la prueba en campo: botón y color de las jornadas asignadas, «Actualizar», pin, colonias, fotografía, Puntos duplicados en 3 m, y en el capítulo del GPS los modelos con baja precisión en la prueba | Alta | Pendiente | Bloque 271, antes de la entrega; las capturas, con la versión de la entrega |
 | M46 | Android | Revisión corta en Android: versión, botón «atrás» con ventanas abiertas, calendario y hora, especies con teclado, precisión, foto, compartir PDF, aviso | Alta | Pendiente | Espera capturas |
 | M168 | Auditoría 360 | Bloque «Publicación ligera», lo que queda: capas con su propia versión (que no se vuelvan a descargar con cada versión de la app) y aligeradas; licencia del mapa base (M2, M4) | Media | Pendiente | Decisiones 3 y 5 de la lista del 26-09-2026. Originales y jsPDF, hechos en B102 |
 | M170 | Auditoría 360 | Bloque «Pruebas en iPhone»: GitHub Actions con Chromium y WebKit, pruebas de migración e integridad (M17, M18) | Media | En curso | Desde la 1.0.5 (B240, D320) las pruebas corren en GitHub en cada subida, con Chromium. Falta WebKit |

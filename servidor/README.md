@@ -400,7 +400,7 @@ publica, nombrado por su id (el `foto_id` de su árbol). La base guarda sólo su
 
 Al recibir un árbol —nuevo, sustituto, restaurado o con el punto corregido— `srp.vecinos` busca otro árbol
 activo, de la misma especie y de otra jornada, a menos de la incertidumbre combinada de los dos puntos: la suma
-de sus precisiones de GPS, nunca menos que el parámetro «Puntos duplicados» (4 m). Un punto puesto en el mapa
+de sus precisiones de GPS, nunca menos que el parámetro «Puntos duplicados» (3 m de arranque). Un punto puesto en el mapa
 o escrito no trae precisión, así que cuenta el piso. Los de la misma jornada los revisa el teléfono con sus
 propios avisos.
 

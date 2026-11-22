@@ -88,14 +88,14 @@ test('con sesión se leen; sólo la Administración global los cambia, dentro de
   const cabo = await sesion(CABO), adm = await sesion(ADMIN);
   const lista = (await cabo('GET', '/parametros')).datos;
   const dup = lista.find((p) => p.clave === 'JORNADA.DUPLICADO_M');
-  assert.deepEqual([dup.valor, dup.porOmision, dup.minimo, dup.maximo, dup.unidad], [4, 4, 1, 50, 'm']);
+  assert.deepEqual([dup.valor, dup.porOmision, dup.minimo, dup.maximo, dup.unidad], [3, 3, 1, 50, 'm']);
   assert.equal((await cabo('PUT', '/parametros/JORNADA.DUPLICADO_M', { valor: 6 })).datos.mensaje, 'No tiene permiso para administrar los catálogos.');
   const r = await adm('PUT', '/parametros/JORNADA.DUPLICADO_M', { valor: 6 });
   assert.deepEqual([r.estado, r.datos], [200, { clave: 'JORNADA.DUPLICADO_M', valor: 6 }]);
   assert.equal((await cabo('GET', '/parametros')).datos.find((p) => p.clave === 'JORNADA.DUPLICADO_M').valor, 6, 'todos los teléfonos lo reciben');
   assert.equal((await adm('PUT', '/parametros/JORNADA.DUPLICADO_M', { valor: 6 })).datos.repetido, true);
   const bit = (await admin.query("SELECT accion, entidad, detalle FROM srp.bitacora WHERE entidad_id = 'parametro:JORNADA.DUPLICADO_M' AND usuario_id = $1", [ADMIN.id])).rows;
-  assert.deepEqual(bit, [{ accion: 'EDITADO', entidad: 'catalogo', detalle: 'Parámetro «Puntos duplicados»: 4 → 6 m' }]);
+  assert.deepEqual(bit, [{ accion: 'EDITADO', entidad: 'catalogo', detalle: 'Parámetro «Puntos duplicados»: 3 → 6 m' }]);
   // Las reglas: entero, en su rango, de sus opciones, y la precisión buena más estricta que la aceptable
   const error = async (clave, valor) => (await adm('PUT', '/parametros/' + clave, { valor })).datos.errores?.[0]?.[1];
   assert.equal(await error('JORNADA.DUPLICADO_M', 0), 'Puntos duplicados va de 1 m a 50 m.');

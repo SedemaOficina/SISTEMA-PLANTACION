@@ -12,7 +12,7 @@ SRP.CONFIG = {
     const m = src.match(/[?&]v=([^&]+)/);
     return m ? decodeURIComponent(m[1]) : 'sin marca de versión';
   })(),
-  ETAPA: 'Bloque 270',
+  ETAPA: 'Bloque 271',
 
   // Mientras sea true: aviso visible de datos ficticios y herramientas de prueba
   // (cambiar de perfil, restablecer datos). En producción debe ser false.
@@ -58,8 +58,9 @@ SRP.CONFIG = {
   ZONA: 'America/Mexico_City',
   MINUTOS_RELOJ: 10,
   // Revisión de jornadas: umbrales de los avisos y de la partición por sitio, en metros
-  // DUPLICADO_M: 4 m: por debajo, el aviso quedaría dentro del ruido del GPS
-  JORNADA: { DUPLICADO_M: 4, FUERA_M: 150, SEPARAR_M: 500 },
+  /* DUPLICADO_M: 3 m, de la misma especie. Eran 4 m: en la prueba en campo del 19-11-2026 se avisaban árboles plantados
+     a 3 m. Menos quedaría dentro del ruido del GPS. La Administración lo cambia en Parámetros */
+  JORNADA: { DUPLICADO_M: 3, FUERA_M: 150, SEPARAR_M: 500 },
 
   /* La Secretaría en el catálogo de instituciones. Sólo sus cuentas tienen área y Administración
      global; no se desactiva. Las de las demás instituciones (alcaldías, PAOT, SOBSE, empresas,

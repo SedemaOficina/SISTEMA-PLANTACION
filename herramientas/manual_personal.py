@@ -399,6 +399,12 @@ def capturas(b):
     cerrar_ventanas(pg)
     vista(pg, 'registrar', 1500)
     tramo(pg, 'p22-franja-apoyo', '#franja-jornada', '#franja-jornada')
+    # En Jornadas, la compartida va en otro color, bajo la franja «Al día»; en su ficha, «Registrar árbol»
+    vista(pg, 'jornadas', 3000)
+    tramo(pg, 'p32-jornadas-apoyo', '#jornadas-al-dia', '#lista-jornadas li.jornada')
+    ficha(pg, 'Evento en Parque España')
+    ventana(pg, 'p33-registrar-apoyo', '#jornada-detalle')
+    unir('p33-registrar-apoyo', [(0, 560), (-270, None)])
     ctx.close()
 
     # La dirección: la ficha de una jornada con su reporte, para descargarlo

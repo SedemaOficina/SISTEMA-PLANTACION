@@ -1078,7 +1078,7 @@ def main():
             par = pg.evaluate(PARAMETROS)
             dup = par['Puntos duplicados']
             ok(tarjeta == '11 valores · 1 cambiado' and all(x['editar'] for x in par.values()) and dup['valor'] == '7 m'
-               and dup['cambio'].startswith('Cambiado el ') and 'por ' + CABO['nombre'] + ' Renombrada. El de arranque es 4 m.' in dup['cambio'],   # la cuenta se renombró antes
+               and dup['cambio'].startswith('Cambiado el ') and 'por ' + CABO['nombre'] + ' Renombrada. El de arranque es 3 m.' in dup['cambio'],   # la cuenta se renombró antes
                'Parámetros: cada valor con «Editar»; el que no es el de arranque dice cuándo, quién y cuál era; la tarjeta los cuenta: %s · %s' % (tarjeta, dup))
 
             # Un valor: llega al servidor, este teléfono lo usa al momento y la pantalla dice quién lo cambió

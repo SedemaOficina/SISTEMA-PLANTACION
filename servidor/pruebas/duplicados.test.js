@@ -151,13 +151,13 @@ test('la distancia que cuenta es la suma de las precisiones, nunca menos que el 
   assert.equal((await plantar(cabo, J, alNorte(P, -15), 5)).r.duplicado, undefined);
   const J3 = await nuevaJornada(cabo, 'Jornada de distancias 2');
   assert.equal((await plantar(cabo, J3, alNorte(P, -15), 12)).r.duplicado?.umbral_m, 17);
-  // Sin precisión (punto puesto en el mapa) cuenta el piso: el de A1 más nada, pero nunca menos de 4 m.
+  // Sin precisión (punto puesto en el mapa) cuenta el piso: el de A1 más nada, pero nunca menos de 3 m, el de arranque.
   // Lejos de los anteriores, para comparar sólo con un árbol
   const Q = alNorte(P, 200);
   const J4 = await nuevaJornada(cabo, 'Jornada del piso');
   await plantar(cabo, J4, Q, null);
   const J5 = await nuevaJornada(cabo, 'Jornada del piso 2');
-  assert.equal((await plantar(cabo, J5, alNorte(Q, 3), null)).r.duplicado?.umbral_m, 4);
+  assert.equal((await plantar(cabo, J5, alNorte(Q, 2), null)).r.duplicado?.umbral_m, 3);
   const J6 = await nuevaJornada(cabo, 'Jornada del piso 3');
   assert.equal((await plantar(cabo, J6, alNorte(Q, -5), null)).r.duplicado, undefined, 'a 5 m del primero, fuera del piso');
 });

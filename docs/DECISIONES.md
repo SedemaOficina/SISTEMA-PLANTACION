@@ -4852,3 +4852,24 @@
     de atrás (`capture="environment"`) y «Galería», las fotos guardadas; una línea debajo dice cuál es cuál. Con una foto
     cargada, los dos quedan en un renglón para cambiarla y la línea se oculta. El icono de galería no existe en el set de
     identidad. Liber lo aprobó con muestra.
+
+- **D351. Los manuales al día con lo de la prueba en campo, y «Puntos duplicados» arranca en 3 m (bloque 271).**
+  21-11-2026.
+  · **3 m de arranque.** Al poner al día el manual de la Administración, su captura de Parámetros enseñaba 4 m, el valor
+    de arranque. Se le preguntó a Liber si lo cambiaba él en Parámetros o si se dejaba en 3 m en el código; eligió el
+    código. `JORNADA.DUPLICADO_M` pasa a 3 en `js/config.js` y en `parametros.ts` (la prueba de paridad exige que sean
+    iguales). En el SIA, la base guarda sólo los valores que alguien cambió: si nadie lo cambió, al instalar la entrega
+    queda en 3 m; si ya lo cambiaron, se queda su valor. Por ser un cambio de código, la versión sube a 1.0.5.
+  · **El manual del personal**: en la sección 2, los modelos con baja precisión en la prueba (Redmi 13C, Redmi Note 13 Pro
+    y Samsung Galaxy A33), como pidió Liber, y que casi todos mejoran al esperar unos segundos; en la 4, «Lo que hacen los
+    demás, al día»: lo que se guarda sale en segundos y los demás lo ven en a lo más 2 minutos o al tocar «Actualizar»;
+    en la 7, la mira, las colonias apagadas al abrir, «Tomar foto» y «Galería», y el duplicado sólo de la misma especie a
+    menos de 3 m; en la 10, el aviso del relevo y de la compartida, que también llega con la app abierta, y dos capturas
+    nuevas del cabo de apoyo: su lista de Jornadas con la compartida en verde azulado y la ficha con «Registrar árbol»;
+    en la 14, que la ventana del relevo trae la jornada al día; en la 18, dos renglones nuevos.
+  · **El manual de la Administración**: «Puntos duplicados» en 3 m y por qué; la franja «Al día», que para la
+    Administración no corre sola; cuánto tarda en verse lo de otra persona.
+  · **El registro de la prueba**, en `docs/PRUEBA-CAMPO-2026-11-19.md`: la tabla de precisión por teléfono, sin nombres de
+    personas, y qué bloque atendió cada observación.
+  · La guía «Teléfono listo para el GPS» (documento de Claude Docs, fuera del repositorio) no cambió: sus ajustes son los
+    mismos; lo nuevo de la prueba va en la sección 2 del manual.

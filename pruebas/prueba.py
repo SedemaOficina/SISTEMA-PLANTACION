@@ -2498,7 +2498,7 @@ with sync_playwright() as p:
     if pg12.is_visible('#dlg-resumen'): pg12.click('#btn-resumen-guardar'); pg12.wait_for_timeout(700)
     hist12=pg12.evaluate("async () => (await SRP.bitacora.deEntidad('%s')).map(h => h.detalle || '').join(' | ')" % rid12)
     ok('Territorio recalculado' in hist12 and 'alcaldia' in hist12,'al editar, si el territorio cambia, el historial lo registra: '+hist12[-160:])
-    ok(pg12.evaluate("SRP.CONFIG.JORNADA.DUPLICADO_M")==4,'el aviso de posible duplicado usa 4 m: por debajo del ruido del GPS no significa nada')
+    ok(pg12.evaluate("SRP.CONFIG.JORNADA.DUPLICADO_M")==3,'el aviso de posible duplicado arranca en 3 m, lo que pidió la prueba en campo: por debajo del ruido del GPS no significaría nada')
     ok(not err12,'y sin errores en consola: %s' % err12[:2])
     ctx12.close()
     # Sin la capa de colonias la aplicación no abre, y no sugiere borrar los datos
